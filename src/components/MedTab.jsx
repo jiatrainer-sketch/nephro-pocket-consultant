@@ -143,9 +143,17 @@ function MedForm({ initial, onSave, onCancel }) {
             value={name}
             onChange={e => handleNameChange(e.target.value)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            onFocus={() => name && setSuggestions(searchMedications(name))}
+            onFocus={() => {
+              if (name.trim().length >= 1) {
+                setSuggestions(searchMedications(name))
+                setShowSuggestions(true)
+              }
+            }}
             placeholder="พิมพ์ชื่อยา เช่น amlo, EPO, CaCO3..."
             className={inp}
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
           {showSuggestions && suggestions.length === 0 && name.trim().length >= 2 && (
             <p className="text-xs text-gray-400 mt-1">
@@ -153,7 +161,7 @@ function MedForm({ initial, onSave, onCancel }) {
             </p>
           )}
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden max-h-56 overflow-y-auto">
+            <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-56 overflow-y-auto">
               {suggestions.map((med, i) => (
                 <button
                   key={i}

@@ -23,6 +23,7 @@ function buildSystemPrompt(patient) {
 
 ข้อมูลคนไข้:
 - ชื่อ/HN: ${patient.name || '—'} / ${patient.hn || '—'}
+- อายุ: ${patient.age || '—'} ปี
 - น้ำหนัก: ${patient.weight_kg || '—'} kg, ส่วนสูง: ${patient.height_cm || '—'} cm, Dry weight: ${patient.dry_weight_kg || '—'} kg
 - เริ่ม HD: ${patient.hd_start_date || '—'}
 - สาเหตุ ESRD: ${patient.esrd_cause || '—'}
@@ -56,7 +57,7 @@ export default function ChatTab({ patient, settings }) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
+  }, [messages, loading, error])
 
   const send = async () => {
     const text = input.trim()

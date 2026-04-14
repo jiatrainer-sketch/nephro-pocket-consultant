@@ -232,14 +232,14 @@ export default function InfoTab({ patient, onUpdate }) {
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="น้ำหนัก (kg)">
-            <input className={input} type="number" value={form.weight_kg} onChange={e => set('weight_kg', e.target.value)} placeholder="60" />
+            <input className={input} type="text" inputMode="decimal" value={form.weight_kg ?? ''} onChange={e => set('weight_kg', e.target.value)} placeholder="60" />
           </Field>
           <Field label="ส่วนสูง (cm)">
-            <input className={input} type="number" value={form.height_cm} onChange={e => set('height_cm', e.target.value)} placeholder="165" />
+            <input className={input} type="text" inputMode="decimal" value={form.height_cm ?? ''} onChange={e => set('height_cm', e.target.value)} placeholder="165" />
           </Field>
         </div>
         <Field label="Dry weight (kg)">
-          <input className={input} type="number" value={form.dry_weight_kg} onChange={e => set('dry_weight_kg', e.target.value)} placeholder="58" />
+          <input className={input} type="text" inputMode="decimal" value={form.dry_weight_kg ?? ''} onChange={e => set('dry_weight_kg', e.target.value)} placeholder="58" />
         </Field>
         <Field label="วันเริ่ม HD">
           <input className={input} value={form.hd_start_date} onChange={e => set('hd_start_date', e.target.value)} placeholder="เช่น 2020-06 หรือ 2563" />
@@ -350,7 +350,7 @@ export default function InfoTab({ patient, onUpdate }) {
                 <button
                   key={i}
                   type="button"
-                  onMouseDown={() => addCondition(c)}
+                  onMouseDown={e => { e.preventDefault(); addCondition(c) }}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
                 >
                   {c}
@@ -387,6 +387,9 @@ export default function InfoTab({ patient, onUpdate }) {
               placeholder="พิมพ์ชื่อยา เช่น amlo, voltaren..."
               onKeyDown={e => e.key === 'Enter' && addAllergy()}
               onBlur={() => setTimeout(() => setAllergySuggestions([]), 150)}
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
             />
             <button
               type="button"

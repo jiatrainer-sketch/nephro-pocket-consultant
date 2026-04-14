@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import RecommendationTab from './RecommendationTab'
 import ChatTab from './ChatTab'
 import MedTab from './MedTab'
@@ -18,6 +18,7 @@ export default function QuickMode({ onBack, settings }) {
       id: '__quick__',
       name: 'Quick Mode',
       hn: '',
+      age: '',
       weight_kg: '',
       status: 'HD',
       conditions: [],
@@ -129,6 +130,9 @@ function QuickLabInput({ patient, onUpdate }) {
 
   const [rawVals, setRawVals] = useState(initRaw)
   const [date, setDate] = useState(existingLab?.date || today)
+  const [rawAge, setRawAge] = useState(
+    patient.age ? String(patient.age) : ''
+  )
   const [rawWeight, setRawWeight] = useState(
     patient.weight_kg ? String(patient.weight_kg) : ''
   )
@@ -163,6 +167,7 @@ function QuickLabInput({ patient, onUpdate }) {
     }
     return {
       ...(nextPatient || patient),
+      age: rawAge ? parseInt(rawAge) || rawAge : '',
       weight_kg: nextWeight ? parseFloat(nextWeight) || nextWeight : '',
       labs: [{ id: 'quick', date: nextDate, values: numericVals }],
     }
@@ -186,6 +191,12 @@ function QuickLabInput({ patient, onUpdate }) {
   const handleDate = (val) => {
     setDate(val)
     onUpdate(buildUpdate(rawVals, val, rawWeight))
+  }
+
+  const handleAge = (val) => {
+    setRawAge(val)
+    const n = parseInt(val)
+    onUpdate({ ...buildUpdate(rawVals, date, rawWeight), age: !isNaN(n) ? n : val })
   }
 
   const handleWeight = (val) => {
@@ -238,15 +249,26 @@ function QuickLabInput({ patient, onUpdate }) {
 
   return (
     <div className="p-4 space-y-4">
-      {/* Date + Weight */}
+      {/* Date + Age + Weight */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <div>
             <label className="block text-xs text-gray-500 mb-1">วันที่เจาะ</label>
             <input
               type="month"
               value={date}
               onChange={e => handleDate(e.target.value)}
+              className={inp}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">อายุ (ปี)</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={rawAge}
+              onChange={e => handleAge(e.target.value)}
+              placeholder="55"
               className={inp}
             />
           </div>
@@ -411,8 +433,61 @@ function QuickLabInput({ patient, onUpdate }) {
 // eGFR trend — compare current กับ eGFR เดิม + คำนวณ % drop + rate/yr
 // ============================================================
 const MONTH_PRESETS = [1, 3, 6, 12, 24]
+const DAY_PRESETS   = [7, 14, 30, 60, 90]
 
 function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, onEgfrPrevMonths }) {
+  const [unit, setUnit] = useState('เดือน') // 'เดือน' | 'วัน'
+
+  // แปลง rawEgfrPrevMonths (เก็บเป็น months เสมอ) → ค่าที่แสดงตาม unit ปัจจุบัน
+  const displayTimeVal = useMemo(() => {
+    if (rawEgfrPrevMonths === '' || rawEgfrPrevMonths == null) return ''
+    const m = parseFloat(rawEgfrPrevMonths)
+    if (isNaN(m)) return rawEgfrPrevMonths
+    if (unit === 'วัน') return String(Math.round(m * 30.44))
+    return rawEgfrPrevMonths
+  }, [rawEgfrPrevMonths, unit])
+
+  // user พิมพ์ → แปลงเป็น months แล้วส่งขึ้น parent
+  const handleTimeInput = (val) => {
+    if (unit === 'วัน') {
+      const days = parseFloat(val)
+      onEgfrPrevMonths(val === '' ? '' : !isNaN(days) ? String(days / 30.44) : val)
+    } else {
+      onEgfrPrevMonths(val)
+    }
+  }
+
+  // preset click
+  const handlePreset = (v) => {
+    if (unit === 'วัน') {
+      onEgfrPrevMonths(String(v / 30.44))
+    } else {
+      onEgfrPrevMonths(String(v))
+    }
+  }
+
+  // เช็คว่า preset ตรงกับค่าปัจจุบันไหม
+  const isPresetActive = (v) => {
+    const m = parseFloat(rawEgfrPrevMonths)
+    if (isNaN(m)) return false
+    if (unit === 'วัน') return Math.round(m * 30.44) === v
+    return m === v
+  }
+
+  // สลับ unit — แปลงค่าที่ค้างอยู่
+  const switchUnit = (newUnit) => {
+    if (newUnit === unit) return
+    const m = parseFloat(rawEgfrPrevMonths)
+    if (!isNaN(m) && m > 0) {
+      if (newUnit === 'วัน') {
+        // เปลี่ยนจาก เดือน → วัน: ค่า months ไม่เปลี่ยน แค่ display เปลี่ยน
+      } else {
+        // เปลี่ยนจาก วัน → เดือน: ค่า months ไม่เปลี่ยนเช่นกัน
+      }
+    }
+    setUnit(newUnit)
+  }
+
   const cur = parseFloat(egfrCurrent)
   const prev = parseFloat(rawEgfrPrev)
   const months = parseFloat(rawEgfrPrevMonths)
@@ -421,7 +496,6 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
   const pct = valid ? (diff / prev) * 100 : null
   const ratePerYear = valid ? (diff / months) * 12 : null
 
-  // สี summary: drop >30% หรือ rate worse than -5/yr → แดง ; drop >10% → เหลือง
   let tone = 'bg-gray-50 border-gray-200 text-gray-700'
   if (valid) {
     if (pct <= -30 || ratePerYear <= -5) tone = 'bg-red-50 border-red-200 text-red-800'
@@ -430,6 +504,7 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
   }
 
   const inpSmall = 'w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
+  const presets = unit === 'วัน' ? DAY_PRESETS : MONTH_PRESETS
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-100">
@@ -449,32 +524,47 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
           />
         </div>
         <div>
+          {/* unit toggle */}
+          <div className="flex justify-center gap-1 mb-1">
+            {['เดือน', 'วัน'].map(u => (
+              <button
+                key={u}
+                type="button"
+                onClick={() => switchUnit(u)}
+                className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                  unit === u ? 'bg-teal-600 text-white border-teal-600' : 'text-gray-500 border-gray-300 bg-white'
+                }`}
+              >
+                {u}
+              </button>
+            ))}
+          </div>
           <label className="block text-xs text-gray-500 mb-1 text-center">
-            เมื่อ<span className="text-gray-400 block text-[10px]">(เดือนก่อน)</span>
+            เมื่อ<span className="text-gray-400 block text-[10px]">({unit}ก่อน)</span>
           </label>
           <input
             type="text"
             inputMode="decimal"
-            value={rawEgfrPrevMonths}
-            onChange={e => onEgfrPrevMonths(e.target.value)}
-            placeholder="3"
+            value={displayTimeVal}
+            onChange={e => handleTimeInput(e.target.value)}
+            placeholder={unit === 'วัน' ? '15' : '3'}
             className={inpSmall}
           />
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5 mt-2">
-        {MONTH_PRESETS.map(m => (
+        {presets.map(v => (
           <button
-            key={m}
+            key={v}
             type="button"
-            onClick={() => onEgfrPrevMonths(String(m))}
+            onClick={() => handlePreset(v)}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-              parseFloat(rawEgfrPrevMonths) === m
+              isPresetActive(v)
                 ? 'bg-teal-600 text-white border-teal-600'
                 : 'text-gray-600 border-gray-300 bg-white'
             }`}
           >
-            {m} เดือน
+            {v} {unit}
           </button>
         ))}
       </div>
