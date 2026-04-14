@@ -35,6 +35,8 @@ const LAB_GROUPS = [
       { key: 'BUN',  label: 'BUN',        unit: 'mg/dL'  },
       { key: 'Cr',   label: 'Creatinine', unit: 'mg/dL'  },
       { key: 'eGFR', label: 'eGFR',       unit: 'mL/min' },
+      { key: 'eGFR_prev', label: 'eGFR เดิม', unit: 'mL/min' },
+      { key: 'eGFR_prev_months', label: 'เมื่อ', unit: 'เดือนก่อน' },
       { key: 'Na',   label: 'Na',         unit: 'mEq/L'  },
       { key: 'K',    label: 'K',          unit: 'mEq/L'  },
       { key: 'Cl',   label: 'Cl',         unit: 'mEq/L'  },

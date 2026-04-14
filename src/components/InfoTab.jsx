@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { getCKDStage, getLatestLabEntry } from '../storage'
+import { searchMedications } from '../medicationDatabase'
 
 const PATIENT_STATUSES = [
   { id: 'CKD', label: 'CKD' },
@@ -25,6 +26,9 @@ export default function InfoTab({ patient, onUpdate }) {
   const [newCondition, setNewCondition] = useState('')
   const [conditionSince, setConditionSince] = useState('')
   const [newAllergy, setNewAllergy] = useState('')
+  const [allergySuggestions, setAllergySuggestions] = useState([])
+  const conditionInputRef = useRef(null)
+  const allergyInputRef = useRef(null)
 
   function clonePatient(p) {
     return JSON.parse(JSON.stringify(p))
@@ -37,7 +41,9 @@ export default function InfoTab({ patient, onUpdate }) {
   }))
 
   const addCondition = (name) => {
-    const n = name || newCondition.trim()
+    // Read from DOM ref as fallback (avoids stale state from mobile keyboards / race conditions)
+    const fromRef = conditionInputRef.current?.value || ''
+    const n = (name || newCondition || fromRef).trim()
     if (!n) return
     setForm(f => ({
       ...f,
@@ -45,17 +51,26 @@ export default function InfoTab({ patient, onUpdate }) {
     }))
     setNewCondition('')
     setConditionSince('')
+    if (conditionInputRef.current) conditionInputRef.current.value = ''
   }
 
   const removeCondition = (i) => {
     setForm(f => ({ ...f, conditions: f.conditions.filter((_, idx) => idx !== i) }))
   }
 
-  const addAllergy = () => {
-    const a = newAllergy.trim()
+  const handleAllergyInput = (val) => {
+    setNewAllergy(val)
+    setAllergySuggestions(val.length >= 2 ? searchMedications(val) : [])
+  }
+
+  const addAllergy = (name) => {
+    const fromRef = allergyInputRef.current?.value || ''
+    const a = (name || newAllergy || fromRef).trim()
     if (!a) return
     setForm(f => ({ ...f, allergies: [...(f.allergies || []), a] }))
     setNewAllergy('')
+    setAllergySuggestions([])
+    if (allergyInputRef.current) allergyInputRef.current.value = ''
   }
 
   const removeAllergy = (i) => {
@@ -273,6 +288,7 @@ export default function InfoTab({ patient, onUpdate }) {
         {/* Free text + since */}
         <div className="flex gap-2">
           <input
+            ref={conditionInputRef}
             className={`${input} flex-1`}
             value={newCondition}
             onChange={e => setNewCondition(e.target.value)}
@@ -280,13 +296,14 @@ export default function InfoTab({ patient, onUpdate }) {
             onKeyDown={e => e.key === 'Enter' && addCondition()}
           />
           <input
-            className={`${input} w-24`}
+            className={`${input} w-20`}
             value={conditionSince}
             onChange={e => setConditionSince(e.target.value)}
             placeholder="ปี..."
           />
           <button
             type="button"
+            onMouseDown={e => { e.preventDefault(); addCondition() }}
             onClick={() => addCondition()}
             className="bg-blue-600 text-white px-3 rounded-xl text-sm shrink-0"
           >
@@ -306,21 +323,41 @@ export default function InfoTab({ patient, onUpdate }) {
             ))}
           </div>
         )}
-        <div className="flex gap-2">
-          <input
-            className={`${input} flex-1`}
-            value={newAllergy}
-            onChange={e => setNewAllergy(e.target.value)}
-            placeholder="ชื่อยาที่แพ้..."
-            onKeyDown={e => e.key === 'Enter' && addAllergy()}
-          />
-          <button
-            type="button"
-            onClick={addAllergy}
-            className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0"
-          >
-            +
-          </button>
+        <div className="relative">
+          <div className="flex gap-2">
+            <input
+              ref={allergyInputRef}
+              className={`${input} flex-1`}
+              value={newAllergy}
+              onChange={e => handleAllergyInput(e.target.value)}
+              placeholder="พิมพ์ชื่อยา เช่น amlo, voltaren..."
+              onKeyDown={e => e.key === 'Enter' && addAllergy()}
+              onBlur={() => setTimeout(() => setAllergySuggestions([]), 150)}
+            />
+            <button
+              type="button"
+              onMouseDown={e => { e.preventDefault(); addAllergy() }}
+              onClick={() => addAllergy()}
+              className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0"
+            >
+              +
+            </button>
+          </div>
+          {allergySuggestions.length > 0 && (
+            <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+              {allergySuggestions.map((med, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onMouseDown={() => addAllergy(med.name)}
+                  className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
+                >
+                  <span className="font-medium text-gray-800">{med.name}</span>
+                  <span className="text-xs text-gray-400 ml-2">{med.generic}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </FormCard>
 
