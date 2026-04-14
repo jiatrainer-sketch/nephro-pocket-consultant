@@ -110,7 +110,7 @@ export default function RecommendationTab({ patient }) {
             outdated ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-gray-100 text-gray-600'
           }`}>
             <span>Lab: {latestLab.date || '—'}</span>
-            {outdated && <span className="font-medium">⚠️ เก่า >3 เดือน — ควรเจาะใหม่</span>}
+            {outdated && <span className="font-medium">⚠️ เก่า &gt;3 เดือน — ควรเจาะใหม่</span>}
           </div>
 
           {/* Critical alerts */}

@@ -94,6 +94,104 @@ const LAB_GROUPS = [
 ]
 
 // ============================================================
+// Sparkline chart (pure SVG, no library)
+// ============================================================
+function Sparkline({ data, width = 80, height = 36, color, refLow, refHigh }) {
+  if (!data || data.length < 2) return null
+  const vals = data.map(d => d.v)
+  const allVals = [...vals, refLow, refHigh].filter(v => v != null)
+  const minV = Math.min(...allVals)
+  const maxV = Math.max(...allVals)
+  const range = maxV - minV || 1
+  const pad = 3
+  const w = width - pad * 2
+  const h = height - pad * 2
+  const cx = (i) => pad + (i / (data.length - 1)) * w
+  const cy = (v) => pad + h - ((v - minV) / range) * h
+  const pathD = data.map((d, i) => `${i === 0 ? 'M' : 'L'}${cx(i).toFixed(1)},${cy(d.v).toFixed(1)}`).join(' ')
+  const lastVal = vals[vals.length - 1]
+  const inRange = (refLow == null || lastVal >= refLow) && (refHigh == null || lastVal <= refHigh)
+  const lineColor = color || (inRange ? '#22c55e' : '#ef4444')
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      {/* Reference range band */}
+      {refLow != null && refHigh != null && (
+        <rect
+          x={pad} y={cy(refHigh).toFixed(1)}
+          width={w} height={(cy(refLow) - cy(refHigh)).toFixed(1)}
+          fill="#22c55e18"
+        />
+      )}
+      {/* Line */}
+      <path d={pathD} fill="none" stroke={lineColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Dots */}
+      {data.map((d, i) => (
+        <circle key={i} cx={cx(i).toFixed(1)} cy={cy(d.v).toFixed(1)} r="2.2" fill={lineColor} />
+      ))}
+    </svg>
+  )
+}
+
+// Key labs to show in trend section
+const TREND_LABS = [
+  { key: 'eGFR',    label: 'eGFR',    unit: '',       color: '#3b82f6', refLow: null, refHigh: null },
+  { key: 'Hb',      label: 'Hb',      unit: 'g/dL',   color: null,      refLow: 10,   refHigh: 12  },
+  { key: 'K',       label: 'K',       unit: 'mEq/L',  color: null,      refLow: 3.5,  refHigh: 5.5 },
+  { key: 'PO4',     label: 'PO4',     unit: 'mg/dL',  color: null,      refLow: 3.5,  refHigh: 5.5 },
+  { key: 'iPTH',    label: 'iPTH',    unit: 'pg/mL',  color: '#a855f7', refLow: 130,  refHigh: 600 },
+  { key: 'Albumin', label: 'Albumin', unit: 'g/dL',   color: null,      refLow: 4.0,  refHigh: null},
+  { key: 'HbA1C',   label: 'HbA1C',  unit: '%',       color: null,      refLow: null, refHigh: 7.0 },
+]
+
+function TrendSection({ labs }) {
+  if (!labs || labs.length < 2) return null
+  const sorted = [...labs].sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+
+  const cards = TREND_LABS.map(tl => {
+    const points = sorted
+      .map(entry => ({ date: entry.date, v: parseFloat(entry.values?.[tl.key]) }))
+      .filter(p => !isNaN(p.v))
+    if (points.length < 2) return null
+    const latest = points[points.length - 1].v
+    const prev = points[points.length - 2].v
+    const diff = latest - prev
+    const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→'
+    const arrowColor = tl.key === 'eGFR'
+      ? (diff >= 0 ? 'text-green-600' : 'text-red-500')
+      : diff === 0 ? 'text-gray-400'
+      : tl.refLow != null && latest < tl.refLow ? 'text-red-500'
+      : tl.refHigh != null && latest > tl.refHigh ? 'text-red-500'
+      : 'text-green-600'
+
+    return { tl, points, latest, arrow, arrowColor }
+  }).filter(Boolean)
+
+  if (cards.length === 0) return null
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-1">
+      <div className="px-4 pt-3 pb-1">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📈 แนวโน้ม Lab</p>
+      </div>
+      <div className="flex overflow-x-auto gap-0 px-2 pb-3 scrollbar-hide">
+        {cards.map(({ tl, points, latest, arrow, arrowColor }) => (
+          <div key={tl.key} className="shrink-0 flex flex-col items-center px-3 py-1.5 min-w-[80px]">
+            <span className="text-xs text-gray-500 mb-0.5">{tl.label}</span>
+            <Sparkline data={points} color={tl.color} refLow={tl.refLow} refHigh={tl.refHigh} />
+            <div className="flex items-baseline gap-0.5 mt-0.5">
+              <span className="text-sm font-bold text-gray-800">{latest}</span>
+              <span className={`text-xs font-bold ${arrowColor}`}>{arrow}</span>
+            </div>
+            {tl.unit && <span className="text-xs text-gray-400">{tl.unit}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
 // LabTab
 // ============================================================
 export default function LabTab({ patient, onUpdate }) {
@@ -138,6 +236,8 @@ export default function LabTab({ patient, onUpdate }) {
       >
         <span className="text-lg leading-none">+</span> บันทึก Lab ใหม่
       </button>
+
+      <TrendSection labs={patient.labs} />
 
       {sortedLabs.length === 0 && (
         <div className="text-center text-gray-400 py-12 text-sm">

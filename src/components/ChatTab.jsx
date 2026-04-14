@@ -86,6 +86,7 @@ export default function ChatTab({ patient, settings }) {
         body: JSON.stringify({
           model: MODEL,
           max_tokens: 2048,
+          stream: true,
           system: buildSystemPrompt(patient),
           messages: newMessages.map(m => ({ role: m.role, content: m.content })),
         }),
@@ -96,13 +97,44 @@ export default function ChatTab({ patient, settings }) {
         throw new Error(err.error?.message || `HTTP ${res.status}`)
       }
 
-      const data = await res.json()
-      const reply = data.content?.[0]?.text || '(ไม่มีคำตอบ)'
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+      // Add empty placeholder for streaming text
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }])
+      setLoading(false)
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let fullText = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() // keep incomplete line
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6).trim()
+          if (data === '[DONE]') continue
+          try {
+            const parsed = JSON.parse(data)
+            if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+              fullText += parsed.delta.text
+              setMessages(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { role: 'assistant', content: fullText }
+                return updated
+              })
+            }
+          } catch {}
+        }
+      }
     } catch (e) {
+      setLoading(false)
       setError(`เกิดข้อผิดพลาด: ${e.message}`)
     } finally {
-      setLoading(false)
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }
@@ -144,6 +176,10 @@ export default function ChatTab({ patient, settings }) {
               }`}
             >
               {msg.content}
+              {/* Blinking cursor while streaming */}
+              {msg.role === 'assistant' && i === messages.length - 1 && !loading && msg.content === '' && (
+                <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse rounded-sm" />
+              )}
             </div>
           </div>
         ))}

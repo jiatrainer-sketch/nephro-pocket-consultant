@@ -96,9 +96,10 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
       </main>
 
       {/* Disclaimer footer */}
-      <div className="max-w-lg mx-auto w-full px-4 py-2 text-center">
-        <p className="text-xs text-gray-400">
-          Clinical decision support — แพทย์ต้อง confirm ก่อนสั่งยาเสมอ
+      <div className="max-w-lg mx-auto w-full px-4 py-3 border-t border-gray-100 bg-gray-50">
+        <p className="text-xs text-gray-400 text-center leading-relaxed">
+          ⚕️ <span className="font-medium text-gray-500">Clinical Decision Support เท่านั้น</span>
+          {' '}— ข้อมูลนี้ไม่ใช่คำสั่งการรักษา แพทย์ต้องใช้วิจารณญาณทางคลินิกและยืนยันก่อนสั่งยาหรือปรับการรักษาทุกครั้ง
         </p>
       </div>
     </div>
