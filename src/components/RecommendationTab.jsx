@@ -336,10 +336,83 @@ function ContrastContent({ patient, latestLab }) {
   )
 }
 
+// ---- Pre-op surgery database ----
+const SURGERY_LIST = [
+  // Minor / Low risk
+  { name: 'ถอนฟัน', risk: 'minor' },
+  { name: 'ต้อกระจก (Cataract)', risk: 'minor' },
+  { name: 'Cataract surgery', risk: 'minor' },
+  { name: 'Skin biopsy', risk: 'minor' },
+  { name: 'Biopsy ผิวหนัง', risk: 'minor' },
+  { name: 'Colonoscopy', risk: 'minor' },
+  { name: 'EGD / Endoscopy', risk: 'minor' },
+  { name: 'Cystoscopy', risk: 'minor' },
+  { name: 'AV fistula (AVF)', risk: 'minor' },
+  { name: 'AV graft (AVG)', risk: 'minor' },
+  { name: 'Perm cath insertion', risk: 'minor' },
+  { name: 'Hernia repair (laparoscopic)', risk: 'minor' },
+  { name: 'Cholecystectomy (laparoscopic)', risk: 'minor' },
+  { name: 'Appendectomy (laparoscopic)', risk: 'minor' },
+  { name: 'Carpal tunnel release', risk: 'minor' },
+  { name: 'Tonsillectomy', risk: 'minor' },
+  { name: 'Circumcision', risk: 'minor' },
+  { name: 'Inguinal hernia repair', risk: 'minor' },
+  { name: 'Thyroidectomy (simple)', risk: 'minor' },
+  { name: 'Mastectomy', risk: 'minor' },
+  { name: 'TURP', risk: 'minor' },
+  { name: 'Breast biopsy', risk: 'minor' },
+  { name: 'Varicose vein surgery', risk: 'minor' },
+  // Major / High risk
+  { name: 'TKR (Total knee replacement)', risk: 'major' },
+  { name: 'THR (Total hip replacement)', risk: 'major' },
+  { name: 'CABG', risk: 'major' },
+  { name: 'Open heart surgery', risk: 'major' },
+  { name: 'Valve replacement', risk: 'major' },
+  { name: 'Aortic surgery', risk: 'major' },
+  { name: 'Aortic aneurysm repair', risk: 'major' },
+  { name: 'Major vascular surgery', risk: 'major' },
+  { name: 'Peripheral bypass surgery', risk: 'major' },
+  { name: 'Neurosurgery (craniotomy)', risk: 'major' },
+  { name: 'Craniotomy', risk: 'major' },
+  { name: 'Spinal surgery', risk: 'major' },
+  { name: 'Open abdominal surgery', risk: 'major' },
+  { name: 'Colectomy', risk: 'major' },
+  { name: 'Gastrectomy', risk: 'major' },
+  { name: 'Esophagectomy', risk: 'major' },
+  { name: 'Whipple procedure', risk: 'major' },
+  { name: 'Liver resection', risk: 'major' },
+  { name: 'Nephrectomy', risk: 'major' },
+  { name: 'Cystectomy', risk: 'major' },
+  { name: 'Prostatectomy (open)', risk: 'major' },
+  { name: 'Hysterectomy (open)', risk: 'major' },
+  { name: 'Thoracotomy', risk: 'major' },
+  { name: 'Lung resection (lobectomy)', risk: 'major' },
+  { name: 'Pancreatectomy', risk: 'major' },
+  { name: 'Hip fracture repair', risk: 'major' },
+  { name: 'Femur fracture repair', risk: 'major' },
+  { name: 'Kidney transplant', risk: 'major' },
+]
+
 // ---- Pre-op ----
 function PreopContent({ patient, latestLab }) {
   const [type, setType] = useState('major')
+  const [surgeryInput, setSurgeryInput] = useState('')
+  const [surgSuggestions, setSurgSuggestions] = useState([])
   const meds = patient.medications || []
+
+  const handleSurgeryInput = (val) => {
+    setSurgeryInput(val)
+    if (val.length < 1) { setSurgSuggestions([]); return }
+    const q = val.toLowerCase()
+    const matches = SURGERY_LIST.filter(s => s.name.toLowerCase().includes(q)).slice(0, 6)
+    setSurgSuggestions(matches)
+  }
+
+  const selectSurgery = (s) => {
+    setSurgeryInput(s.name)
+    setType(s.risk)
+    setSurgSuggestions([])
+  }
   const isHD = patient.status === 'HD'
   const egfr = latestLab?.values?.eGFR ? parseFloat(latestLab.values.eGFR) : null
 
@@ -379,6 +452,33 @@ function PreopContent({ patient, latestLab }) {
 
   return (
     <>
+      {/* Surgery type input with autocomplete */}
+      <div className="relative">
+        <input
+          type="text"
+          value={surgeryInput}
+          onChange={e => handleSurgeryInput(e.target.value)}
+          placeholder="พิมพ์ชนิดการผ่าตัด เช่น TKR, CABG, ถอนฟัน..."
+          className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+        />
+        {surgSuggestions.length > 0 && (
+          <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+            {surgSuggestions.map((s, i) => (
+              <button
+                key={i}
+                onMouseDown={() => selectSurgery(s)}
+                className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between border-b border-gray-50 last:border-0"
+              >
+                <span>{s.name}</span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.risk === 'minor' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                  {s.risk === 'minor' ? 'Minor' : 'Major'}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="flex gap-2">
         {[['minor', 'Minor / Low risk'], ['major', 'Major / High risk']].map(([k, label]) => (
           <button key={k} onClick={() => setType(k)} className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
