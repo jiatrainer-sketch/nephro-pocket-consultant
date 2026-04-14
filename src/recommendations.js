@@ -20,6 +20,9 @@ export function getRecommendations(patient) {
   // Critical alerts first
   recs.push(...getCriticalAlerts(v))
 
+  // eGFR trend (Quick Mode explicit + Record Mode lab history)
+  recs.push(...getEgfrTrendRecs(patient, v, meds))
+
   // Domain recs
   recs.push(...getAnemiaRecs(v, meds, allergies))
   recs.push(...getMBDRecs(v, meds))
@@ -27,6 +30,96 @@ export function getRecommendations(patient) {
   recs.push(...getNutritionRecs(v, patient))
   recs.push(...getElectrolyteRecs(v))
   recs.push(...getInfectionRecs(v, labEntry.date))
+
+  return recs
+}
+
+// ---- eGFR trend: % drop + rate of decline per year ----
+function getEgfrTrendRecs(patient, v, meds) {
+  const recs = []
+  let cur = parseFloat(v.eGFR)
+  let prev = null
+  let months = null
+
+  // 1) Quick Mode explicit values
+  if (v.eGFR_prev != null && v.eGFR_prev_months != null) {
+    prev = parseFloat(v.eGFR_prev)
+    months = parseFloat(v.eGFR_prev_months)
+  } else if (patient.labs && patient.labs.length >= 2) {
+    // 2) Record Mode: find most recent previous lab with eGFR (before current labEntry date)
+    const sorted = [...patient.labs].sort((a, b) => {
+      const da = parseLabDate(a.date) || new Date(0)
+      const db = parseLabDate(b.date) || new Date(0)
+      return db - da
+    })
+    const curEntry = sorted[0]
+    const prevEntry = sorted.slice(1).find(l => l.values?.eGFR != null)
+    if (prevEntry) {
+      prev = parseFloat(prevEntry.values.eGFR)
+      const dCur = parseLabDate(curEntry.date)
+      const dPrev = parseLabDate(prevEntry.date)
+      if (dCur && dPrev) {
+        months = (dCur - dPrev) / (1000 * 60 * 60 * 24 * 30.44)
+      }
+    }
+  }
+
+  if (isNaN(cur) || prev == null || isNaN(prev) || prev <= 0 || months == null || isNaN(months) || months <= 0) {
+    return recs
+  }
+
+  const diff = cur - prev
+  const pct = (diff / prev) * 100
+  const ratePerYear = (diff / months) * 12
+
+  const hasACEiARB = findMed(meds, ['Losartan','Valsartan','Irbesartan','Telmisartan','Olmesartan','Candesartan','Enalapril','Ramipril','Lisinopril','Perindopril'])
+  const hasSGLT2i = findMed(meds, ['Dapagliflozin','Empagliflozin','Canagliflozin','Forxiga','Jardiance','Invokana'])
+
+  // Drop >30% with ACEi/ARB → red
+  if (pct <= -30 && hasACEiARB) {
+    recs.push({
+      id: 'egfr-drop-arb', severity: 'red', domain: 'CKD Progression',
+      title: `eGFR drop ${pct.toFixed(0)}% หลังเริ่ม ACEi/ARB`,
+      recommendation: `eGFR ลด ${prev.toFixed(0)} → ${cur.toFixed(0)} mL/min ใน ${months.toFixed(1)} เดือน (−${Math.abs(pct).toFixed(0)}%, rate ${ratePerYear.toFixed(0)} mL/min/ปี)\nพิจารณา **ลดหรือหยุด ${hasACEiARB.name}** + หา renal artery stenosis (Doppler renal artery) + ตรวจ K/Cr ซ้ำ 1-2 สัปดาห์`,
+      target: 'eGFR drop <30% หลังเริ่ม RAS inhibitor',
+      warning: 'ถ้ามี bilateral renal artery stenosis → ห้ามใช้ ACEi/ARB',
+    })
+  } else if (pct <= -30 && hasSGLT2i) {
+    // Drop >30% with SGLT2i → yellow (can be hemodynamic)
+    recs.push({
+      id: 'egfr-drop-sglt2', severity: 'yellow', domain: 'CKD Progression',
+      title: `eGFR drop ${pct.toFixed(0)}% หลังเริ่ม SGLT2i`,
+      recommendation: `eGFR ลด ${prev.toFixed(0)} → ${cur.toFixed(0)} mL/min ใน ${months.toFixed(1)} เดือน\nอาจเป็น hemodynamic effect ของ ${hasSGLT2i.name} (ช่วง 2-4 สัปดาห์แรก) — **recheck eGFR ใน 2-4 สัปดาห์** ก่อนปรับยา`,
+      target: 'eGFR stable หลัง initial dip',
+      warning: 'ถ้า drop ต่อเนื่อง → หยุด SGLT2i + หาสาเหตุอื่น',
+    })
+  } else if (pct <= -30) {
+    recs.push({
+      id: 'egfr-drop', severity: 'red', domain: 'CKD Progression',
+      title: `eGFR drop ${pct.toFixed(0)}%`,
+      recommendation: `eGFR ลด ${prev.toFixed(0)} → ${cur.toFixed(0)} mL/min ใน ${months.toFixed(1)} เดือน\nหา acute cause: dehydration, NSAIDs, contrast, obstruction, infection — recheck Cr/eGFR 1-2 สัปดาห์`,
+      target: 'eGFR stable',
+      warning: 'Acute kidney injury workup',
+    })
+  }
+
+  // Rapid progression: rate < -5 mL/min/year (not covered by >30% drop)
+  if (ratePerYear <= -5 && pct > -30) {
+    recs.push({
+      id: 'egfr-rapid', severity: 'yellow', domain: 'CKD Progression',
+      title: `Rapid eGFR decline (${ratePerYear.toFixed(1)} mL/min/ปี)`,
+      recommendation: `Rate of decline เร็วกว่าเป้า (>5 mL/min/ปี)\nเช็ค: BP control, proteinuria (UACR), DM control, NSAID exposure, renoprotection (ACEi/ARB + SGLT2i + max tolerated dose)`,
+      target: 'Rate of decline <5 mL/min/ปี',
+      warning: 'พิจารณา renoprotection ladder ตาม KDIGO 2024',
+    })
+  } else if (ratePerYear >= -2 && pct > -10) {
+    recs.push({
+      id: 'egfr-stable', severity: 'green', domain: 'CKD Progression',
+      title: `eGFR stable (${ratePerYear.toFixed(1)} mL/min/ปี)`,
+      recommendation: `Rate of decline ${ratePerYear.toFixed(1)} mL/min/ปี — อยู่ในเป้า`,
+      target: 'Rate of decline <5 mL/min/ปี',
+    })
+  }
 
   return recs
 }

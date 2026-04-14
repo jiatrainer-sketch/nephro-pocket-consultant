@@ -132,12 +132,18 @@ function QuickLabInput({ patient, onUpdate }) {
   const [rawWeight, setRawWeight] = useState(
     patient.weight_kg ? String(patient.weight_kg) : ''
   )
+  const [rawEgfrPrev, setRawEgfrPrev] = useState(
+    existingVals.eGFR_prev != null ? String(existingVals.eGFR_prev) : ''
+  )
+  const [rawEgfrPrevMonths, setRawEgfrPrevMonths] = useState(
+    existingVals.eGFR_prev_months != null ? String(existingVals.eGFR_prev_months) : ''
+  )
   const [newAllergy, setNewAllergy] = useState('')
   const [allergySuggestions, setAllergySuggestions] = useState([])
   const [newCondition, setNewCondition] = useState('')
 
   // Convert raw strings → numbers for patient/recommendations
-  const buildUpdate = (nextRaw, nextDate, nextWeight, nextPatient) => {
+  const buildUpdate = (nextRaw, nextDate, nextWeight, nextPatient, nextPrev, nextMonths) => {
     const numericVals = {}
     Object.entries(nextRaw).forEach(([k, v]) => {
       if (v !== '' && v !== undefined) {
@@ -145,11 +151,30 @@ function QuickLabInput({ patient, onUpdate }) {
         if (!isNaN(n)) numericVals[k] = n
       }
     })
+    const pPrev = nextPrev !== undefined ? nextPrev : rawEgfrPrev
+    const pMonths = nextMonths !== undefined ? nextMonths : rawEgfrPrevMonths
+    if (pPrev !== '' && pPrev !== undefined) {
+      const n = parseFloat(pPrev)
+      if (!isNaN(n)) numericVals.eGFR_prev = n
+    }
+    if (pMonths !== '' && pMonths !== undefined) {
+      const n = parseFloat(pMonths)
+      if (!isNaN(n)) numericVals.eGFR_prev_months = n
+    }
     return {
       ...(nextPatient || patient),
       weight_kg: nextWeight ? parseFloat(nextWeight) || nextWeight : '',
       labs: [{ id: 'quick', date: nextDate, values: numericVals }],
     }
+  }
+
+  const handleEgfrPrev = (val) => {
+    setRawEgfrPrev(val)
+    onUpdate(buildUpdate(rawVals, date, rawWeight, null, val, rawEgfrPrevMonths))
+  }
+  const handleEgfrPrevMonths = (val) => {
+    setRawEgfrPrevMonths(val)
+    onUpdate(buildUpdate(rawVals, date, rawWeight, null, rawEgfrPrev, val))
   }
 
   const setVal = (key, raw) => {
@@ -257,6 +282,15 @@ function QuickLabInput({ patient, onUpdate }) {
             </div>
           ))}
         </div>
+
+        {/* eGFR trend — compare กับ eGFR เดิม */}
+        <EgfrTrend
+          egfrCurrent={rawVals.eGFR}
+          rawEgfrPrev={rawEgfrPrev}
+          rawEgfrPrevMonths={rawEgfrPrevMonths}
+          onEgfrPrev={handleEgfrPrev}
+          onEgfrPrevMonths={handleEgfrPrevMonths}
+        />
       </div>
 
       {/* โรคประจำตัว */}
@@ -369,6 +403,92 @@ function QuickLabInput({ patient, onUpdate }) {
       <p className="text-xs text-center text-gray-400">
         กรอกเสร็จ → ไปดู 📋 Rec หรือ 💬 AI ด้านบน
       </p>
+    </div>
+  )
+}
+
+// ============================================================
+// eGFR trend — compare current กับ eGFR เดิม + คำนวณ % drop + rate/yr
+// ============================================================
+const MONTH_PRESETS = [1, 3, 6, 12, 24]
+
+function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, onEgfrPrevMonths }) {
+  const cur = parseFloat(egfrCurrent)
+  const prev = parseFloat(rawEgfrPrev)
+  const months = parseFloat(rawEgfrPrevMonths)
+  const valid = !isNaN(cur) && !isNaN(prev) && prev > 0 && !isNaN(months) && months > 0
+  const diff = valid ? cur - prev : null
+  const pct = valid ? (diff / prev) * 100 : null
+  const ratePerYear = valid ? (diff / months) * 12 : null
+
+  // สี summary: drop >30% หรือ rate worse than -5/yr → แดง ; drop >10% → เหลือง
+  let tone = 'bg-gray-50 border-gray-200 text-gray-700'
+  if (valid) {
+    if (pct <= -30 || ratePerYear <= -5) tone = 'bg-red-50 border-red-200 text-red-800'
+    else if (pct <= -10) tone = 'bg-yellow-50 border-yellow-200 text-yellow-800'
+    else if (pct >= 0) tone = 'bg-green-50 border-green-200 text-green-800'
+  }
+
+  const inpSmall = 'w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-100">
+      <p className="text-xs text-gray-500 mb-2">📉 เทียบ eGFR เดิม (ถ้ามี)</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 text-center">
+            eGFR เดิม<span className="text-gray-400 block text-[10px]">(mL/min)</span>
+          </label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={rawEgfrPrev}
+            onChange={e => onEgfrPrev(e.target.value)}
+            placeholder="35"
+            className={inpSmall}
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 text-center">
+            เมื่อ<span className="text-gray-400 block text-[10px]">(เดือนก่อน)</span>
+          </label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={rawEgfrPrevMonths}
+            onChange={e => onEgfrPrevMonths(e.target.value)}
+            placeholder="3"
+            className={inpSmall}
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {MONTH_PRESETS.map(m => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => onEgfrPrevMonths(String(m))}
+            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              parseFloat(rawEgfrPrevMonths) === m
+                ? 'bg-teal-600 text-white border-teal-600'
+                : 'text-gray-600 border-gray-300 bg-white'
+            }`}
+          >
+            {m} เดือน
+          </button>
+        ))}
+      </div>
+      {valid && (
+        <div className={`mt-3 rounded-xl border px-3 py-2 text-xs ${tone}`}>
+          <div className="font-semibold">
+            {diff >= 0 ? '▲' : '▼'} {diff >= 0 ? '+' : ''}{diff.toFixed(1)} mL/min
+            <span className="ml-2">({pct >= 0 ? '+' : ''}{pct.toFixed(1)}%)</span>
+          </div>
+          <div className="mt-0.5">
+            Rate: {ratePerYear >= 0 ? '+' : ''}{ratePerYear.toFixed(1)} mL/min/ปี
+          </div>
+        </div>
+      )}
     </div>
   )
 }
