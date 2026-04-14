@@ -20,6 +20,25 @@ const COMMON_CONDITIONS = [
   'Hepatitis B', 'Hepatitis C', 'HIV',
 ]
 
+// ฐานโรคสำหรับ autocomplete (รวม COMMON_CONDITIONS + เพิ่มโรคที่เจอบ่อยในคลินิกไต)
+const CONDITION_SUGGESTIONS = [
+  ...COMMON_CONDITIONS,
+  'Alzheimer\'s disease', 'Parkinson\'s disease', 'Dementia',
+  'Asthma', 'COPD', 'OSA', 'Pulmonary TB', 'Pulmonary hemorrhage',
+  'Thyroid cancer', 'Breast cancer', 'Lung cancer', 'Colorectal cancer',
+  'Hepatocellular carcinoma (HCC)', 'Renal cell carcinoma (RCC)',
+  'Multiple myeloma', 'Lymphoma', 'Leukemia',
+  'Rheumatoid arthritis', 'Sjogren syndrome', 'Psoriasis', 'Vasculitis',
+  'Autoimmune hepatitis', 'Autoimmune thyroiditis', 'ITP',
+  'IgA nephropathy', 'FSGS', 'Membranous nephropathy', 'Lupus nephritis',
+  'Diabetic retinopathy', 'Diabetic neuropathy',
+  'Osteoporosis', 'Osteoarthritis',
+  'GERD', 'Peptic ulcer disease',
+  'Depression', 'Anxiety disorder', 'Insomnia',
+  'BPH', 'UTI (recurrent)', 'Nephrolithiasis',
+  'Anemia of CKD', 'Iron deficiency anemia',
+]
+
 export default function InfoTab({ patient, onUpdate }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(clonePatient(patient))
@@ -27,6 +46,7 @@ export default function InfoTab({ patient, onUpdate }) {
   const [conditionSince, setConditionSince] = useState('')
   const [newAllergy, setNewAllergy] = useState('')
   const [allergySuggestions, setAllergySuggestions] = useState([])
+  const [conditionSuggestions, setConditionSuggestions] = useState([])
   const conditionInputRef = useRef(null)
   const allergyInputRef = useRef(null)
 
@@ -40,6 +60,17 @@ export default function InfoTab({ patient, onUpdate }) {
     vascular_access: { ...(f.vascular_access || {}), [key]: value }
   }))
 
+  const handleConditionInput = (val) => {
+    setNewCondition(val)
+    const q = val.trim().toLowerCase()
+    if (q.length < 2) { setConditionSuggestions([]); return }
+    const already = new Set((form.conditions || []).map(c => c.name.toLowerCase()))
+    const results = CONDITION_SUGGESTIONS
+      .filter(c => c.toLowerCase().includes(q) && !already.has(c.toLowerCase()))
+      .slice(0, 6)
+    setConditionSuggestions(results)
+  }
+
   const addCondition = (name) => {
     // Read from DOM ref as fallback (avoids stale state from mobile keyboards / race conditions)
     const fromRef = conditionInputRef.current?.value || ''
@@ -51,6 +82,7 @@ export default function InfoTab({ patient, onUpdate }) {
     }))
     setNewCondition('')
     setConditionSince('')
+    setConditionSuggestions([])
     if (conditionInputRef.current) conditionInputRef.current.value = ''
   }
 
@@ -285,30 +317,52 @@ export default function InfoTab({ patient, onUpdate }) {
               </button>
             ))}
         </div>
-        {/* Free text + since */}
-        <div className="flex gap-2">
-          <input
-            ref={conditionInputRef}
-            className={`${input} flex-1`}
-            value={newCondition}
-            onChange={e => setNewCondition(e.target.value)}
-            placeholder="พิมพ์โรคเพิ่ม..."
-            onKeyDown={e => e.key === 'Enter' && addCondition()}
-          />
-          <input
-            className={`${input} w-20`}
-            value={conditionSince}
-            onChange={e => setConditionSince(e.target.value)}
-            placeholder="ปี..."
-          />
-          <button
-            type="button"
-            onMouseDown={e => { e.preventDefault(); addCondition() }}
-            onClick={() => addCondition()}
-            className="bg-blue-600 text-white px-3 rounded-xl text-sm shrink-0"
-          >
-            +
-          </button>
+        {/* Free text + since + autocomplete */}
+        <div className="relative">
+          <div className="flex gap-2">
+            <input
+              ref={conditionInputRef}
+              className={`${input} flex-1`}
+              value={newCondition}
+              onChange={e => handleConditionInput(e.target.value)}
+              placeholder="พิมพ์โรคเพิ่ม..."
+              onKeyDown={e => e.key === 'Enter' && addCondition()}
+              onBlur={() => setTimeout(() => setConditionSuggestions([]), 150)}
+            />
+            <input
+              className={`${input} w-20`}
+              value={conditionSince}
+              onChange={e => setConditionSince(e.target.value)}
+              placeholder="ปี..."
+            />
+            <button
+              type="button"
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => addCondition()}
+              className="bg-blue-600 text-white px-3 rounded-xl text-sm shrink-0 active:bg-blue-700"
+            >
+              +
+            </button>
+          </div>
+          {conditionSuggestions.length > 0 && (
+            <div className="absolute left-0 right-24 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden max-h-56 overflow-y-auto">
+              {conditionSuggestions.map((c, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onMouseDown={() => addCondition(c)}
+                  className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+          {newCondition.trim().length >= 2 && conditionSuggestions.length === 0 && (
+            <p className="text-xs text-gray-400 mt-1">
+              ไม่พบใน list — กด <span className="text-blue-500 font-medium">+</span> เพื่อเพิ่มเป็น custom
+            </p>
+          )}
         </div>
       </FormCard>
 
@@ -336,9 +390,9 @@ export default function InfoTab({ patient, onUpdate }) {
             />
             <button
               type="button"
-              onMouseDown={e => { e.preventDefault(); addAllergy() }}
+              onMouseDown={e => e.preventDefault()}
               onClick={() => addAllergy()}
-              className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0"
+              className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0 active:bg-red-600"
             >
               +
             </button>
