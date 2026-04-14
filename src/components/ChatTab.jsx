@@ -1,0 +1,217 @@
+import { useState, useRef, useEffect } from 'react'
+
+const MODEL = 'claude-sonnet-4-6'
+
+function buildSystemPrompt(patient) {
+  const labs = patient.labs?.length
+    ? patient.labs
+        .slice()
+        .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+        .slice(0, 3)
+        .map(l => `  - ${l.date || 'ไม่ระบุวันที่'}: ${JSON.stringify(l.values)}`)
+        .join('\n')
+    : '  ไม่มีข้อมูล lab'
+
+  const meds = patient.medications?.length
+    ? patient.medications.map(m => `  - ${m.name} ${m.dose} ${m.frequency} ${m.timing}`).join('\n')
+    : '  ไม่มีข้อมูล'
+
+  const conditions = patient.conditions?.map(c => c.name + (c.since ? ` (since ${c.since})` : '')).join(', ') || 'ไม่มีข้อมูล'
+  const allergies = patient.allergies?.join(', ') || 'ไม่มี'
+
+  return `คุณคือ Nephrology Clinical Consultant สำหรับ nephrologist ไทย
+
+ข้อมูลคนไข้:
+- ชื่อ/HN: ${patient.name || '—'} / ${patient.hn || '—'}
+- น้ำหนัก: ${patient.weight_kg || '—'} kg, ส่วนสูง: ${patient.height_cm || '—'} cm, Dry weight: ${patient.dry_weight_kg || '—'} kg
+- เริ่ม HD: ${patient.hd_start_date || '—'}
+- สาเหตุ ESRD: ${patient.esrd_cause || '—'}
+- Vascular access: ${patient.vascular_access?.type || '—'} (${patient.vascular_access?.created_date || '—'})
+- โรคประจำตัว: ${conditions}
+- Allergy: ${allergies}
+- ยาปัจจุบัน:
+${meds}
+- Lab (ล่าสุด 3 ครั้ง):
+${labs}
+
+หลักการตอบ:
+1. ตอบเป็นภาษาไทย ชื่อยาและศัพท์เฉพาะทางใช้ภาษาอังกฤษ
+2. อ้างอิง CPG: Thailand CPG Anemia 2021, KDIGO 2026 Anemia, KDIGO 2024 CKD, KDIGO 2017/2025 MBD, AHA/ACC guidelines
+3. คำนวณ dose จริงจากข้อมูลยาปัจจุบัน
+4. บอกเป้าหมาย + ข้อระวัง + monitor หลังปรับยา
+5. ถ้าคนไข้มี allergy → ห้ามแนะนำยาที่แพ้
+6. ถ้า lab เก่า >3 เดือน → เตือนควรเจาะใหม่
+7. ตอบสั้นกระชับ เว้นแต่ถูกถามให้ขยาย
+8. คุณเป็น clinical decision support — แพทย์ต้อง confirm ก่อนสั่งยาเสมอ
+9. ดูคนไข้ให้ครอบทุกมุม: ไต + เบาหวาน + ความดัน + หัวใจ + drug interaction`
+}
+
+export default function ChatTab({ patient, settings }) {
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  const send = async () => {
+    const text = input.trim()
+    if (!text || loading) return
+    if (!settings?.apiKey) {
+      setError('ยังไม่ได้ตั้ง API Key — ไปที่ ⚙️ ตั้งค่า')
+      return
+    }
+
+    const userMsg = { role: 'user', content: text }
+    const newMessages = [...messages, userMsg]
+    setMessages(newMessages)
+    setInput('')
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': settings.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 2048,
+          system: buildSystemPrompt(patient),
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error?.message || `HTTP ${res.status}`)
+      }
+
+      const data = await res.json()
+      const reply = data.content?.[0]?.text || '(ไม่มีคำตอบ)'
+      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+    } catch (e) {
+      setError(`เกิดข้อผิดพลาด: ${e.message}`)
+    } finally {
+      setLoading(false)
+      setTimeout(() => inputRef.current?.focus(), 100)
+    }
+  }
+
+  return (
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 130px)' }}>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        {messages.length === 0 && (
+          <div className="text-center py-10 text-gray-400">
+            <div className="text-4xl mb-3">💬</div>
+            <p className="text-sm font-medium">AI Nephrology Consultant</p>
+            <p className="text-xs mt-1">ถามได้ทุกเรื่องที่เกี่ยวกับคนไข้รายนี้</p>
+            <div className="mt-4 space-y-2">
+              {[
+                'ควรปรับ EPO เท่าไหร่?',
+                'iPTH สูง ทำยังไงดี?',
+                'มี drug interaction ไหม?',
+              ].map(q => (
+                <button
+                  key={q}
+                  onClick={() => { setInput(q) }}
+                  className="block w-full text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-xl border border-blue-100 text-left"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div
+              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white rounded-br-md'
+                  : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-bl-md'
+              }`}
+            >
+              {msg.content}
+            </div>
+          </div>
+        ))}
+
+        {loading && (
+          <div className="flex justify-start">
+            <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-md px-4 py-3">
+              <div className="flex gap-1 items-center">
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2.5 rounded-xl">
+            {error}
+          </div>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div className="px-4 pb-4 pt-2 border-t border-gray-100 bg-gray-50"
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+        {!settings?.apiKey && (
+          <p className="text-xs text-orange-600 mb-2 text-center">
+            ⚠️ ยังไม่ได้ตั้ง API Key — ไปที่ ⚙️ ตั้งค่า
+          </p>
+        )}
+        <div className="flex gap-2">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                send()
+              }
+            }}
+            placeholder="ถามเกี่ยวกับคนไข้..."
+            rows={2}
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+          <button
+            onClick={send}
+            disabled={loading || !input.trim()}
+            className={`px-4 rounded-xl text-sm font-medium transition-colors shrink-0 ${
+              loading || !input.trim()
+                ? 'bg-gray-100 text-gray-400'
+                : 'bg-blue-600 text-white active:bg-blue-700'
+            }`}
+          >
+            ส่ง
+          </button>
+        </div>
+        {messages.length > 0 && (
+          <button
+            onClick={() => setMessages([])}
+            className="w-full mt-2 text-xs text-gray-400 py-1"
+          >
+            ล้างประวัติแชท
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
