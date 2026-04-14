@@ -484,6 +484,43 @@ function getMBDRecs(v, meds) {
       })
   }
 
+  // 25-OH Vitamin D (KDIGO 2017 CKD-MBD)
+  if (v.VitD25 !== undefined) {
+    const vd = v.VitD25
+    if (vd < 10)
+      recs.push({
+        id: 'vitd-severe', severity: 'red', domain: 'CKD-MBD',
+        title: '25-OH Vit D ต่ำมาก (Severe deficiency)',
+        recommendation: `VitD25 = ${vd} ng/mL\n• Cholecalciferol 40,000–50,000 IU/wk IM × 8–12 wk\n• หรือ Ergocalciferol 50,000 IU/wk × 8 wk\n• Recheck ใน 3 เดือน`,
+        target: '25-OH VitD ≥ 30 ng/mL',
+        warning: 'Monitor Ca/PO4 ทุก 4–6 สัปดาห์หลังเริ่มยา',
+      })
+    else if (vd < 20)
+      recs.push({
+        id: 'vitd-deficient', severity: 'red', domain: 'CKD-MBD',
+        title: '25-OH Vit D ต่ำ (Deficiency)',
+        recommendation: `VitD25 = ${vd} ng/mL\n• Cholecalciferol 20,000–40,000 IU/wk × 8–12 wk\n• Recheck ใน 3 เดือน`,
+        target: '25-OH VitD ≥ 30 ng/mL',
+        warning: 'ระวัง hypercalcemia — ติดตาม Ca หลัง 4–6 สัปดาห์',
+      })
+    else if (vd < 30)
+      recs.push({
+        id: 'vitd-insufficient', severity: 'yellow', domain: 'CKD-MBD',
+        title: '25-OH Vit D ไม่พอ (Insufficiency)',
+        recommendation: `VitD25 = ${vd} ng/mL\n• Cholecalciferol 1,000–2,000 IU/วัน หรือ 10,000 IU/wk × 4–8 wk\n• Recheck ใน 3 เดือน`,
+        target: '25-OH VitD ≥ 30 ng/mL',
+        warning: '—',
+      })
+    else
+      recs.push({
+        id: 'vitd-ok', severity: 'green', domain: 'CKD-MBD',
+        title: '25-OH Vit D อยู่ในเกณฑ์',
+        recommendation: `VitD25 = ${vd} ng/mL — คงการรักษาเดิม`,
+        target: '25-OH VitD ≥ 30 ng/mL',
+        warning: '—',
+      })
+  }
+
   if (v.iPTH !== undefined) {
     const pth = v.iPTH
     const ca = v.Ca

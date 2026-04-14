@@ -104,6 +104,7 @@ const QUICK_FIELDS = [
   { key: 'Ca',      label: 'Ca',        unit: 'mg/dL'  },
   { key: 'PO4',     label: 'PO4',       unit: 'mg/dL'  },
   { key: 'iPTH',    label: 'iPTH',      unit: 'pg/mL'  },
+  { key: 'VitD25',  label: '25-OH VitD',unit: 'ng/mL'  },
   { key: 'Albumin', label: 'Albumin',   unit: 'g/dL'   },
   { key: 'KtV',     label: 'Kt/V',      unit: ''       },
   { key: 'HCO3',    label: 'HCO3',      unit: 'mEq/L'  },
@@ -142,12 +143,18 @@ function QuickLabInput({ patient, onUpdate }) {
   const [rawEgfrPrevMonths, setRawEgfrPrevMonths] = useState(
     existingVals.eGFR_prev_months != null ? String(existingVals.eGFR_prev_months) : ''
   )
+  const [rawPthPrev, setRawPthPrev] = useState(
+    existingVals.iPTH_prev != null ? String(existingVals.iPTH_prev) : ''
+  )
+  const [rawPthPrevMonths, setRawPthPrevMonths] = useState(
+    existingVals.iPTH_prev_months != null ? String(existingVals.iPTH_prev_months) : ''
+  )
   const [newAllergy, setNewAllergy] = useState('')
   const [allergySuggestions, setAllergySuggestions] = useState([])
   const [newCondition, setNewCondition] = useState('')
 
   // Convert raw strings → numbers for patient/recommendations
-  const buildUpdate = (nextRaw, nextDate, nextWeight, nextPatient, nextPrev, nextMonths) => {
+  const buildUpdate = (nextRaw, nextDate, nextWeight, nextPatient, nextPrev, nextMonths, nextPthPrev, nextPthMonths) => {
     const numericVals = {}
     Object.entries(nextRaw).forEach(([k, v]) => {
       if (v !== '' && v !== undefined) {
@@ -158,12 +165,18 @@ function QuickLabInput({ patient, onUpdate }) {
     const pPrev = nextPrev !== undefined ? nextPrev : rawEgfrPrev
     const pMonths = nextMonths !== undefined ? nextMonths : rawEgfrPrevMonths
     if (pPrev !== '' && pPrev !== undefined) {
-      const n = parseFloat(pPrev)
-      if (!isNaN(n)) numericVals.eGFR_prev = n
+      const n = parseFloat(pPrev); if (!isNaN(n)) numericVals.eGFR_prev = n
     }
     if (pMonths !== '' && pMonths !== undefined) {
-      const n = parseFloat(pMonths)
-      if (!isNaN(n)) numericVals.eGFR_prev_months = n
+      const n = parseFloat(pMonths); if (!isNaN(n)) numericVals.eGFR_prev_months = n
+    }
+    const pp = nextPthPrev !== undefined ? nextPthPrev : rawPthPrev
+    const pm = nextPthMonths !== undefined ? nextPthMonths : rawPthPrevMonths
+    if (pp !== '' && pp !== undefined) {
+      const n = parseFloat(pp); if (!isNaN(n)) numericVals.iPTH_prev = n
+    }
+    if (pm !== '' && pm !== undefined) {
+      const n = parseFloat(pm); if (!isNaN(n)) numericVals.iPTH_prev_months = n
     }
     return {
       ...(nextPatient || patient),
@@ -180,6 +193,14 @@ function QuickLabInput({ patient, onUpdate }) {
   const handleEgfrPrevMonths = (val) => {
     setRawEgfrPrevMonths(val)
     onUpdate(buildUpdate(rawVals, date, rawWeight, null, rawEgfrPrev, val))
+  }
+  const handlePthPrev = (val) => {
+    setRawPthPrev(val)
+    onUpdate(buildUpdate(rawVals, date, rawWeight, null, undefined, undefined, val, rawPthPrevMonths))
+  }
+  const handlePthPrevMonths = (val) => {
+    setRawPthPrevMonths(val)
+    onUpdate(buildUpdate(rawVals, date, rawWeight, null, undefined, undefined, rawPthPrev, val))
   }
 
   const setVal = (key, raw) => {
@@ -313,6 +334,15 @@ function QuickLabInput({ patient, onUpdate }) {
           onEgfrPrev={handleEgfrPrev}
           onEgfrPrevMonths={handleEgfrPrevMonths}
         />
+
+        {/* iPTH trend — compare กับ iPTH เดิม */}
+        <PthTrend
+          pthCurrent={rawVals.iPTH}
+          rawPthPrev={rawPthPrev}
+          rawPthPrevMonths={rawPthPrevMonths}
+          onPthPrev={handlePthPrev}
+          onPthPrevMonths={handlePthPrevMonths}
+        />
       </div>
 
       {/* โรคประจำตัว */}
@@ -425,6 +455,95 @@ function QuickLabInput({ patient, onUpdate }) {
       <p className="text-xs text-center text-gray-400">
         กรอกเสร็จ → ไปดู 📋 Rec หรือ 💬 AI ด้านบน
       </p>
+    </div>
+  )
+}
+
+// ============================================================
+// PTH trend — compare current กับ iPTH เดิม
+// ============================================================
+const PTH_MONTH_PRESETS = [3, 6, 12, 24]
+
+function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPrevMonths }) {
+  const cur = parseFloat(pthCurrent)
+  const prev = parseFloat(rawPthPrev)
+  const months = parseFloat(rawPthPrevMonths)
+  const valid = !isNaN(cur) && !isNaN(prev) && prev > 0 && !isNaN(months) && months > 0
+  const diff = valid ? cur - prev : null
+  const pct = valid ? (diff / prev) * 100 : null
+
+  let tone = 'bg-gray-50 border-gray-200 text-gray-700'
+  if (valid) {
+    if (pct >= 50)  tone = 'bg-red-50 border-red-200 text-red-800'
+    else if (pct >= 20) tone = 'bg-yellow-50 border-yellow-200 text-yellow-800'
+    else if (pct <= -30) tone = 'bg-yellow-50 border-yellow-200 text-yellow-800'
+    else tone = 'bg-green-50 border-green-200 text-green-800'
+  }
+
+  const inpSmall = 'w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-100">
+      <p className="text-xs text-gray-500 mb-2">📉 เทียบ iPTH เดิม (ถ้ามี)</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 text-center">
+            iPTH เดิม<span className="text-gray-400 block text-[10px]">(pg/mL)</span>
+          </label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={rawPthPrev}
+            onChange={e => onPthPrev(e.target.value)}
+            placeholder="350"
+            className={inpSmall}
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1 text-center">
+            เมื่อ<span className="text-gray-400 block text-[10px]">(เดือนก่อน)</span>
+          </label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={rawPthPrevMonths}
+            onChange={e => onPthPrevMonths(e.target.value)}
+            placeholder="6"
+            className={inpSmall}
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {PTH_MONTH_PRESETS.map(v => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => onPthPrevMonths(String(v))}
+            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              parseFloat(rawPthPrevMonths) === v
+                ? 'bg-teal-600 text-white border-teal-600'
+                : 'text-gray-600 border-gray-300 bg-white'
+            }`}
+          >
+            {v} เดือน
+          </button>
+        ))}
+      </div>
+      {valid && (
+        <div className={`mt-3 rounded-xl border px-3 py-2 text-xs ${tone}`}>
+          <div className="font-semibold">
+            {diff >= 0 ? '▲' : '▼'} {diff >= 0 ? '+' : ''}{diff.toFixed(0)} pg/mL
+            <span className="ml-2">({pct >= 0 ? '+' : ''}{pct.toFixed(1)}%)</span>
+            <span className="ml-2 font-normal">ใน {months} เดือน</span>
+          </div>
+          <div className="mt-0.5 text-gray-500">
+            {pct >= 50 ? '⚠️ iPTH เพิ่มมาก — พิจารณาเพิ่ม/เริ่ม active VitD หรือ Cinacalcet'
+              : pct >= 20 ? 'iPTH มีแนวโน้มสูงขึ้น — ติดตามใกล้ชิด'
+              : pct <= -30 ? 'iPTH ลดลงดี — monitor ไม่ให้ต่ำเกิน'
+              : 'iPTH ค่อนข้างคงที่'}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
