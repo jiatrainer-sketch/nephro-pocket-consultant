@@ -132,6 +132,7 @@ function QuickLabInput({ patient, onUpdate }) {
     patient.weight_kg ? String(patient.weight_kg) : ''
   )
   const [newAllergy, setNewAllergy] = useState('')
+  const [newCondition, setNewCondition] = useState('')
 
   // Convert raw strings → numbers for patient/recommendations
   const buildUpdate = (nextRaw, nextDate, nextWeight, nextPatient) => {
@@ -171,6 +172,15 @@ function QuickLabInput({ patient, onUpdate }) {
       ? patient.conditions.filter(c => c.name !== name)
       : [...patient.conditions, { name, since: '' }]
     onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
+  }
+
+  const addCondition = () => {
+    const c = newCondition.trim()
+    if (!c) return
+    const exists = patient.conditions.some(x => x.name === c)
+    if (exists) { setNewCondition(''); return }
+    onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: [...patient.conditions, { name: c, since: '' }] })
+    setNewCondition('')
   }
 
   const addAllergy = () => {
@@ -262,10 +272,38 @@ function QuickLabInput({ patient, onUpdate }) {
             )
           })}
         </div>
+        {/* Custom condition free text */}
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text"
+            value={newCondition}
+            onChange={e => setNewCondition(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && addCondition()}
+            placeholder="เพิ่มโรคอื่น เช่น Autoimmune, HIV..."
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-300"
+          />
+          <button
+            type="button"
+            onClick={addCondition}
+            className="bg-teal-600 text-white px-3 rounded-xl text-sm shrink-0"
+          >
+            +
+          </button>
+        </div>
         {patient.conditions.length > 0 && (
-          <p className="text-xs text-teal-600 mt-2">
-            เลือก: {patient.conditions.map(c => c.name).join(', ')}
-          </p>
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {patient.conditions.map((c, i) => (
+              <span key={i} className="flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-800 text-xs px-2.5 py-1 rounded-full">
+                {c.name}
+                {!QUICK_CONDITIONS.includes(c.name) && (
+                  <button onClick={() => {
+                    const next = patient.conditions.filter((_, idx) => idx !== i)
+                    onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
+                  }} className="text-teal-400 ml-0.5">✕</button>
+                )}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 
