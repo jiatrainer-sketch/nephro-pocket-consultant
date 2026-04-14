@@ -2,6 +2,7 @@ import { useState } from 'react'
 import RecommendationTab from './RecommendationTab'
 import ChatTab from './ChatTab'
 import MedTab from './MedTab'
+import { searchMedications } from '../medicationDatabase'
 
 const QUICK_CONDITIONS = [
   'DM type 2', 'DM type 1', 'Hypertension', 'CAD', 'Heart failure',
@@ -132,6 +133,7 @@ function QuickLabInput({ patient, onUpdate }) {
     patient.weight_kg ? String(patient.weight_kg) : ''
   )
   const [newAllergy, setNewAllergy] = useState('')
+  const [allergySuggestions, setAllergySuggestions] = useState([])
   const [newCondition, setNewCondition] = useState('')
 
   // Convert raw strings → numbers for patient/recommendations
@@ -183,14 +185,20 @@ function QuickLabInput({ patient, onUpdate }) {
     setNewCondition('')
   }
 
-  const addAllergy = () => {
-    const a = newAllergy.trim()
+  const handleAllergyInput = (val) => {
+    setNewAllergy(val)
+    setAllergySuggestions(val.length >= 2 ? searchMedications(val) : [])
+  }
+
+  const addAllergy = (name) => {
+    const a = (name || newAllergy).trim()
     if (!a) return
     onUpdate({
       ...buildUpdate(rawVals, date, rawWeight),
       allergies: [...patient.allergies, a],
     })
     setNewAllergy('')
+    setAllergySuggestions([])
   }
 
   const removeAllergy = (i) => {
@@ -198,6 +206,7 @@ function QuickLabInput({ patient, onUpdate }) {
       ...buildUpdate(rawVals, date, rawWeight),
       allergies: patient.allergies.filter((_, idx) => idx !== i),
     })
+    setAllergySuggestions([])
   }
 
   const inp = 'w-full border border-gray-200 rounded-xl px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
@@ -320,22 +329,40 @@ function QuickLabInput({ patient, onUpdate }) {
             ))}
           </div>
         )}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newAllergy}
-            onChange={e => setNewAllergy(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addAllergy()}
-            placeholder="ชื่อยาที่แพ้..."
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
-          />
-          <button
-            type="button"
-            onClick={addAllergy}
-            className="bg-red-500 text-white px-3 rounded-xl text-sm"
-          >
-            +
-          </button>
+        <div className="relative">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newAllergy}
+              onChange={e => handleAllergyInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addAllergy()}
+              onBlur={() => setTimeout(() => setAllergySuggestions([]), 150)}
+              placeholder="พิมพ์ชื่อยา เช่น amlo, penicillin..."
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
+            />
+            <button
+              type="button"
+              onClick={() => addAllergy()}
+              className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0"
+            >
+              +
+            </button>
+          </div>
+          {allergySuggestions.length > 0 && (
+            <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+              {allergySuggestions.map((med, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onMouseDown={() => addAllergy(med.name)}
+                  className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
+                >
+                  <span className="font-medium text-gray-800">{med.name}</span>
+                  <span className="text-xs text-gray-400 ml-2">{med.generic}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
