@@ -143,9 +143,7 @@ export function searchMedications(query) {
   if (!query || query.trim().length < 1) return []
   const q = query.toLowerCase()
   return MEDICATIONS.filter(
-    m =>
-      m.name.toLowerCase().includes(q) ||
-      m.generic.toLowerCase().includes(q)
+    (m) => m.name.toLowerCase().includes(q) || m.generic.toLowerCase().includes(q)
   ).slice(0, 8)
 }
 

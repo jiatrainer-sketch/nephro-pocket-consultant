@@ -26,13 +26,20 @@ const SEV_STYLE = {
 }
 
 const DOMAIN_ORDER = [
-  'CKD Progression', 'Drug Interaction', 'Drug Adjustment',
-  'Anemia', 'CKD-MBD', 'Dialysis Adequacy', 'Electrolytes', 'Nutrition', 'Infection',
+  'CKD Progression',
+  'Drug Interaction',
+  'Drug Adjustment',
+  'Anemia',
+  'CKD-MBD',
+  'Dialysis Adequacy',
+  'Electrolytes',
+  'Nutrition',
+  'Infection',
 ]
 
 // ---- local helper for protocol panels ----
 function localFind(meds, keywords) {
-  return meds.find(m => keywords.some(k => m.name.toLowerCase().includes(k.toLowerCase())))
+  return meds.find((m) => keywords.some((k) => m.name.toLowerCase().includes(k.toLowerCase())))
 }
 
 export default function RecommendationTab({ patient }) {
@@ -41,8 +48,8 @@ export default function RecommendationTab({ patient }) {
   const outdated = latestLab ? isLabOutdated(latestLab.date) : false
   const recs = latestLab ? getRecommendations(patient) : []
 
-  const criticals = recs.filter(r => r.severity === 'critical')
-  const others = recs.filter(r => r.severity !== 'critical')
+  const criticals = recs.filter((r) => r.severity === 'critical')
+  const others = recs.filter((r) => r.severity !== 'critical')
 
   const sorted = [...others].sort((a, b) => {
     const ai = DOMAIN_ORDER.indexOf(a.domain)
@@ -52,7 +59,7 @@ export default function RecommendationTab({ patient }) {
     return (severityOrder[a.severity] ?? 9) - (severityOrder[b.severity] ?? 9)
   })
 
-  const toggleProtocol = (key) => setActiveProtocol(p => p === key ? null : key)
+  const toggleProtocol = (key) => setActiveProtocol((p) => (p === key ? null : key))
 
   return (
     <div className="p-4 space-y-3">
@@ -68,9 +75,11 @@ export default function RecommendationTab({ patient }) {
             onClick={() => toggleProtocol(key)}
             className={`flex-1 flex flex-col items-center py-2.5 rounded-2xl text-xs font-semibold border transition-colors ${
               activeProtocol === key
-                ? color === 'orange' ? 'bg-orange-500 text-white border-orange-500'
-                : color === 'purple' ? 'bg-purple-600 text-white border-purple-600'
-                : 'bg-blue-600 text-white border-blue-600'
+                ? color === 'orange'
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : color === 'purple'
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-gray-600 border-gray-200 active:bg-gray-50'
             }`}
           >
@@ -106,34 +115,46 @@ export default function RecommendationTab({ patient }) {
       ) : (
         <>
           {/* Lab date + outdated warning */}
-          <div className={`flex items-center justify-between text-xs px-3 py-2 rounded-xl ${
-            outdated ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-gray-100 text-gray-600'
-          }`}>
+          <div
+            className={`flex items-center justify-between text-xs px-3 py-2 rounded-xl ${
+              outdated
+                ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                : 'bg-gray-100 text-gray-600'
+            }`}
+          >
             <span>Lab: {latestLab.date || '—'}</span>
             {outdated && <span className="font-medium">⚠️ เก่า &gt;3 เดือน — ควรเจาะใหม่</span>}
           </div>
 
           {/* Critical alerts */}
-          {criticals.map(rec => <RecCard key={rec.id} rec={rec} />)}
+          {criticals.map((rec) => (
+            <RecCard key={rec.id} rec={rec} />
+          ))}
 
           {/* Domain sections */}
-          {DOMAIN_ORDER.map(domain => {
-            const domainRecs = sorted.filter(r => r.domain === domain)
+          {DOMAIN_ORDER.map((domain) => {
+            const domainRecs = sorted.filter((r) => r.domain === domain)
             if (domainRecs.length === 0) return null
             return (
               <div key={domain}>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 mt-2">{domain}</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 mt-2">
+                  {domain}
+                </p>
                 <div className="space-y-2">
-                  {domainRecs.map(rec => <RecCard key={rec.id} rec={rec} />)}
+                  {domainRecs.map((rec) => (
+                    <RecCard key={rec.id} rec={rec} />
+                  ))}
                 </div>
               </div>
             )
           })}
 
           {/* Other domains */}
-          {sorted.filter(r => !DOMAIN_ORDER.includes(r.domain)).map(rec => (
-            <RecCard key={rec.id} rec={rec} />
-          ))}
+          {sorted
+            .filter((r) => !DOMAIN_ORDER.includes(r.domain))
+            .map((rec) => (
+              <RecCard key={rec.id} rec={rec} />
+            ))}
 
           {recs.length === 0 && (
             <div className="text-center text-gray-400 py-8 text-sm">
@@ -152,7 +173,9 @@ function ProtocolCard({ title, onClose, children }) {
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
         <h3 className="font-bold text-sm text-gray-800">{title}</h3>
-        <button onClick={onClose} className="text-gray-400 text-lg leading-none px-1">✕</button>
+        <button onClick={onClose} className="text-gray-400 text-lg leading-none px-1">
+          ✕
+        </button>
       </div>
       <div className="px-4 py-3 space-y-3">{children}</div>
     </div>
@@ -164,31 +187,67 @@ function SickDayContent({ patient, latestLab }) {
   const meds = patient.medications || []
 
   const STOP_RULES = [
-    { keys: ['dapagliflozin','empagliflozin','canagliflozin','forxiga','jardiance','invokana'], reason: 'Euglycemic DKA risk', level: 'stop' },
-    { keys: ['metformin','glucophage'], reason: 'Lactic acidosis risk เมื่อ dehydrated', level: 'stop' },
-    { keys: ['losartan','valsartan','irbesartan','telmisartan','olmesartan','candesartan','enalapril','ramipril','lisinopril','perindopril'], reason: 'AKI risk เมื่อ volume depleted', level: 'hold' },
-    { keys: ['furosemide','lasix'], reason: 'Dehydration + AKI risk', level: 'hold' },
-    { keys: ['hctz','hydrochlorothiazide'], reason: 'Dehydration + AKI risk', level: 'hold' },
-    { keys: ['finerenone','kerendia'], reason: 'Hyperkalemia + AKI risk', level: 'hold' },
-    { keys: ['spironolactone','aldactone'], reason: 'Hyperkalemia + AKI risk', level: 'hold' },
+    {
+      keys: ['dapagliflozin', 'empagliflozin', 'canagliflozin', 'forxiga', 'jardiance', 'invokana'],
+      reason: 'Euglycemic DKA risk',
+      level: 'stop',
+    },
+    {
+      keys: ['metformin', 'glucophage'],
+      reason: 'Lactic acidosis risk เมื่อ dehydrated',
+      level: 'stop',
+    },
+    {
+      keys: [
+        'losartan',
+        'valsartan',
+        'irbesartan',
+        'telmisartan',
+        'olmesartan',
+        'candesartan',
+        'enalapril',
+        'ramipril',
+        'lisinopril',
+        'perindopril',
+      ],
+      reason: 'AKI risk เมื่อ volume depleted',
+      level: 'hold',
+    },
+    { keys: ['furosemide', 'lasix'], reason: 'Dehydration + AKI risk', level: 'hold' },
+    { keys: ['hctz', 'hydrochlorothiazide'], reason: 'Dehydration + AKI risk', level: 'hold' },
+    { keys: ['finerenone', 'kerendia'], reason: 'Hyperkalemia + AKI risk', level: 'hold' },
+    { keys: ['spironolactone', 'aldactone'], reason: 'Hyperkalemia + AKI risk', level: 'hold' },
   ]
   const MONITOR_RULES = [
-    { keys: ['insulin','glargine','lantus','detemir','degludec','aspart','lispro','nph'], note: 'คง dose แต่ monitor DTX ถี่ขึ้น — ลด 20–50% ถ้ากินไม่ได้' },
-    { keys: ['warfarin','coumadin'], note: 'กินต่อ แต่ monitor INR — อาจผันผวนถ้าไข้/ไม่กินอาหาร' },
-    { keys: ['digoxin','lanoxin'], note: 'กินต่อ แต่ระวัง toxicity ถ้า K ต่ำหรือ dehydrated' },
+    {
+      keys: ['insulin', 'glargine', 'lantus', 'detemir', 'degludec', 'aspart', 'lispro', 'nph'],
+      note: 'คง dose แต่ monitor DTX ถี่ขึ้น — ลด 20–50% ถ้ากินไม่ได้',
+    },
+    { keys: ['warfarin', 'coumadin'], note: 'กินต่อ แต่ monitor INR — อาจผันผวนถ้าไข้/ไม่กินอาหาร' },
+    { keys: ['digoxin', 'lanoxin'], note: 'กินต่อ แต่ระวัง toxicity ถ้า K ต่ำหรือ dehydrated' },
   ]
   const CONTINUE_RULES = [
-    { keys: ['atenolol','bisoprolol','metoprolol','carvedilol','propranolol'] },
-    { keys: ['amlodipine','nifedipine','diltiazem','verapamil','manidipine'] },
-    { keys: ['atorvastatin','rosuvastatin','simvastatin','pravastatin'] },
+    { keys: ['atenolol', 'bisoprolol', 'metoprolol', 'carvedilol', 'propranolol'] },
+    { keys: ['amlodipine', 'nifedipine', 'diltiazem', 'verapamil', 'manidipine'] },
+    { keys: ['atorvastatin', 'rosuvastatin', 'simvastatin', 'pravastatin'] },
   ]
 
-  const stopList = STOP_RULES.map(r => { const m = localFind(meds, r.keys); return m ? { name: m.name, reason: r.reason, level: r.level } : null }).filter(Boolean)
-  const monitorList = MONITOR_RULES.map(r => { const m = localFind(meds, r.keys); return m ? { name: m.name, note: r.note } : null }).filter(Boolean)
-  const continueList = CONTINUE_RULES.map(r => localFind(meds, r.keys)).filter(Boolean)
+  const stopList = STOP_RULES.map((r) => {
+    const m = localFind(meds, r.keys)
+    return m ? { name: m.name, reason: r.reason, level: r.level } : null
+  }).filter(Boolean)
+  const monitorList = MONITOR_RULES.map((r) => {
+    const m = localFind(meds, r.keys)
+    return m ? { name: m.name, note: r.note } : null
+  }).filter(Boolean)
+  const continueList = CONTINUE_RULES.map((r) => localFind(meds, r.keys)).filter(Boolean)
 
   if (stopList.length === 0 && monitorList.length === 0 && continueList.length === 0) {
-    return <p className="text-sm text-gray-500 py-1">ยังไม่มีข้อมูลยา — กรอกยาใน tab ยา เพื่อดู Sick Day protocol</p>
+    return (
+      <p className="text-sm text-gray-500 py-1">
+        ยังไม่มีข้อมูลยา — กรอกยาใน tab ยา เพื่อดู Sick Day protocol
+      </p>
+    )
   }
 
   return (
@@ -200,9 +259,14 @@ function SickDayContent({ patient, latestLab }) {
           <p className="text-xs font-bold text-red-700 mb-1.5">🛑 หยุดชั่วคราว</p>
           <div className="space-y-1">
             {stopList.map((item, i) => (
-              <div key={i} className={`flex items-start gap-2 px-3 py-2 rounded-xl text-sm border ${
-                item.level === 'stop' ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'
-              }`}>
+              <div
+                key={i}
+                className={`flex items-start gap-2 px-3 py-2 rounded-xl text-sm border ${
+                  item.level === 'stop'
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-orange-50 border-orange-200'
+                }`}
+              >
                 <span className="shrink-0 mt-0.5">{item.level === 'stop' ? '❌' : '⏸️'}</span>
                 <div>
                   <span className="font-medium text-gray-800">{item.name}</span>
@@ -219,7 +283,10 @@ function SickDayContent({ patient, latestLab }) {
           <p className="text-xs font-bold text-yellow-700 mb-1.5">⚠️ คงไว้ แต่ระวัง</p>
           <div className="space-y-1">
             {monitorList.map((item, i) => (
-              <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-xl text-sm bg-yellow-50 border border-yellow-200">
+              <div
+                key={i}
+                className="flex items-start gap-2 px-3 py-2 rounded-xl text-sm bg-yellow-50 border border-yellow-200"
+              >
                 <span className="shrink-0 mt-0.5">⚠️</span>
                 <div>
                   <span className="font-medium text-gray-800">{item.name}</span>
@@ -236,7 +303,12 @@ function SickDayContent({ patient, latestLab }) {
           <p className="text-xs font-bold text-green-700 mb-1.5">✅ กินต่อตามปกติ</p>
           <div className="flex flex-wrap gap-1.5">
             {continueList.map((m, i) => (
-              <span key={i} className="px-2.5 py-1 rounded-full text-xs bg-green-50 border border-green-200 text-green-800">{m.name}</span>
+              <span
+                key={i}
+                className="px-2.5 py-1 rounded-full text-xs bg-green-50 border border-green-200 text-green-800"
+              >
+                {m.name}
+              </span>
             ))}
           </div>
         </div>
@@ -252,12 +324,22 @@ function SickDayContent({ patient, latestLab }) {
 // ---- Contrast ----
 function ContrastContent({ patient, latestLab }) {
   const meds = patient.medications || []
-  const egfr = latestLab?.values?.eGFR ? parseFloat(latestLab.values.eGFR) : null
+  const egfr = latestLab?.values?.eGFR ? Number.parseFloat(latestLab.values.eGFR) : null
   const isHD = patient.status === 'HD'
-  const metformin = localFind(meds, ['metformin','glucophage'])
-  const nsaid = localFind(meds, ['ibuprofen','diclofenac','naproxen','voltaren','celecoxib','mefenamic','arcoxia'])
+  const metformin = localFind(meds, ['metformin', 'glucophage'])
+  const nsaid = localFind(meds, [
+    'ibuprofen',
+    'diclofenac',
+    'naproxen',
+    'voltaren',
+    'celecoxib',
+    'mefenamic',
+    'arcoxia',
+  ])
 
-  let risk, riskBg, hydration
+  let risk
+  let riskBg
+  let hydration
   if (isHD) {
     risk = 'HD Patient'
     riskBg = 'bg-blue-50 border-blue-200 text-blue-800'
@@ -277,7 +359,8 @@ function ContrastContent({ patient, latestLab }) {
   } else {
     risk = `eGFR ${egfr} — High risk`
     riskBg = 'bg-red-50 border-red-200 text-red-800'
-    hydration = 'NSS hydration ก่อน + หลัง + ใช้ low-osmolar contrast + minimal volume\nพิจารณา alternative imaging ถ้าเป็นไปได้'
+    hydration =
+      'NSS hydration ก่อน + หลัง + ใช้ low-osmolar contrast + minimal volume\nพิจารณา alternative imaging ถ้าเป็นไปได้'
   }
 
   return (
@@ -286,7 +369,8 @@ function ContrastContent({ patient, latestLab }) {
 
       {hydration && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-sm text-blue-800">
-          <span className="font-medium">💧 Hydration: </span><span className="whitespace-pre-line">{hydration}</span>
+          <span className="font-medium">💧 Hydration: </span>
+          <span className="whitespace-pre-line">{hydration}</span>
         </div>
       )}
 
@@ -299,7 +383,9 @@ function ContrastContent({ patient, latestLab }) {
                 <span>❌</span>
                 <div>
                   <span className="font-medium">{metformin.name}</span>
-                  <p className="text-xs text-gray-600 mt-0.5">หยุด 48 ชม. ก่อนฉีด (หรือวันฉีด) + ไม่เริ่มจนกว่า Cr stable หลัง 48 ชม.</p>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    หยุด 48 ชม. ก่อนฉีด (หรือวันฉีด) + ไม่เริ่มจนกว่า Cr stable หลัง 48 ชม.
+                  </p>
                 </div>
               </div>
             ) : (
@@ -321,15 +407,22 @@ function ContrastContent({ patient, latestLab }) {
       <div>
         <p className="text-xs font-bold text-gray-600 mb-1">Lab monitoring</p>
         <div className="text-xs text-gray-700 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 space-y-0.5">
-          <p>• <span className="font-medium">ก่อนฉีด:</span> Cr, eGFR</p>
-          <p>• <span className="font-medium">48–72 ชม. หลังฉีด:</span> Cr, eGFR (ดู AKI)</p>
-          <p>• <span className="font-medium">1–2 สัปดาห์:</span> Cr, eGFR (ดู recovery)</p>
+          <p>
+            • <span className="font-medium">ก่อนฉีด:</span> Cr, eGFR
+          </p>
+          <p>
+            • <span className="font-medium">48–72 ชม. หลังฉีด:</span> Cr, eGFR (ดู AKI)
+          </p>
+          <p>
+            • <span className="font-medium">1–2 สัปดาห์:</span> Cr, eGFR (ดู recovery)
+          </p>
         </div>
       </div>
 
       {isHD && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-xs text-blue-800">
-          <span className="font-medium">HD:</span> ทำ HD session ถัดไปหลังฉีด contrast เพื่อ clear ออก (ไม่ต้องกังวลเรื่อง Metformin)
+          <span className="font-medium">HD:</span> ทำ HD session ถัดไปหลังฉีด contrast เพื่อ clear ออก
+          (ไม่ต้องกังวลเรื่อง Metformin)
         </div>
       )}
     </>
@@ -402,9 +495,12 @@ function PreopContent({ patient, latestLab }) {
 
   const handleSurgeryInput = (val) => {
     setSurgeryInput(val)
-    if (val.length < 1) { setSurgSuggestions([]); return }
+    if (val.length < 1) {
+      setSurgSuggestions([])
+      return
+    }
     const q = val.toLowerCase()
-    const matches = SURGERY_LIST.filter(s => s.name.toLowerCase().includes(q)).slice(0, 6)
+    const matches = SURGERY_LIST.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 6)
     setSurgSuggestions(matches)
   }
 
@@ -414,41 +510,162 @@ function PreopContent({ patient, latestLab }) {
     setSurgSuggestions([])
   }
   const isHD = patient.status === 'HD'
-  const egfr = latestLab?.values?.eGFR ? parseFloat(latestLab.values.eGFR) : null
+  const egfr = latestLab?.values?.eGFR ? Number.parseFloat(latestLab.values.eGFR) : null
 
   const PREOP_RULES = [
-    { keys: ['aspirin','asa'], label: 'ASA', minor: 'กินต่อ ✓', major: 'กินต่อ ✓ (หยุดเฉพาะ neurosurgery)', mc: 'green', Mc: 'green' },
-    { keys: ['clopidogrel','plavix'], label: null, minor: 'ไม่หยุด หรือหยุด 3 วัน', major: 'หยุด 5–7 วัน', mc: 'yellow', Mc: 'red' },
-    { keys: ['ticagrelor','brilinta'], label: null, minor: 'หยุด 3 วัน', major: 'หยุด 5 วัน', mc: 'yellow', Mc: 'red' },
-    { keys: ['prasugrel','efient'], label: null, minor: 'หยุด 5 วัน', major: 'หยุด 7 วัน', mc: 'red', Mc: 'red' },
-    { keys: ['warfarin','coumadin'], label: null, minor: 'ไม่หยุด (ถอนฟัน/ต้อกระจก)', major: 'หยุด 5 วัน + เช็ค INR', mc: 'green', Mc: 'red' },
-    { keys: ['rivaroxaban','xarelto'], label: null, minor: 'ข้าม 1 dose', major: 'หยุด 2–3 วัน', mc: 'yellow', Mc: 'orange' },
-    { keys: ['apixaban','eliquis'], label: null, minor: 'ข้าม 1 dose', major: 'หยุด 2–3 วัน', mc: 'yellow', Mc: 'orange' },
-    { keys: ['dabigatran','pradaxa'], label: null,
+    {
+      keys: ['aspirin', 'asa'],
+      label: 'ASA',
+      minor: 'กินต่อ ✓',
+      major: 'กินต่อ ✓ (หยุดเฉพาะ neurosurgery)',
+      mc: 'green',
+      Mc: 'green',
+    },
+    {
+      keys: ['clopidogrel', 'plavix'],
+      label: null,
+      minor: 'ไม่หยุด หรือหยุด 3 วัน',
+      major: 'หยุด 5–7 วัน',
+      mc: 'yellow',
+      Mc: 'red',
+    },
+    {
+      keys: ['ticagrelor', 'brilinta'],
+      label: null,
+      minor: 'หยุด 3 วัน',
+      major: 'หยุด 5 วัน',
+      mc: 'yellow',
+      Mc: 'red',
+    },
+    {
+      keys: ['prasugrel', 'efient'],
+      label: null,
+      minor: 'หยุด 5 วัน',
+      major: 'หยุด 7 วัน',
+      mc: 'red',
+      Mc: 'red',
+    },
+    {
+      keys: ['warfarin', 'coumadin'],
+      label: null,
+      minor: 'ไม่หยุด (ถอนฟัน/ต้อกระจก)',
+      major: 'หยุด 5 วัน + เช็ค INR',
+      mc: 'green',
+      Mc: 'red',
+    },
+    {
+      keys: ['rivaroxaban', 'xarelto'],
+      label: null,
+      minor: 'ข้าม 1 dose',
+      major: 'หยุด 2–3 วัน',
+      mc: 'yellow',
+      Mc: 'orange',
+    },
+    {
+      keys: ['apixaban', 'eliquis'],
+      label: null,
+      minor: 'ข้าม 1 dose',
+      major: 'หยุด 2–3 วัน',
+      mc: 'yellow',
+      Mc: 'orange',
+    },
+    {
+      keys: ['dabigatran', 'pradaxa'],
+      label: null,
       minor: 'หยุด 1–2 วัน',
       major: egfr && egfr < 30 ? 'หยุด 3–5 วัน (eGFR ต่ำ ขับช้า)' : 'หยุด 2–4 วัน',
-      mc: 'yellow', Mc: 'orange' },
-    { keys: ['dapagliflozin','empagliflozin','canagliflozin','forxiga','jardiance','invokana'], label: null, minor: 'หยุด 1 วัน', major: 'หยุด 3 วันก่อน', mc: 'yellow', Mc: 'red' },
-    { keys: ['metformin','glucophage'], label: null, minor: 'หยุดเช้าวันผ่าตัด', major: 'หยุดเช้าวันผ่าตัด', mc: 'yellow', Mc: 'yellow' },
-    { keys: ['losartan','valsartan','irbesartan','telmisartan','olmesartan','candesartan','enalapril','ramipril','lisinopril','perindopril'], label: null, minor: 'หยุดเช้าวันผ่าตัด', major: 'หยุดเช้าวันผ่าตัด (hypotension risk)', mc: 'yellow', Mc: 'yellow' },
-    { keys: ['insulin','glargine','lantus','detemir','degludec','aspart','lispro','nph'], label: null, minor: 'คง dose ปกติ', major: 'ลด basal 50–80% คืนก่อน', mc: 'green', Mc: 'orange' },
-    { keys: ['atorvastatin','rosuvastatin','simvastatin','pravastatin'], label: null, minor: 'กินต่อ ✓', major: 'กินต่อ ✓', mc: 'green', Mc: 'green' },
-    { keys: ['atenolol','bisoprolol','metoprolol','carvedilol','propranolol'], label: null, minor: 'กินต่อ ✓', major: 'กินต่อ ✓', mc: 'green', Mc: 'green' },
-    { keys: ['amlodipine','nifedipine','diltiazem','verapamil','manidipine'], label: null, minor: 'กินต่อ ✓', major: 'กินต่อ ✓', mc: 'green', Mc: 'green' },
+      mc: 'yellow',
+      Mc: 'orange',
+    },
+    {
+      keys: ['dapagliflozin', 'empagliflozin', 'canagliflozin', 'forxiga', 'jardiance', 'invokana'],
+      label: null,
+      minor: 'หยุด 1 วัน',
+      major: 'หยุด 3 วันก่อน',
+      mc: 'yellow',
+      Mc: 'red',
+    },
+    {
+      keys: ['metformin', 'glucophage'],
+      label: null,
+      minor: 'หยุดเช้าวันผ่าตัด',
+      major: 'หยุดเช้าวันผ่าตัด',
+      mc: 'yellow',
+      Mc: 'yellow',
+    },
+    {
+      keys: [
+        'losartan',
+        'valsartan',
+        'irbesartan',
+        'telmisartan',
+        'olmesartan',
+        'candesartan',
+        'enalapril',
+        'ramipril',
+        'lisinopril',
+        'perindopril',
+      ],
+      label: null,
+      minor: 'หยุดเช้าวันผ่าตัด',
+      major: 'หยุดเช้าวันผ่าตัด (hypotension risk)',
+      mc: 'yellow',
+      Mc: 'yellow',
+    },
+    {
+      keys: ['insulin', 'glargine', 'lantus', 'detemir', 'degludec', 'aspart', 'lispro', 'nph'],
+      label: null,
+      minor: 'คง dose ปกติ',
+      major: 'ลด basal 50–80% คืนก่อน',
+      mc: 'green',
+      Mc: 'orange',
+    },
+    {
+      keys: ['atorvastatin', 'rosuvastatin', 'simvastatin', 'pravastatin'],
+      label: null,
+      minor: 'กินต่อ ✓',
+      major: 'กินต่อ ✓',
+      mc: 'green',
+      Mc: 'green',
+    },
+    {
+      keys: ['atenolol', 'bisoprolol', 'metoprolol', 'carvedilol', 'propranolol'],
+      label: null,
+      minor: 'กินต่อ ✓',
+      major: 'กินต่อ ✓',
+      mc: 'green',
+      Mc: 'green',
+    },
+    {
+      keys: ['amlodipine', 'nifedipine', 'diltiazem', 'verapamil', 'manidipine'],
+      label: null,
+      minor: 'กินต่อ ✓',
+      major: 'กินต่อ ✓',
+      mc: 'green',
+      Mc: 'green',
+    },
   ]
 
-  const colorCls = (c) => ({
-    red: 'bg-red-50 border-red-200 text-red-800',
-    orange: 'bg-orange-50 border-orange-200 text-orange-800',
-    yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-    green: 'bg-green-50 border-green-200 text-green-800',
-  }[c] || 'bg-gray-50 border-gray-200 text-gray-700')
+  const colorCls = (c) =>
+    ({
+      red: 'bg-red-50 border-red-200 text-red-800',
+      orange: 'bg-orange-50 border-orange-200 text-orange-800',
+      yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+      green: 'bg-green-50 border-green-200 text-green-800',
+    })[c] || 'bg-gray-50 border-gray-200 text-gray-700'
 
-  const rows = PREOP_RULES
-    .map(r => { const m = localFind(meds, r.keys); return m ? { name: r.label || m.name, instr: type === 'minor' ? r.minor : r.major, color: type === 'minor' ? r.mc : r.Mc } : null })
-    .filter(Boolean)
+  const rows = PREOP_RULES.map((r) => {
+    const m = localFind(meds, r.keys)
+    return m
+      ? {
+          name: r.label || m.name,
+          instr: type === 'minor' ? r.minor : r.major,
+          color: type === 'minor' ? r.mc : r.Mc,
+        }
+      : null
+  }).filter(Boolean)
 
-  const hasWarfarin = localFind(meds, ['warfarin','coumadin'])
+  const hasWarfarin = localFind(meds, ['warfarin', 'coumadin'])
 
   return (
     <>
@@ -457,7 +674,7 @@ function PreopContent({ patient, latestLab }) {
         <input
           type="text"
           value={surgeryInput}
-          onChange={e => handleSurgeryInput(e.target.value)}
+          onChange={(e) => handleSurgeryInput(e.target.value)}
           placeholder="พิมพ์ชนิดการผ่าตัด เช่น TKR, CABG, ถอนฟัน..."
           className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
@@ -470,7 +687,9 @@ function PreopContent({ patient, latestLab }) {
                 className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between border-b border-gray-50 last:border-0"
               >
                 <span>{s.name}</span>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.risk === 'minor' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.risk === 'minor' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}
+                >
                   {s.risk === 'minor' ? 'Minor' : 'Major'}
                 </span>
               </button>
@@ -480,17 +699,30 @@ function PreopContent({ patient, latestLab }) {
       </div>
 
       <div className="flex gap-2">
-        {[['minor', 'Minor / Low risk'], ['major', 'Major / High risk']].map(([k, label]) => (
-          <button key={k} onClick={() => setType(k)} className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
-            type === k
-              ? k === 'minor' ? 'bg-blue-600 text-white border-blue-600' : 'bg-orange-600 text-white border-orange-600'
-              : 'bg-white text-gray-600 border-gray-300'
-          }`}>{label}</button>
+        {[
+          ['minor', 'Minor / Low risk'],
+          ['major', 'Major / High risk'],
+        ].map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => setType(k)}
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+              type === k
+                ? k === 'minor'
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-orange-600 text-white border-orange-600'
+                : 'bg-white text-gray-600 border-gray-300'
+            }`}
+          >
+            {label}
+          </button>
         ))}
       </div>
 
       <p className="text-xs text-gray-500">
-        {type === 'minor' ? 'เช่น ถอนฟัน, ต้อกระจก, biopsy ผิวหนัง, small procedure' : 'เช่น TKR, THR, CABG, open abdominal, neurosurgery, major vascular'}
+        {type === 'minor'
+          ? 'เช่น ถอนฟัน, ต้อกระจก, biopsy ผิวหนัง, small procedure'
+          : 'เช่น TKR, THR, CABG, open abdominal, neurosurgery, major vascular'}
       </p>
 
       {rows.length === 0 ? (
@@ -498,7 +730,10 @@ function PreopContent({ patient, latestLab }) {
       ) : (
         <div className="space-y-1.5">
           {rows.map((row, i) => (
-            <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm border ${colorCls(row.color)}`}>
+            <div
+              key={i}
+              className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm border ${colorCls(row.color)}`}
+            >
               <span className="font-medium shrink-0 mr-2">{row.name}</span>
               <span className="text-right text-xs">{row.instr}</span>
             </div>
@@ -549,17 +784,19 @@ function RecCard({ rec }) {
             <span className={`font-bold text-sm ${isCritical ? 'text-white' : 'text-gray-900'}`}>
               {rec.title}
             </span>
-            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${s.badge}`}>
-              {rec.domain}
-            </span>
+            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${s.badge}`}>{rec.domain}</span>
           </div>
         </div>
 
-        <div className={`text-sm leading-relaxed whitespace-pre-line mb-2 ${isCritical ? 'text-red-50' : 'text-gray-700'}`}>
+        <div
+          className={`text-sm leading-relaxed whitespace-pre-line mb-2 ${isCritical ? 'text-red-50' : 'text-gray-700'}`}
+        >
           {rec.recommendation}
         </div>
 
-        <div className={`text-xs space-y-0.5 mt-2 pt-2 border-t ${isCritical ? 'border-red-500 text-red-200' : 'border-gray-100 text-gray-500'}`}>
+        <div
+          className={`text-xs space-y-0.5 mt-2 pt-2 border-t ${isCritical ? 'border-red-500 text-red-200' : 'border-gray-100 text-gray-500'}`}
+        >
           <div>
             <span className="font-medium">เป้าหมาย:</span> {rec.target}
           </div>

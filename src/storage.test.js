@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  parseLabDate,
-  isLabOutdated,
-  isScreeningOutdated,
-  getCKDStage,
-  getLatestLabEntry,
   createEmptyPatient,
   generateId,
+  getCKDStage,
+  getLatestLabEntry,
+  isLabOutdated,
+  isScreeningOutdated,
+  parseLabDate,
 } from './storage'
 
 describe('getCKDStage', () => {

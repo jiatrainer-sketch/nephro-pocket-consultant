@@ -20,11 +20,15 @@ Run, in order:
 
 ```bash
 npm install
+npm run lint
 npm run build
 npm test
 ```
 
 If any step fails, that is the top-priority finding for today.
+`npm run lint` exits 0 with only warnings — report warning counts as a
+trend signal, not a failure, unless the count increased from the
+previous run.
 
 Also scan `src/` for:
 

@@ -1,3 +1,44 @@
+/**
+ * storage.js — the ONLY IO boundary for patient and settings data.
+ *
+ * Keep all persistence calls (browser localStorage today, backend tomorrow)
+ * isolated to this file. Components must import the helpers here and must
+ * never call `localStorage` / `fetch` / a DB client directly. This makes
+ * swapping the backend a one-file change (see Issue "Backend migration
+ * decision" for criteria and plan).
+ *
+ * Schema — Patient:
+ *   {
+ *     id:            string                        // generateId()
+ *     name:          string
+ *     hn:            string                        // hospital number
+ *     status:        'HD' | 'PD' | 'KT' | 'CKD'
+ *     weight_kg:     string | number
+ *     height_cm:     string | number
+ *     dry_weight_kg: string | number               // HD only
+ *     hd_start_date: string                        // YYYY-MM-DD
+ *     esrd_cause:    string                        // free text
+ *     vascular_access: { type: string, created_date: string }
+ *     conditions:    string[]                      // free text per item
+ *     allergies:     string[]                      // free text per item
+ *     medications:   Array<{
+ *       name: string, dose: string, frequency: string,
+ *       timing: string, note: string
+ *     }>
+ *     labs:          Array<{
+ *       date: string,                              // YYYY-MM-DD or YYYY-MM
+ *       values: Record<string, string | number>    // eGFR, Hb, K, Ca, P, iPTH, ...
+ *     }>
+ *     created_at:    string                        // ISO timestamp
+ *     updated_at:    string                        // ISO timestamp
+ *   }
+ *
+ * Schema — Settings:
+ *   { apiKey: string }                             // Anthropic API key, local only
+ *
+ * Storage keys are versioned (`_v1`). Bump the suffix and add a migration
+ * step here if the Patient shape changes in a non-backwards-compatible way.
+ */
 const PATIENTS_KEY = 'nephro_patients_v1'
 const SETTINGS_KEY = 'nephro_settings_v1'
 
@@ -39,7 +80,7 @@ export function parseLabDate(dateStr) {
   // Try YYYY-MM
   if (/^\d{4}-\d{2}$/.test(dateStr)) {
     const [y, m] = dateStr.split('-')
-    return new Date(parseInt(y), parseInt(m) - 1, 1)
+    return new Date(Number.parseInt(y), Number.parseInt(m) - 1, 1)
   }
   return null
 }
@@ -71,8 +112,8 @@ export function getLatestLabEntry(patient) {
 
 export function getCKDStage(egfr) {
   if (egfr === null || egfr === undefined || egfr === '') return null
-  const v = parseFloat(egfr)
-  if (isNaN(v)) return null
+  const v = Number.parseFloat(egfr)
+  if (Number.isNaN(v)) return null
   if (v >= 90) return 'G1'
   if (v >= 60) return 'G2'
   if (v >= 45) return 'G3a'
@@ -86,7 +127,7 @@ export function createEmptyPatient(id) {
     id,
     name: '',
     hn: '',
-    status: 'HD',       // CKD | HD | PD | KT
+    status: 'HD', // CKD | HD | PD | KT
     weight_kg: '',
     height_cm: '',
     dry_weight_kg: '',

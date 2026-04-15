@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  MEDICATIONS,
-  searchMedications,
-  TIMING_OPTIONS,
   FREQUENCY_OPTIONS,
+  MEDICATIONS,
+  TIMING_OPTIONS,
+  searchMedications,
 } from './medicationDatabase'
 
 describe('MEDICATIONS integrity', () => {
@@ -32,7 +32,7 @@ describe('MEDICATIONS integrity', () => {
 
   it('covers key renal-adjusted drugs', () => {
     // Guard against accidental removal of drugs used in recommendations.js
-    const generics = MEDICATIONS.map(m => m.generic.toLowerCase())
+    const generics = MEDICATIONS.map((m) => m.generic.toLowerCase())
     const required = [
       'losartan',
       'metformin',
@@ -43,8 +43,8 @@ describe('MEDICATIONS integrity', () => {
     ]
     for (const g of required) {
       expect(
-        generics.some(x => x.includes(g)),
-        `missing renal-critical drug: ${g}`,
+        generics.some((x) => x.includes(g)),
+        `missing renal-critical drug: ${g}`
       ).toBe(true)
     }
   })

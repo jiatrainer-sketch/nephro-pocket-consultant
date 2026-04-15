@@ -1,18 +1,24 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { FREQUENCY_OPTIONS, TIMING_OPTIONS, searchMedications } from '../medicationDatabase'
 import { generateId } from '../storage'
-import { searchMedications, TIMING_OPTIONS, FREQUENCY_OPTIONS } from '../medicationDatabase'
 
 export default function MedTab({ patient, onUpdate }) {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
 
-  const openAdd = () => { setEditingId(null); setShowForm(true) }
-  const openEdit = (id) => { setEditingId(id); setShowForm(true) }
+  const openAdd = () => {
+    setEditingId(null)
+    setShowForm(true)
+  }
+  const openEdit = (id) => {
+    setEditingId(id)
+    setShowForm(true)
+  }
 
   const saveMed = (med) => {
     let meds
     if (editingId) {
-      meds = patient.medications.map(m => m.id === editingId ? { ...med, id: editingId } : m)
+      meds = patient.medications.map((m) => (m.id === editingId ? { ...med, id: editingId } : m))
     } else {
       meds = [...(patient.medications || []), { ...med, id: generateId() }]
     }
@@ -22,18 +28,12 @@ export default function MedTab({ patient, onUpdate }) {
 
   const deleteMed = (id) => {
     if (!window.confirm('ลบยานี้?')) return
-    onUpdate({ ...patient, medications: patient.medications.filter(m => m.id !== id) })
+    onUpdate({ ...patient, medications: patient.medications.filter((m) => m.id !== id) })
   }
 
   if (showForm) {
-    const existing = editingId ? patient.medications.find(m => m.id === editingId) : null
-    return (
-      <MedForm
-        initial={existing}
-        onSave={saveMed}
-        onCancel={() => setShowForm(false)}
-      />
-    )
+    const existing = editingId ? patient.medications.find((m) => m.id === editingId) : null
+    return <MedForm initial={existing} onSave={saveMed} onCancel={() => setShowForm(false)} />
   }
 
   const meds = patient.medications || []
@@ -48,15 +48,13 @@ export default function MedTab({ patient, onUpdate }) {
       </button>
 
       {meds.length === 0 && (
-        <div className="text-center text-gray-400 py-12 text-sm">
-          ยังไม่มียา — กด + เพิ่มยา
-        </div>
+        <div className="text-center text-gray-400 py-12 text-sm">ยังไม่มียา — กด + เพิ่มยา</div>
       )}
 
       {/* Group by category */}
       {meds.length > 0 && (
         <div className="space-y-2">
-          {meds.map(med => (
+          {meds.map((med) => (
             <MedCard
               key={med.id}
               med={med}
@@ -84,8 +82,18 @@ function MedCard({ med, onEdit, onDelete }) {
         {med.note && <div className="text-xs text-gray-400 mt-0.5">{med.note}</div>}
       </div>
       <div className="flex gap-1 shrink-0">
-        <button onClick={onEdit} className="text-xs text-blue-500 px-2 py-1 rounded-lg active:bg-blue-50">แก้</button>
-        <button onClick={onDelete} className="text-xs text-red-400 px-2 py-1 rounded-lg active:bg-red-50">ลบ</button>
+        <button
+          onClick={onEdit}
+          className="text-xs text-blue-500 px-2 py-1 rounded-lg active:bg-blue-50"
+        >
+          แก้
+        </button>
+        <button
+          onClick={onDelete}
+          className="text-xs text-red-400 px-2 py-1 rounded-lg active:bg-red-50"
+        >
+          ลบ
+        </button>
       </div>
     </div>
   )
@@ -102,8 +110,12 @@ function MedForm({ initial, onSave, onCancel }) {
   const [note, setNote] = useState(initial?.note || '')
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [customFreq, setCustomFreq] = useState(!FREQUENCY_OPTIONS.includes(initial?.frequency || '') && !!initial?.frequency)
-  const [customTiming, setCustomTiming] = useState(!TIMING_OPTIONS.includes(initial?.timing || '') && !!initial?.timing)
+  const [customFreq, setCustomFreq] = useState(
+    !FREQUENCY_OPTIONS.includes(initial?.frequency || '') && !!initial?.frequency
+  )
+  const [customTiming, setCustomTiming] = useState(
+    !TIMING_OPTIONS.includes(initial?.timing || '') && !!initial?.timing
+  )
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -125,14 +137,13 @@ function MedForm({ initial, onSave, onCancel }) {
 
   const canSave = name.trim().length > 0
 
-  const inp = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
+  const inp =
+    'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
 
   return (
     <div className="p-4 space-y-4">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
-        <h3 className="font-semibold text-sm text-gray-700">
-          {initial ? 'แก้ไขยา' : 'เพิ่มยา'}
-        </h3>
+        <h3 className="font-semibold text-sm text-gray-700">{initial ? 'แก้ไขยา' : 'เพิ่มยา'}</h3>
 
         {/* Drug name with autocomplete */}
         <div className="relative">
@@ -141,7 +152,7 @@ function MedForm({ initial, onSave, onCancel }) {
             ref={inputRef}
             type="text"
             value={name}
-            onChange={e => handleNameChange(e.target.value)}
+            onChange={(e) => handleNameChange(e.target.value)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             onFocus={() => {
               if (name.trim().length >= 1) {
@@ -157,7 +168,8 @@ function MedForm({ initial, onSave, onCancel }) {
           />
           {showSuggestions && suggestions.length === 0 && name.trim().length >= 2 && (
             <p className="text-xs text-gray-400 mt-1">
-              ไม่พบ "{name}" ในฐานยา — พิมพ์ต่อจนครบแล้วกด <span className="text-blue-500 font-medium">บันทึก</span> ได้เลย
+              ไม่พบ "{name}" ในฐานยา — พิมพ์ต่อจนครบแล้วกด{' '}
+              <span className="text-blue-500 font-medium">บันทึก</span> ได้เลย
             </p>
           )}
           {showSuggestions && suggestions.length > 0 && (
@@ -183,7 +195,7 @@ function MedForm({ initial, onSave, onCancel }) {
           <input
             type="text"
             value={dose}
-            onChange={e => setDose(e.target.value)}
+            onChange={(e) => setDose(e.target.value)}
             placeholder="เช่น 4000 u, 0.25 mcg, 10 mg"
             className={inp}
           />
@@ -193,13 +205,18 @@ function MedForm({ initial, onSave, onCancel }) {
         <div>
           <label className="block text-xs text-gray-500 mb-1">Frequency</label>
           <div className="flex flex-wrap gap-1.5 mb-2">
-            {FREQUENCY_OPTIONS.filter(o => o !== 'อื่น ๆ').map(o => (
+            {FREQUENCY_OPTIONS.filter((o) => o !== 'อื่น ๆ').map((o) => (
               <button
                 key={o}
                 type="button"
-                onClick={() => { setFrequency(o); setCustomFreq(false) }}
+                onClick={() => {
+                  setFrequency(o)
+                  setCustomFreq(false)
+                }}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                  frequency === o && !customFreq ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+                  frequency === o && !customFreq
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'text-gray-600 border-gray-300'
                 }`}
               >
                 {o}
@@ -207,9 +224,14 @@ function MedForm({ initial, onSave, onCancel }) {
             ))}
             <button
               type="button"
-              onClick={() => { setCustomFreq(true); setFrequency('') }}
+              onClick={() => {
+                setCustomFreq(true)
+                setFrequency('')
+              }}
               className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                customFreq ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+                customFreq
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'text-gray-600 border-gray-300'
               }`}
             >
               อื่น ๆ
@@ -219,10 +241,9 @@ function MedForm({ initial, onSave, onCancel }) {
             <input
               type="text"
               value={frequency}
-              onChange={e => setFrequency(e.target.value)}
+              onChange={(e) => setFrequency(e.target.value)}
               placeholder="ระบุ frequency..."
               className={inp}
-              autoFocus
             />
           )}
         </div>
@@ -231,13 +252,18 @@ function MedForm({ initial, onSave, onCancel }) {
         <div>
           <label className="block text-xs text-gray-500 mb-1">เวลากิน</label>
           <div className="flex flex-wrap gap-1.5 mb-2">
-            {TIMING_OPTIONS.filter(o => o !== 'อื่น ๆ').map(o => (
+            {TIMING_OPTIONS.filter((o) => o !== 'อื่น ๆ').map((o) => (
               <button
                 key={o}
                 type="button"
-                onClick={() => { setTiming(o); setCustomTiming(false) }}
+                onClick={() => {
+                  setTiming(o)
+                  setCustomTiming(false)
+                }}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                  timing === o && !customTiming ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+                  timing === o && !customTiming
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'text-gray-600 border-gray-300'
                 }`}
               >
                 {o}
@@ -245,9 +271,14 @@ function MedForm({ initial, onSave, onCancel }) {
             ))}
             <button
               type="button"
-              onClick={() => { setCustomTiming(true); setTiming('') }}
+              onClick={() => {
+                setCustomTiming(true)
+                setTiming('')
+              }}
               className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                customTiming ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+                customTiming
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'text-gray-600 border-gray-300'
               }`}
             >
               อื่น ๆ
@@ -257,10 +288,9 @@ function MedForm({ initial, onSave, onCancel }) {
             <input
               type="text"
               value={timing}
-              onChange={e => setTiming(e.target.value)}
+              onChange={(e) => setTiming(e.target.value)}
               placeholder="ระบุเวลา..."
               className={inp}
-              autoFocus
             />
           )}
         </div>
@@ -271,7 +301,7 @@ function MedForm({ initial, onSave, onCancel }) {
           <input
             type="text"
             value={note}
-            onChange={e => setNote(e.target.value)}
+            onChange={(e) => setNote(e.target.value)}
             placeholder="บันทึกเพิ่มเติม (ไม่บังคับ)"
             className={inp}
           />
@@ -288,7 +318,10 @@ function MedForm({ initial, onSave, onCancel }) {
         >
           บันทึก
         </button>
-        <button onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">
+        <button
+          onClick={onCancel}
+          className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
+        >
           ยกเลิก
         </button>
       </div>
