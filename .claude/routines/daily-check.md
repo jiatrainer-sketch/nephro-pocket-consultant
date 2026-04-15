@@ -64,17 +64,23 @@ the renal-adjusted drugs below. Flag only concrete, sourceable issues.
 |---|---|
 | Build / test / lint failure | branch `claude/fix-<slug>-<YYYYMMDD>` + PR |
 | Typo, dead code, a11y, Tailwind fix | branch + PR (small, focused) |
-| Medical content update (guideline, drug label, dose) | **Issue only** — cite source, tag `medical-review` |
+| Drug dose add / change (any entry in `medicationDatabase.js` `dosage` field) | **comment on Issue #1 "Drug Dose Reference Review"** — one row per drug, cite source, never open a branch |
+| Medical content update (guideline, threshold, renal formula) | **Issue only** — cite source, tag `medical-review` |
 | Vercel deploy failure | **Issue only** — attach last deploy log excerpt |
 | Nothing to do | single comment `✅ All clear YYYY-MM-DD` on a tracking issue (do not open a new issue) |
 
 Hard rules:
 
-- never edit `src/recommendations.js` or the contents of
-  `src/medicationDatabase.js` via an auto-PR
+- never edit `src/recommendations.js` or the `dosage` / `source` /
+  `lastReviewed` fields in `src/medicationDatabase.js` via an auto-PR
+- drug dose content ONLY enters `medicationDatabase.js` after a physician
+  signs off in the "Drug Dose Reference Review" Issue — a human must open
+  that PR, not the Routine
 - never remove or weaken the "แพทย์ต้อง confirm" disclaimer
 - never introduce network calls, analytics, or a backend
 - at most **one PR and one Issue per day** from this routine
+- report must reflect the ACTUAL git diff made, not the work planned
+  (no claims of changes that were not committed)
 
 ### [6] Report format
 
