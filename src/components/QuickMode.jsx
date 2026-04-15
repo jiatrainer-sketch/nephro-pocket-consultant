@@ -1,12 +1,20 @@
-import { useState, useMemo } from 'react'
-import RecommendationTab from './RecommendationTab'
+import { useMemo, useState } from 'react'
+import { searchMedications } from '../medicationDatabase'
 import ChatTab from './ChatTab'
 import MedTab from './MedTab'
-import { searchMedications } from '../medicationDatabase'
+import RecommendationTab from './RecommendationTab'
 
 const QUICK_CONDITIONS = [
-  'DM type 2', 'DM type 1', 'Hypertension', 'CAD', 'Heart failure',
-  'AF', 'Dyslipidemia', 'Gout', 'SLE', 'CKD',
+  'DM type 2',
+  'DM type 1',
+  'Hypertension',
+  'CAD',
+  'Heart failure',
+  'AF',
+  'Dyslipidemia',
+  'Gout',
+  'SLE',
+  'CKD',
 ]
 
 export default function QuickMode({ onBack, settings }) {
@@ -50,7 +58,9 @@ export default function QuickMode({ onBack, settings }) {
       >
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">←</button>
+            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+              ←
+            </button>
             <div className="flex-1">
               <div className="font-bold text-base">Quick Mode</div>
               <div className="text-xs text-teal-200">ไม่บันทึกข้อมูล</div>
@@ -60,7 +70,7 @@ export default function QuickMode({ onBack, settings }) {
             </button>
           </div>
           <div className="flex -mx-4 px-2 overflow-x-auto">
-            {TABS.map(t => (
+            {TABS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
@@ -76,9 +86,7 @@ export default function QuickMode({ onBack, settings }) {
       </header>
 
       <main className="flex-1 max-w-lg mx-auto w-full">
-        {tab === 'lab' && (
-          <QuickLabInput patient={patient} onUpdate={setPatient} />
-        )}
+        {tab === 'lab' && <QuickLabInput patient={patient} onUpdate={setPatient} />}
         {tab === 'med' && <MedTab patient={patient} onUpdate={setPatient} />}
         {tab === 'rec' && <RecommendationTab patient={patient} />}
         {tab === 'chat' && <ChatTab patient={patient} settings={settings} />}
@@ -97,25 +105,25 @@ export default function QuickMode({ onBack, settings }) {
 // Quick fields — ใช้ type="text" inputMode="decimal" เพื่อให้กรอกตัวเลขได้บนมือถือ
 // ============================================================
 const QUICK_FIELDS = [
-  { key: 'Hb',      label: 'Hb',       unit: 'g/dL'   },
-  { key: 'Ferritin',label: 'Ferritin',  unit: 'ng/mL'  },
-  { key: 'TSAT',    label: 'TSAT',      unit: '%'      },
-  { key: 'K',       label: 'K',         unit: 'mEq/L'  },
-  { key: 'Ca',      label: 'Ca',        unit: 'mg/dL'  },
-  { key: 'PO4',     label: 'PO4',       unit: 'mg/dL'  },
-  { key: 'iPTH',    label: 'iPTH',      unit: 'pg/mL'  },
-  { key: 'VitD25',  label: '25-OH VitD',unit: 'ng/mL'  },
-  { key: 'Albumin', label: 'Albumin',   unit: 'g/dL'   },
-  { key: 'KtV',     label: 'Kt/V',      unit: ''       },
-  { key: 'HCO3',    label: 'HCO3',      unit: 'mEq/L'  },
-  { key: 'Na',      label: 'Na',        unit: 'mEq/L'  },
-  { key: 'URR',     label: 'URR',       unit: '%'      },
-  { key: 'BUN',     label: 'BUN',       unit: 'mg/dL'  },
-  { key: 'Cr',      label: 'Cr',        unit: 'mg/dL'  },
-  { key: 'eGFR',    label: 'eGFR',      unit: 'mL/min' },
-  { key: 'FBS',     label: 'FBS/DTX',   unit: 'mg/dL'  },
-  { key: 'HbA1C',   label: 'HbA1C',     unit: '%'      },
-  { key: 'UACR',    label: 'UACR',      unit: 'mg/g'   },
+  { key: 'Hb', label: 'Hb', unit: 'g/dL' },
+  { key: 'Ferritin', label: 'Ferritin', unit: 'ng/mL' },
+  { key: 'TSAT', label: 'TSAT', unit: '%' },
+  { key: 'K', label: 'K', unit: 'mEq/L' },
+  { key: 'Ca', label: 'Ca', unit: 'mg/dL' },
+  { key: 'PO4', label: 'PO4', unit: 'mg/dL' },
+  { key: 'iPTH', label: 'iPTH', unit: 'pg/mL' },
+  { key: 'VitD25', label: '25-OH VitD', unit: 'ng/mL' },
+  { key: 'Albumin', label: 'Albumin', unit: 'g/dL' },
+  { key: 'KtV', label: 'Kt/V', unit: '' },
+  { key: 'HCO3', label: 'HCO3', unit: 'mEq/L' },
+  { key: 'Na', label: 'Na', unit: 'mEq/L' },
+  { key: 'URR', label: 'URR', unit: '%' },
+  { key: 'BUN', label: 'BUN', unit: 'mg/dL' },
+  { key: 'Cr', label: 'Cr', unit: 'mg/dL' },
+  { key: 'eGFR', label: 'eGFR', unit: 'mL/min' },
+  { key: 'FBS', label: 'FBS/DTX', unit: 'mg/dL' },
+  { key: 'HbA1C', label: 'HbA1C', unit: '%' },
+  { key: 'UACR', label: 'UACR', unit: 'mg/g' },
 ]
 
 function QuickLabInput({ patient, onUpdate }) {
@@ -131,12 +139,8 @@ function QuickLabInput({ patient, onUpdate }) {
 
   const [rawVals, setRawVals] = useState(initRaw)
   const [date, setDate] = useState(existingLab?.date || today)
-  const [rawAge, setRawAge] = useState(
-    patient.age ? String(patient.age) : ''
-  )
-  const [rawWeight, setRawWeight] = useState(
-    patient.weight_kg ? String(patient.weight_kg) : ''
-  )
+  const [rawAge, setRawAge] = useState(patient.age ? String(patient.age) : '')
+  const [rawWeight, setRawWeight] = useState(patient.weight_kg ? String(patient.weight_kg) : '')
   const [rawEgfrPrev, setRawEgfrPrev] = useState(
     existingVals.eGFR_prev != null ? String(existingVals.eGFR_prev) : ''
   )
@@ -154,34 +158,47 @@ function QuickLabInput({ patient, onUpdate }) {
   const [newCondition, setNewCondition] = useState('')
 
   // Convert raw strings → numbers for patient/recommendations
-  const buildUpdate = (nextRaw, nextDate, nextWeight, nextPatient, nextPrev, nextMonths, nextPthPrev, nextPthMonths) => {
+  const buildUpdate = (
+    nextRaw,
+    nextDate,
+    nextWeight,
+    nextPatient,
+    nextPrev,
+    nextMonths,
+    nextPthPrev,
+    nextPthMonths
+  ) => {
     const numericVals = {}
     Object.entries(nextRaw).forEach(([k, v]) => {
       if (v !== '' && v !== undefined) {
-        const n = parseFloat(v)
-        if (!isNaN(n)) numericVals[k] = n
+        const n = Number.parseFloat(v)
+        if (!Number.isNaN(n)) numericVals[k] = n
       }
     })
     const pPrev = nextPrev !== undefined ? nextPrev : rawEgfrPrev
     const pMonths = nextMonths !== undefined ? nextMonths : rawEgfrPrevMonths
     if (pPrev !== '' && pPrev !== undefined) {
-      const n = parseFloat(pPrev); if (!isNaN(n)) numericVals.eGFR_prev = n
+      const n = Number.parseFloat(pPrev)
+      if (!Number.isNaN(n)) numericVals.eGFR_prev = n
     }
     if (pMonths !== '' && pMonths !== undefined) {
-      const n = parseFloat(pMonths); if (!isNaN(n)) numericVals.eGFR_prev_months = n
+      const n = Number.parseFloat(pMonths)
+      if (!Number.isNaN(n)) numericVals.eGFR_prev_months = n
     }
     const pp = nextPthPrev !== undefined ? nextPthPrev : rawPthPrev
     const pm = nextPthMonths !== undefined ? nextPthMonths : rawPthPrevMonths
     if (pp !== '' && pp !== undefined) {
-      const n = parseFloat(pp); if (!isNaN(n)) numericVals.iPTH_prev = n
+      const n = Number.parseFloat(pp)
+      if (!Number.isNaN(n)) numericVals.iPTH_prev = n
     }
     if (pm !== '' && pm !== undefined) {
-      const n = parseFloat(pm); if (!isNaN(n)) numericVals.iPTH_prev_months = n
+      const n = Number.parseFloat(pm)
+      if (!Number.isNaN(n)) numericVals.iPTH_prev_months = n
     }
     return {
       ...(nextPatient || patient),
-      age: rawAge ? parseInt(rawAge) || rawAge : '',
-      weight_kg: nextWeight ? parseFloat(nextWeight) || nextWeight : '',
+      age: rawAge ? Number.parseInt(rawAge) || rawAge : '',
+      weight_kg: nextWeight ? Number.parseFloat(nextWeight) || nextWeight : '',
       labs: [{ id: 'quick', date: nextDate, values: numericVals }],
     }
   }
@@ -196,7 +213,9 @@ function QuickLabInput({ patient, onUpdate }) {
   }
   const handlePthPrev = (val) => {
     setRawPthPrev(val)
-    onUpdate(buildUpdate(rawVals, date, rawWeight, null, undefined, undefined, val, rawPthPrevMonths))
+    onUpdate(
+      buildUpdate(rawVals, date, rawWeight, null, undefined, undefined, val, rawPthPrevMonths)
+    )
   }
   const handlePthPrevMonths = (val) => {
     setRawPthPrevMonths(val)
@@ -216,8 +235,8 @@ function QuickLabInput({ patient, onUpdate }) {
 
   const handleAge = (val) => {
     setRawAge(val)
-    const n = parseInt(val)
-    onUpdate({ ...buildUpdate(rawVals, date, rawWeight), age: !isNaN(n) ? n : val })
+    const n = Number.parseInt(val)
+    onUpdate({ ...buildUpdate(rawVals, date, rawWeight), age: !Number.isNaN(n) ? n : val })
   }
 
   const handleWeight = (val) => {
@@ -226,9 +245,9 @@ function QuickLabInput({ patient, onUpdate }) {
   }
 
   const toggleCondition = (name) => {
-    const exists = patient.conditions.some(c => c.name === name)
+    const exists = patient.conditions.some((c) => c.name === name)
     const next = exists
-      ? patient.conditions.filter(c => c.name !== name)
+      ? patient.conditions.filter((c) => c.name !== name)
       : [...patient.conditions, { name, since: '' }]
     onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
   }
@@ -236,9 +255,15 @@ function QuickLabInput({ patient, onUpdate }) {
   const addCondition = () => {
     const c = newCondition.trim()
     if (!c) return
-    const exists = patient.conditions.some(x => x.name === c)
-    if (exists) { setNewCondition(''); return }
-    onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: [...patient.conditions, { name: c, since: '' }] })
+    const exists = patient.conditions.some((x) => x.name === c)
+    if (exists) {
+      setNewCondition('')
+      return
+    }
+    onUpdate({
+      ...buildUpdate(rawVals, date, rawWeight),
+      conditions: [...patient.conditions, { name: c, since: '' }],
+    })
     setNewCondition('')
   }
 
@@ -266,7 +291,8 @@ function QuickLabInput({ patient, onUpdate }) {
     setAllergySuggestions([])
   }
 
-  const inp = 'w-full border border-gray-200 rounded-xl px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
+  const inp =
+    'w-full border border-gray-200 rounded-xl px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
 
   return (
     <div className="p-4 space-y-4">
@@ -278,7 +304,7 @@ function QuickLabInput({ patient, onUpdate }) {
             <input
               type="month"
               value={date}
-              onChange={e => handleDate(e.target.value)}
+              onChange={(e) => handleDate(e.target.value)}
               className={inp}
             />
           </div>
@@ -288,7 +314,7 @@ function QuickLabInput({ patient, onUpdate }) {
               type="text"
               inputMode="numeric"
               value={rawAge}
-              onChange={e => handleAge(e.target.value)}
+              onChange={(e) => handleAge(e.target.value)}
               placeholder="55"
               className={inp}
             />
@@ -299,7 +325,7 @@ function QuickLabInput({ patient, onUpdate }) {
               type="text"
               inputMode="decimal"
               value={rawWeight}
-              onChange={e => handleWeight(e.target.value)}
+              onChange={(e) => handleWeight(e.target.value)}
               placeholder="60"
               className={inp}
             />
@@ -308,7 +334,7 @@ function QuickLabInput({ patient, onUpdate }) {
 
         {/* Lab grid */}
         <div className="grid grid-cols-3 gap-x-2 gap-y-3">
-          {QUICK_FIELDS.map(f => (
+          {QUICK_FIELDS.map((f) => (
             <div key={f.key}>
               <label className="block text-xs text-gray-500 mb-1 text-center leading-tight">
                 {f.label}
@@ -318,7 +344,7 @@ function QuickLabInput({ patient, onUpdate }) {
                 type="text"
                 inputMode="decimal"
                 value={rawVals[f.key] ?? ''}
-                onChange={e => setVal(f.key, e.target.value)}
+                onChange={(e) => setVal(f.key, e.target.value)}
                 placeholder="—"
                 className={inp}
               />
@@ -349,8 +375,8 @@ function QuickLabInput({ patient, onUpdate }) {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
         <p className="text-sm font-semibold text-gray-700 mb-2">โรคประจำตัว</p>
         <div className="flex flex-wrap gap-1.5">
-          {QUICK_CONDITIONS.map(name => {
-            const selected = patient.conditions.some(c => c.name === name)
+          {QUICK_CONDITIONS.map((name) => {
+            const selected = patient.conditions.some((c) => c.name === name)
             return (
               <button
                 key={name}
@@ -372,8 +398,8 @@ function QuickLabInput({ patient, onUpdate }) {
           <input
             type="text"
             value={newCondition}
-            onChange={e => setNewCondition(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addCondition()}
+            onChange={(e) => setNewCondition(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addCondition()}
             placeholder="เพิ่มโรคอื่น เช่น Autoimmune, HIV..."
             className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-300"
           />
@@ -388,13 +414,21 @@ function QuickLabInput({ patient, onUpdate }) {
         {patient.conditions.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {patient.conditions.map((c, i) => (
-              <span key={i} className="flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-800 text-xs px-2.5 py-1 rounded-full">
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-800 text-xs px-2.5 py-1 rounded-full"
+              >
                 {c.name}
                 {!QUICK_CONDITIONS.includes(c.name) && (
-                  <button onClick={() => {
-                    const next = patient.conditions.filter((_, idx) => idx !== i)
-                    onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
-                  }} className="text-teal-400 ml-0.5">✕</button>
+                  <button
+                    onClick={() => {
+                      const next = patient.conditions.filter((_, idx) => idx !== i)
+                      onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
+                    }}
+                    className="text-teal-400 ml-0.5"
+                  >
+                    ✕
+                  </button>
                 )}
               </span>
             ))}
@@ -408,9 +442,14 @@ function QuickLabInput({ patient, onUpdate }) {
         {patient.allergies.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {patient.allergies.map((a, i) => (
-              <span key={i} className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full">
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
+              >
                 ⚠️ {a}
-                <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">✕</button>
+                <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">
+                  ✕
+                </button>
               </span>
             ))}
           </div>
@@ -420,8 +459,8 @@ function QuickLabInput({ patient, onUpdate }) {
             <input
               type="text"
               value={newAllergy}
-              onChange={e => handleAllergyInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addAllergy()}
+              onChange={(e) => handleAllergyInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addAllergy()}
               onBlur={() => setTimeout(() => setAllergySuggestions([]), 150)}
               placeholder="พิมพ์ชื่อยา เช่น amlo, penicillin..."
               className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
@@ -452,9 +491,7 @@ function QuickLabInput({ patient, onUpdate }) {
         </div>
       </div>
 
-      <p className="text-xs text-center text-gray-400">
-        กรอกเสร็จ → ไปดู 📋 Rec หรือ 💬 AI ด้านบน
-      </p>
+      <p className="text-xs text-center text-gray-400">กรอกเสร็จ → ไปดู 📋 Rec หรือ 💬 AI ด้านบน</p>
     </div>
   )
 }
@@ -465,22 +502,24 @@ function QuickLabInput({ patient, onUpdate }) {
 const PTH_MONTH_PRESETS = [3, 6, 12, 24]
 
 function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPrevMonths }) {
-  const cur = parseFloat(pthCurrent)
-  const prev = parseFloat(rawPthPrev)
-  const months = parseFloat(rawPthPrevMonths)
-  const valid = !isNaN(cur) && !isNaN(prev) && prev > 0 && !isNaN(months) && months > 0
+  const cur = Number.parseFloat(pthCurrent)
+  const prev = Number.parseFloat(rawPthPrev)
+  const months = Number.parseFloat(rawPthPrevMonths)
+  const valid =
+    !Number.isNaN(cur) && !Number.isNaN(prev) && prev > 0 && !Number.isNaN(months) && months > 0
   const diff = valid ? cur - prev : null
   const pct = valid ? (diff / prev) * 100 : null
 
   let tone = 'bg-gray-50 border-gray-200 text-gray-700'
   if (valid) {
-    if (pct >= 50)  tone = 'bg-red-50 border-red-200 text-red-800'
+    if (pct >= 50) tone = 'bg-red-50 border-red-200 text-red-800'
     else if (pct >= 20) tone = 'bg-yellow-50 border-yellow-200 text-yellow-800'
     else if (pct <= -30) tone = 'bg-yellow-50 border-yellow-200 text-yellow-800'
     else tone = 'bg-green-50 border-green-200 text-green-800'
   }
 
-  const inpSmall = 'w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
+  const inpSmall =
+    'w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-100">
@@ -494,7 +533,7 @@ function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPr
             type="text"
             inputMode="decimal"
             value={rawPthPrev}
-            onChange={e => onPthPrev(e.target.value)}
+            onChange={(e) => onPthPrev(e.target.value)}
             placeholder="350"
             className={inpSmall}
           />
@@ -507,20 +546,20 @@ function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPr
             type="text"
             inputMode="decimal"
             value={rawPthPrevMonths}
-            onChange={e => onPthPrevMonths(e.target.value)}
+            onChange={(e) => onPthPrevMonths(e.target.value)}
             placeholder="6"
             className={inpSmall}
           />
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5 mt-2">
-        {PTH_MONTH_PRESETS.map(v => (
+        {PTH_MONTH_PRESETS.map((v) => (
           <button
             key={v}
             type="button"
             onClick={() => onPthPrevMonths(String(v))}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-              parseFloat(rawPthPrevMonths) === v
+              Number.parseFloat(rawPthPrevMonths) === v
                 ? 'bg-teal-600 text-white border-teal-600'
                 : 'text-gray-600 border-gray-300 bg-white'
             }`}
@@ -532,15 +571,22 @@ function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPr
       {valid && (
         <div className={`mt-3 rounded-xl border px-3 py-2 text-xs ${tone}`}>
           <div className="font-semibold">
-            {diff >= 0 ? '▲' : '▼'} {diff >= 0 ? '+' : ''}{diff.toFixed(0)} pg/mL
-            <span className="ml-2">({pct >= 0 ? '+' : ''}{pct.toFixed(1)}%)</span>
+            {diff >= 0 ? '▲' : '▼'} {diff >= 0 ? '+' : ''}
+            {diff.toFixed(0)} pg/mL
+            <span className="ml-2">
+              ({pct >= 0 ? '+' : ''}
+              {pct.toFixed(1)}%)
+            </span>
             <span className="ml-2 font-normal">ใน {months} เดือน</span>
           </div>
           <div className="mt-0.5 text-gray-500">
-            {pct >= 50 ? '⚠️ iPTH เพิ่มมาก — พิจารณาเพิ่ม/เริ่ม active VitD หรือ Cinacalcet'
-              : pct >= 20 ? 'iPTH มีแนวโน้มสูงขึ้น — ติดตามใกล้ชิด'
-              : pct <= -30 ? 'iPTH ลดลงดี — monitor ไม่ให้ต่ำเกิน'
-              : 'iPTH ค่อนข้างคงที่'}
+            {pct >= 50
+              ? '⚠️ iPTH เพิ่มมาก — พิจารณาเพิ่ม/เริ่ม active VitD หรือ Cinacalcet'
+              : pct >= 20
+                ? 'iPTH มีแนวโน้มสูงขึ้น — ติดตามใกล้ชิด'
+                : pct <= -30
+                  ? 'iPTH ลดลงดี — monitor ไม่ให้ต่ำเกิน'
+                  : 'iPTH ค่อนข้างคงที่'}
           </div>
         </div>
       )}
@@ -552,7 +598,7 @@ function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPr
 // eGFR trend — compare current กับ eGFR เดิม + คำนวณ % drop + rate/yr
 // ============================================================
 const MONTH_PRESETS = [1, 3, 6, 12, 24]
-const DAY_PRESETS   = [7, 14, 30, 60, 90]
+const DAY_PRESETS = [7, 14, 30, 60, 90]
 
 function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, onEgfrPrevMonths }) {
   const [unit, setUnit] = useState('เดือน') // 'เดือน' | 'วัน'
@@ -560,8 +606,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
   // แปลง rawEgfrPrevMonths (เก็บเป็น months เสมอ) → ค่าที่แสดงตาม unit ปัจจุบัน
   const displayTimeVal = useMemo(() => {
     if (rawEgfrPrevMonths === '' || rawEgfrPrevMonths == null) return ''
-    const m = parseFloat(rawEgfrPrevMonths)
-    if (isNaN(m)) return rawEgfrPrevMonths
+    const m = Number.parseFloat(rawEgfrPrevMonths)
+    if (Number.isNaN(m)) return rawEgfrPrevMonths
     if (unit === 'วัน') return String(Math.round(m * 30.44))
     return rawEgfrPrevMonths
   }, [rawEgfrPrevMonths, unit])
@@ -569,8 +615,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
   // user พิมพ์ → แปลงเป็น months แล้วส่งขึ้น parent
   const handleTimeInput = (val) => {
     if (unit === 'วัน') {
-      const days = parseFloat(val)
-      onEgfrPrevMonths(val === '' ? '' : !isNaN(days) ? String(days / 30.44) : val)
+      const days = Number.parseFloat(val)
+      onEgfrPrevMonths(val === '' ? '' : !Number.isNaN(days) ? String(days / 30.44) : val)
     } else {
       onEgfrPrevMonths(val)
     }
@@ -587,8 +633,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
 
   // เช็คว่า preset ตรงกับค่าปัจจุบันไหม
   const isPresetActive = (v) => {
-    const m = parseFloat(rawEgfrPrevMonths)
-    if (isNaN(m)) return false
+    const m = Number.parseFloat(rawEgfrPrevMonths)
+    if (Number.isNaN(m)) return false
     if (unit === 'วัน') return Math.round(m * 30.44) === v
     return m === v
   }
@@ -596,8 +642,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
   // สลับ unit — แปลงค่าที่ค้างอยู่
   const switchUnit = (newUnit) => {
     if (newUnit === unit) return
-    const m = parseFloat(rawEgfrPrevMonths)
-    if (!isNaN(m) && m > 0) {
+    const m = Number.parseFloat(rawEgfrPrevMonths)
+    if (!Number.isNaN(m) && m > 0) {
       if (newUnit === 'วัน') {
         // เปลี่ยนจาก เดือน → วัน: ค่า months ไม่เปลี่ยน แค่ display เปลี่ยน
       } else {
@@ -607,10 +653,11 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
     setUnit(newUnit)
   }
 
-  const cur = parseFloat(egfrCurrent)
-  const prev = parseFloat(rawEgfrPrev)
-  const months = parseFloat(rawEgfrPrevMonths)
-  const valid = !isNaN(cur) && !isNaN(prev) && prev > 0 && !isNaN(months) && months > 0
+  const cur = Number.parseFloat(egfrCurrent)
+  const prev = Number.parseFloat(rawEgfrPrev)
+  const months = Number.parseFloat(rawEgfrPrevMonths)
+  const valid =
+    !Number.isNaN(cur) && !Number.isNaN(prev) && prev > 0 && !Number.isNaN(months) && months > 0
   const diff = valid ? cur - prev : null
   const pct = valid ? (diff / prev) * 100 : null
   const ratePerYear = valid ? (diff / months) * 12 : null
@@ -622,7 +669,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
     else if (pct >= 0) tone = 'bg-green-50 border-green-200 text-green-800'
   }
 
-  const inpSmall = 'w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
+  const inpSmall =
+    'w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-center bg-white'
   const presets = unit === 'วัน' ? DAY_PRESETS : MONTH_PRESETS
 
   return (
@@ -637,7 +685,7 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
             type="text"
             inputMode="decimal"
             value={rawEgfrPrev}
-            onChange={e => onEgfrPrev(e.target.value)}
+            onChange={(e) => onEgfrPrev(e.target.value)}
             placeholder="35"
             className={inpSmall}
           />
@@ -645,13 +693,15 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
         <div>
           {/* unit toggle */}
           <div className="flex justify-center gap-1 mb-1">
-            {['เดือน', 'วัน'].map(u => (
+            {['เดือน', 'วัน'].map((u) => (
               <button
                 key={u}
                 type="button"
                 onClick={() => switchUnit(u)}
                 className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
-                  unit === u ? 'bg-teal-600 text-white border-teal-600' : 'text-gray-500 border-gray-300 bg-white'
+                  unit === u
+                    ? 'bg-teal-600 text-white border-teal-600'
+                    : 'text-gray-500 border-gray-300 bg-white'
                 }`}
               >
                 {u}
@@ -665,14 +715,14 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
             type="text"
             inputMode="decimal"
             value={displayTimeVal}
-            onChange={e => handleTimeInput(e.target.value)}
+            onChange={(e) => handleTimeInput(e.target.value)}
             placeholder={unit === 'วัน' ? '15' : '3'}
             className={inpSmall}
           />
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5 mt-2">
-        {presets.map(v => (
+        {presets.map((v) => (
           <button
             key={v}
             type="button"
@@ -690,11 +740,16 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
       {valid && (
         <div className={`mt-3 rounded-xl border px-3 py-2 text-xs ${tone}`}>
           <div className="font-semibold">
-            {diff >= 0 ? '▲' : '▼'} {diff >= 0 ? '+' : ''}{diff.toFixed(1)} mL/min
-            <span className="ml-2">({pct >= 0 ? '+' : ''}{pct.toFixed(1)}%)</span>
+            {diff >= 0 ? '▲' : '▼'} {diff >= 0 ? '+' : ''}
+            {diff.toFixed(1)} mL/min
+            <span className="ml-2">
+              ({pct >= 0 ? '+' : ''}
+              {pct.toFixed(1)}%)
+            </span>
           </div>
           <div className="mt-0.5">
-            Rate: {ratePerYear >= 0 ? '+' : ''}{ratePerYear.toFixed(1)} mL/min/ปี
+            Rate: {ratePerYear >= 0 ? '+' : ''}
+            {ratePerYear.toFixed(1)} mL/min/ปี
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
-import { getCKDStage, getLatestLabEntry } from '../storage'
+import { useRef, useState } from 'react'
 import { searchMedications } from '../medicationDatabase'
+import { getCKDStage, getLatestLabEntry } from '../storage'
 
 const PATIENT_STATUSES = [
   { id: 'CKD', label: 'CKD' },
@@ -9,34 +9,83 @@ const PATIENT_STATUSES = [
   { id: 'KT', label: 'KT' },
 ]
 
-const ESRD_CAUSES = ['DKD', 'CGN', 'PKD', 'Obstructive uropathy', 'Hypertensive nephrosclerosis', 'SLE nephritis', 'Unknown', 'อื่น ๆ']
+const ESRD_CAUSES = [
+  'DKD',
+  'CGN',
+  'PKD',
+  'Obstructive uropathy',
+  'Hypertensive nephrosclerosis',
+  'SLE nephritis',
+  'Unknown',
+  'อื่น ๆ',
+]
 const VASCULAR_ACCESS_TYPES = ['AVF', 'AVG', 'Perm cath', 'DLC (Dual-lumen catheter)']
 const COMMON_CONDITIONS = [
-  'DM type 2', 'DM type 1', 'Hypertension',
-  'CAD s/p PCI', 'CAD s/p CABG', 'CAD (stable)',
-  'CVA (ischemic)', 'CVA (hemorrhagic)',
-  'Heart failure (HFrEF)', 'Heart failure (HFpEF)',
-  'AF', 'Dyslipidemia', 'Gout', 'SLE', 'PKD',
-  'Hepatitis B', 'Hepatitis C', 'HIV',
+  'DM type 2',
+  'DM type 1',
+  'Hypertension',
+  'CAD s/p PCI',
+  'CAD s/p CABG',
+  'CAD (stable)',
+  'CVA (ischemic)',
+  'CVA (hemorrhagic)',
+  'Heart failure (HFrEF)',
+  'Heart failure (HFpEF)',
+  'AF',
+  'Dyslipidemia',
+  'Gout',
+  'SLE',
+  'PKD',
+  'Hepatitis B',
+  'Hepatitis C',
+  'HIV',
 ]
 
 // ฐานโรคสำหรับ autocomplete (รวม COMMON_CONDITIONS + เพิ่มโรคที่เจอบ่อยในคลินิกไต)
 const CONDITION_SUGGESTIONS = [
   ...COMMON_CONDITIONS,
-  'Alzheimer\'s disease', 'Parkinson\'s disease', 'Dementia',
-  'Asthma', 'COPD', 'OSA', 'Pulmonary TB', 'Pulmonary hemorrhage',
-  'Thyroid cancer', 'Breast cancer', 'Lung cancer', 'Colorectal cancer',
-  'Hepatocellular carcinoma (HCC)', 'Renal cell carcinoma (RCC)',
-  'Multiple myeloma', 'Lymphoma', 'Leukemia',
-  'Rheumatoid arthritis', 'Sjogren syndrome', 'Psoriasis', 'Vasculitis',
-  'Autoimmune hepatitis', 'Autoimmune thyroiditis', 'ITP',
-  'IgA nephropathy', 'FSGS', 'Membranous nephropathy', 'Lupus nephritis',
-  'Diabetic retinopathy', 'Diabetic neuropathy',
-  'Osteoporosis', 'Osteoarthritis',
-  'GERD', 'Peptic ulcer disease',
-  'Depression', 'Anxiety disorder', 'Insomnia',
-  'BPH', 'UTI (recurrent)', 'Nephrolithiasis',
-  'Anemia of CKD', 'Iron deficiency anemia',
+  "Alzheimer's disease",
+  "Parkinson's disease",
+  'Dementia',
+  'Asthma',
+  'COPD',
+  'OSA',
+  'Pulmonary TB',
+  'Pulmonary hemorrhage',
+  'Thyroid cancer',
+  'Breast cancer',
+  'Lung cancer',
+  'Colorectal cancer',
+  'Hepatocellular carcinoma (HCC)',
+  'Renal cell carcinoma (RCC)',
+  'Multiple myeloma',
+  'Lymphoma',
+  'Leukemia',
+  'Rheumatoid arthritis',
+  'Sjogren syndrome',
+  'Psoriasis',
+  'Vasculitis',
+  'Autoimmune hepatitis',
+  'Autoimmune thyroiditis',
+  'ITP',
+  'IgA nephropathy',
+  'FSGS',
+  'Membranous nephropathy',
+  'Lupus nephritis',
+  'Diabetic retinopathy',
+  'Diabetic neuropathy',
+  'Osteoporosis',
+  'Osteoarthritis',
+  'GERD',
+  'Peptic ulcer disease',
+  'Depression',
+  'Anxiety disorder',
+  'Insomnia',
+  'BPH',
+  'UTI (recurrent)',
+  'Nephrolithiasis',
+  'Anemia of CKD',
+  'Iron deficiency anemia',
 ]
 
 export default function InfoTab({ patient, onUpdate }) {
@@ -54,20 +103,24 @@ export default function InfoTab({ patient, onUpdate }) {
     return JSON.parse(JSON.stringify(p))
   }
 
-  const set = (key, value) => setForm(f => ({ ...f, [key]: value }))
-  const setAccess = (key, value) => setForm(f => ({
-    ...f,
-    vascular_access: { ...(f.vascular_access || {}), [key]: value }
-  }))
+  const set = (key, value) => setForm((f) => ({ ...f, [key]: value }))
+  const setAccess = (key, value) =>
+    setForm((f) => ({
+      ...f,
+      vascular_access: { ...(f.vascular_access || {}), [key]: value },
+    }))
 
   const handleConditionInput = (val) => {
     setNewCondition(val)
     const q = val.trim().toLowerCase()
-    if (q.length < 2) { setConditionSuggestions([]); return }
-    const already = new Set((form.conditions || []).map(c => c.name.toLowerCase()))
-    const results = CONDITION_SUGGESTIONS
-      .filter(c => c.toLowerCase().includes(q) && !already.has(c.toLowerCase()))
-      .slice(0, 6)
+    if (q.length < 2) {
+      setConditionSuggestions([])
+      return
+    }
+    const already = new Set((form.conditions || []).map((c) => c.name.toLowerCase()))
+    const results = CONDITION_SUGGESTIONS.filter(
+      (c) => c.toLowerCase().includes(q) && !already.has(c.toLowerCase())
+    ).slice(0, 6)
     setConditionSuggestions(results)
   }
 
@@ -76,9 +129,9 @@ export default function InfoTab({ patient, onUpdate }) {
     const fromRef = conditionInputRef.current?.value || ''
     const n = (name || newCondition || fromRef).trim()
     if (!n) return
-    setForm(f => ({
+    setForm((f) => ({
       ...f,
-      conditions: [...(f.conditions || []), { name: n, since: conditionSince.trim() }]
+      conditions: [...(f.conditions || []), { name: n, since: conditionSince.trim() }],
     }))
     setNewCondition('')
     setConditionSince('')
@@ -87,7 +140,7 @@ export default function InfoTab({ patient, onUpdate }) {
   }
 
   const removeCondition = (i) => {
-    setForm(f => ({ ...f, conditions: f.conditions.filter((_, idx) => idx !== i) }))
+    setForm((f) => ({ ...f, conditions: f.conditions.filter((_, idx) => idx !== i) }))
   }
 
   const handleAllergyInput = (val) => {
@@ -99,14 +152,14 @@ export default function InfoTab({ patient, onUpdate }) {
     const fromRef = allergyInputRef.current?.value || ''
     const a = (name || newAllergy || fromRef).trim()
     if (!a) return
-    setForm(f => ({ ...f, allergies: [...(f.allergies || []), a] }))
+    setForm((f) => ({ ...f, allergies: [...(f.allergies || []), a] }))
     setNewAllergy('')
     setAllergySuggestions([])
     if (allergyInputRef.current) allergyInputRef.current.value = ''
   }
 
   const removeAllergy = (i) => {
-    setForm(f => ({ ...f, allergies: f.allergies.filter((_, idx) => idx !== i) }))
+    setForm((f) => ({ ...f, allergies: f.allergies.filter((_, idx) => idx !== i) }))
   }
 
   const save = () => {
@@ -129,12 +182,17 @@ export default function InfoTab({ patient, onUpdate }) {
       <div className="p-4 space-y-4">
         {/* Status badge */}
         <div className="flex items-center gap-2">
-          <span className={`text-sm font-bold px-3 py-1 rounded-full ${
-            patient.status === 'HD' ? 'bg-blue-100 text-blue-800' :
-            patient.status === 'PD' ? 'bg-purple-100 text-purple-800' :
-            patient.status === 'KT' ? 'bg-green-100 text-green-800' :
-            'bg-orange-100 text-orange-800'
-          }`}>
+          <span
+            className={`text-sm font-bold px-3 py-1 rounded-full ${
+              patient.status === 'HD'
+                ? 'bg-blue-100 text-blue-800'
+                : patient.status === 'PD'
+                  ? 'bg-purple-100 text-purple-800'
+                  : patient.status === 'KT'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-orange-100 text-orange-800'
+            }`}
+          >
             {patient.status || 'HD'}
           </span>
           {ckdStage && (
@@ -151,7 +209,10 @@ export default function InfoTab({ patient, onUpdate }) {
           <Row label="HN" value={patient.hn || '—'} />
           <Row label="น้ำหนัก" value={patient.weight_kg ? `${patient.weight_kg} kg` : '—'} />
           <Row label="ส่วนสูง" value={patient.height_cm ? `${patient.height_cm} cm` : '—'} />
-          <Row label="Dry weight" value={patient.dry_weight_kg ? `${patient.dry_weight_kg} kg` : '—'} />
+          <Row
+            label="Dry weight"
+            value={patient.dry_weight_kg ? `${patient.dry_weight_kg} kg` : '—'}
+          />
           <Row label="เริ่ม HD" value={patient.hd_start_date || '—'} />
           <Row label="สาเหตุ ESRD" value={patient.esrd_cause || '—'} />
         </Section>
@@ -162,13 +223,17 @@ export default function InfoTab({ patient, onUpdate }) {
         </Section>
 
         <Section title="โรคประจำตัว">
-          {(!patient.conditions || patient.conditions.length === 0) ? (
+          {!patient.conditions || patient.conditions.length === 0 ? (
             <p className="text-sm text-gray-400">—</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {patient.conditions.map((c, i) => (
-                <span key={i} className="bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full">
-                  {c.name}{c.since ? ` (${c.since})` : ''}
+                <span
+                  key={i}
+                  className="bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full"
+                >
+                  {c.name}
+                  {c.since ? ` (${c.since})` : ''}
                 </span>
               ))}
             </div>
@@ -176,12 +241,15 @@ export default function InfoTab({ patient, onUpdate }) {
         </Section>
 
         <Section title="Allergy ยา">
-          {(!patient.allergies || patient.allergies.length === 0) ? (
+          {!patient.allergies || patient.allergies.length === 0 ? (
             <p className="text-sm text-gray-400">ไม่มี allergy</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {patient.allergies.map((a, i) => (
-                <span key={i} className="bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full">
+                <span
+                  key={i}
+                  className="bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
+                >
                   ⚠️ {a}
                 </span>
               ))}
@@ -205,17 +273,20 @@ export default function InfoTab({ patient, onUpdate }) {
       <FormCard title="ข้อมูลพื้นฐาน">
         <Field label="สถานะคนไข้">
           <div className="flex gap-2">
-            {PATIENT_STATUSES.map(s => (
+            {PATIENT_STATUSES.map((s) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => set('status', s.id)}
                 className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
                   form.status === s.id
-                    ? s.id === 'HD' ? 'bg-blue-600 text-white border-blue-600'
-                      : s.id === 'PD' ? 'bg-purple-600 text-white border-purple-600'
-                      : s.id === 'KT' ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-orange-500 text-white border-orange-500'
+                    ? s.id === 'HD'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : s.id === 'PD'
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : s.id === 'KT'
+                          ? 'bg-green-600 text-white border-green-600'
+                          : 'bg-orange-500 text-white border-orange-500'
                     : 'text-gray-600 border-gray-300 bg-white'
                 }`}
               >
@@ -225,34 +296,72 @@ export default function InfoTab({ patient, onUpdate }) {
           </div>
         </Field>
         <Field label="ชื่อ / ชื่อเล่น">
-          <input className={input} value={form.name} onChange={e => set('name', e.target.value)} placeholder="ชื่อคนไข้" />
+          <input
+            className={input}
+            value={form.name}
+            onChange={(e) => set('name', e.target.value)}
+            placeholder="ชื่อคนไข้"
+          />
         </Field>
         <Field label="HN (ไม่บังคับ)">
-          <input className={input} value={form.hn} onChange={e => set('hn', e.target.value)} placeholder="เลข HN" />
+          <input
+            className={input}
+            value={form.hn}
+            onChange={(e) => set('hn', e.target.value)}
+            placeholder="เลข HN"
+          />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="น้ำหนัก (kg)">
-            <input className={input} type="text" inputMode="decimal" value={form.weight_kg ?? ''} onChange={e => set('weight_kg', e.target.value)} placeholder="60" />
+            <input
+              className={input}
+              type="text"
+              inputMode="decimal"
+              value={form.weight_kg ?? ''}
+              onChange={(e) => set('weight_kg', e.target.value)}
+              placeholder="60"
+            />
           </Field>
           <Field label="ส่วนสูง (cm)">
-            <input className={input} type="text" inputMode="decimal" value={form.height_cm ?? ''} onChange={e => set('height_cm', e.target.value)} placeholder="165" />
+            <input
+              className={input}
+              type="text"
+              inputMode="decimal"
+              value={form.height_cm ?? ''}
+              onChange={(e) => set('height_cm', e.target.value)}
+              placeholder="165"
+            />
           </Field>
         </div>
         <Field label="Dry weight (kg)">
-          <input className={input} type="text" inputMode="decimal" value={form.dry_weight_kg ?? ''} onChange={e => set('dry_weight_kg', e.target.value)} placeholder="58" />
+          <input
+            className={input}
+            type="text"
+            inputMode="decimal"
+            value={form.dry_weight_kg ?? ''}
+            onChange={(e) => set('dry_weight_kg', e.target.value)}
+            placeholder="58"
+          />
         </Field>
         <Field label="วันเริ่ม HD">
-          <input className={input} value={form.hd_start_date} onChange={e => set('hd_start_date', e.target.value)} placeholder="เช่น 2020-06 หรือ 2563" />
+          <input
+            className={input}
+            value={form.hd_start_date}
+            onChange={(e) => set('hd_start_date', e.target.value)}
+            placeholder="เช่น 2020-06 หรือ 2563"
+          />
         </Field>
         <Field label="สาเหตุ ESRD">
           <div className="flex flex-wrap gap-1.5 mb-2">
-            {ESRD_CAUSES.map(c => (
+            {ESRD_CAUSES.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => set('esrd_cause', form.esrd_cause === c ? '' : c)}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                  form.esrd_cause === c ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+                  form.esrd_cause === c
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'text-gray-600 border-gray-300'
                 }`}
               >
                 {c}
@@ -262,7 +371,7 @@ export default function InfoTab({ patient, onUpdate }) {
           <input
             className={input}
             value={form.esrd_cause || ''}
-            onChange={e => set('esrd_cause', e.target.value)}
+            onChange={(e) => set('esrd_cause', e.target.value)}
             placeholder="หรือพิมพ์เพิ่ม..."
           />
         </Field>
@@ -271,13 +380,15 @@ export default function InfoTab({ patient, onUpdate }) {
       <FormCard title="Vascular Access">
         <Field label="ชนิด">
           <div className="flex flex-wrap gap-1.5">
-            {VASCULAR_ACCESS_TYPES.map(t => (
+            {VASCULAR_ACCESS_TYPES.map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setAccess('type', form.vascular_access?.type === t ? '' : t)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  form.vascular_access?.type === t ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+                  form.vascular_access?.type === t
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'text-gray-600 border-gray-300'
                 }`}
               >
                 {t}
@@ -286,7 +397,12 @@ export default function InfoTab({ patient, onUpdate }) {
           </div>
         </Field>
         <Field label="วันที่สร้าง">
-          <input className={input} value={form.vascular_access?.created_date || ''} onChange={e => setAccess('created_date', e.target.value)} placeholder="เช่น 2022-03" />
+          <input
+            className={input}
+            value={form.vascular_access?.created_date || ''}
+            onChange={(e) => setAccess('created_date', e.target.value)}
+            placeholder="เช่น 2022-03"
+          />
         </Field>
       </FormCard>
 
@@ -295,27 +411,34 @@ export default function InfoTab({ patient, onUpdate }) {
         {form.conditions?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {form.conditions.map((c, i) => (
-              <span key={i} className="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full">
-                {c.name}{c.since ? ` (${c.since})` : ''}
-                <button onClick={() => removeCondition(i)} className="text-blue-400 hover:text-red-500 ml-0.5">✕</button>
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full"
+              >
+                {c.name}
+                {c.since ? ` (${c.since})` : ''}
+                <button
+                  onClick={() => removeCondition(i)}
+                  className="text-blue-400 hover:text-red-500 ml-0.5"
+                >
+                  ✕
+                </button>
               </span>
             ))}
           </div>
         )}
         {/* Common list */}
         <div className="flex flex-wrap gap-1.5 mb-3">
-          {COMMON_CONDITIONS
-            .filter(c => !form.conditions?.some(x => x.name === c))
-            .map(c => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => addCondition(c)}
-                className="text-xs px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 active:bg-blue-50"
-              >
-                + {c}
-              </button>
-            ))}
+          {COMMON_CONDITIONS.filter((c) => !form.conditions?.some((x) => x.name === c)).map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => addCondition(c)}
+              className="text-xs px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 active:bg-blue-50"
+            >
+              + {c}
+            </button>
+          ))}
         </div>
         {/* Free text + since + autocomplete */}
         <div className="relative">
@@ -324,20 +447,20 @@ export default function InfoTab({ patient, onUpdate }) {
               ref={conditionInputRef}
               className={`${input} flex-1`}
               value={newCondition}
-              onChange={e => handleConditionInput(e.target.value)}
+              onChange={(e) => handleConditionInput(e.target.value)}
               placeholder="พิมพ์โรคเพิ่ม..."
-              onKeyDown={e => e.key === 'Enter' && addCondition()}
+              onKeyDown={(e) => e.key === 'Enter' && addCondition()}
               onBlur={() => setTimeout(() => setConditionSuggestions([]), 150)}
             />
             <input
               className={`${input} w-20`}
               value={conditionSince}
-              onChange={e => setConditionSince(e.target.value)}
+              onChange={(e) => setConditionSince(e.target.value)}
               placeholder="ปี..."
             />
             <button
               type="button"
-              onMouseDown={e => e.preventDefault()}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => addCondition()}
               className="bg-blue-600 text-white px-3 rounded-xl text-sm shrink-0 active:bg-blue-700"
             >
@@ -350,7 +473,10 @@ export default function InfoTab({ patient, onUpdate }) {
                 <button
                   key={i}
                   type="button"
-                  onMouseDown={e => { e.preventDefault(); addCondition(c) }}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    addCondition(c)
+                  }}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
                 >
                   {c}
@@ -370,9 +496,17 @@ export default function InfoTab({ patient, onUpdate }) {
         {form.allergies?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {form.allergies.map((a, i) => (
-              <span key={i} className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full">
+              <span
+                key={i}
+                className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
+              >
                 ⚠️ {a}
-                <button onClick={() => removeAllergy(i)} className="text-red-400 hover:text-red-600 ml-0.5">✕</button>
+                <button
+                  onClick={() => removeAllergy(i)}
+                  className="text-red-400 hover:text-red-600 ml-0.5"
+                >
+                  ✕
+                </button>
               </span>
             ))}
           </div>
@@ -383,9 +517,9 @@ export default function InfoTab({ patient, onUpdate }) {
               ref={allergyInputRef}
               className={`${input} flex-1`}
               value={newAllergy}
-              onChange={e => handleAllergyInput(e.target.value)}
+              onChange={(e) => handleAllergyInput(e.target.value)}
               placeholder="พิมพ์ชื่อยา เช่น amlo, voltaren..."
-              onKeyDown={e => e.key === 'Enter' && addAllergy()}
+              onKeyDown={(e) => e.key === 'Enter' && addAllergy()}
               onBlur={() => setTimeout(() => setAllergySuggestions([]), 150)}
               autoCorrect="off"
               autoCapitalize="none"
@@ -393,7 +527,7 @@ export default function InfoTab({ patient, onUpdate }) {
             />
             <button
               type="button"
-              onMouseDown={e => e.preventDefault()}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => addAllergy()}
               className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0 active:bg-red-600"
             >
@@ -420,10 +554,16 @@ export default function InfoTab({ patient, onUpdate }) {
 
       {/* Save / Cancel */}
       <div className="flex gap-2 pb-8">
-        <button onClick={save} className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium">
+        <button
+          onClick={save}
+          className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium"
+        >
           บันทึก
         </button>
-        <button onClick={cancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">
+        <button
+          onClick={cancel}
+          className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
+        >
           ยกเลิก
         </button>
       </div>
@@ -432,7 +572,8 @@ export default function InfoTab({ patient, onUpdate }) {
 }
 
 // ---- sub-components ----
-const input = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white'
+const input =
+  'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white'
 
 function Section({ title, children, onEdit }) {
   return (
@@ -440,7 +581,9 @@ function Section({ title, children, onEdit }) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
         <h3 className="font-semibold text-sm text-gray-700">{title}</h3>
         {onEdit && (
-          <button onClick={onEdit} className="text-xs text-blue-500">แก้ไข</button>
+          <button onClick={onEdit} className="text-xs text-blue-500">
+            แก้ไข
+          </button>
         )}
       </div>
       <div className="px-4 py-3">{children}</div>

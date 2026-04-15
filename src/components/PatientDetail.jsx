@@ -1,9 +1,9 @@
 import { useState } from 'react'
+import ChatTab from './ChatTab'
 import InfoTab from './InfoTab'
 import LabTab from './LabTab'
 import MedTab from './MedTab'
 import RecommendationTab from './RecommendationTab'
-import ChatTab from './ChatTab'
 
 const TABS = [
   { id: 'rec', label: '📋 Rec', title: 'Recommendation' },
@@ -17,7 +17,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
   const [tab, setTab] = useState('rec')
   const [showMenu, setShowMenu] = useState(false)
 
-  const activeTab = TABS.find(t => t.id === tab)
+  const _activeTab = TABS.find((t) => t.id === tab)
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -29,14 +29,14 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
         <div className="max-w-lg mx-auto">
           {/* Top row */}
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">←</button>
+            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+              ←
+            </button>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-base leading-tight truncate">
                 {patient.name || '(ไม่มีชื่อ)'}
               </div>
-              {patient.hn && (
-                <div className="text-xs text-blue-200">HN: {patient.hn}</div>
-              )}
+              {patient.hn && <div className="text-xs text-blue-200">HN: {patient.hn}</div>}
             </div>
             <div className="relative">
               <button
@@ -50,13 +50,19 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                   <div className="absolute right-0 top-9 bg-white text-gray-800 rounded-xl shadow-lg border border-gray-100 z-20 min-w-36 overflow-hidden">
                     <button
-                      onClick={() => { setShowMenu(false); setTab('info') }}
+                      onClick={() => {
+                        setShowMenu(false)
+                        setTab('info')
+                      }}
                       className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50"
                     >
                       ✏️ แก้ไขข้อมูล
                     </button>
                     <button
-                      onClick={() => { setShowMenu(false); onDelete() }}
+                      onClick={() => {
+                        setShowMenu(false)
+                        onDelete()
+                      }}
                       className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50"
                     >
                       🗑️ ลบคนไข้
@@ -69,7 +75,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
 
           {/* Tab bar */}
           <div className="flex gap-0 -mx-4 px-2 overflow-x-auto scrollbar-hide">
-            {TABS.map(t => (
+            {TABS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
@@ -98,8 +104,8 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
       {/* Disclaimer footer */}
       <div className="max-w-lg mx-auto w-full px-4 py-3 border-t border-gray-100 bg-gray-50">
         <p className="text-xs text-gray-400 text-center leading-relaxed">
-          ⚕️ <span className="font-medium text-gray-500">Clinical Decision Support เท่านั้น</span>
-          {' '}— ข้อมูลนี้ไม่ใช่คำสั่งการรักษา แพทย์ต้องใช้วิจารณญาณทางคลินิกและยืนยันก่อนสั่งยาหรือปรับการรักษาทุกครั้ง
+          ⚕️ <span className="font-medium text-gray-500">Clinical Decision Support เท่านั้น</span> —
+          ข้อมูลนี้ไม่ใช่คำสั่งการรักษา แพทย์ต้องใช้วิจารณญาณทางคลินิกและยืนยันก่อนสั่งยาหรือปรับการรักษาทุกครั้ง
         </p>
       </div>
     </div>

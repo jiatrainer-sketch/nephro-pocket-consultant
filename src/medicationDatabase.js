@@ -1,3 +1,19 @@
+/**
+ * Drug reference database.
+ *
+ * Required fields:
+ *   - name      (string)  display name incl. brand
+ *   - generic   (string)  generic name
+ *   - category  (string)  'HD' | 'CV' | 'DM' | 'Other'
+ *
+ * Optional fields (added ONLY after human medical review — see tracking Issue):
+ *   - dosage        (string)  short reference dose, renal-adjusted where relevant
+ *   - source        (string)  citation, e.g. "UpToDate 2026 / KDIGO 2024 §3.2"
+ *   - lastReviewed  (string)  ISO date YYYY-MM-DD of last medical review
+ *
+ * SAFETY: never auto-generate `dosage` / `source`. A physician must review and
+ * sign off per drug in the tracking Issue before the field is added here.
+ */
 export const MEDICATIONS = [
   // === HD หลัก ===
   { name: 'EPO (Recormon)', generic: 'Epoetin beta', category: 'HD' },
@@ -127,9 +143,7 @@ export function searchMedications(query) {
   if (!query || query.trim().length < 1) return []
   const q = query.toLowerCase()
   return MEDICATIONS.filter(
-    m =>
-      m.name.toLowerCase().includes(q) ||
-      m.generic.toLowerCase().includes(q)
+    (m) => m.name.toLowerCase().includes(q) || m.generic.toLowerCase().includes(q)
   ).slice(0, 8)
 }
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const MODEL = 'claude-sonnet-4-6'
 
@@ -8,15 +8,19 @@ function buildSystemPrompt(patient) {
         .slice()
         .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
         .slice(0, 3)
-        .map(l => `  - ${l.date || 'ไม่ระบุวันที่'}: ${JSON.stringify(l.values)}`)
+        .map((l) => `  - ${l.date || 'ไม่ระบุวันที่'}: ${JSON.stringify(l.values)}`)
         .join('\n')
     : '  ไม่มีข้อมูล lab'
 
   const meds = patient.medications?.length
-    ? patient.medications.map(m => `  - ${m.name} ${m.dose} ${m.frequency} ${m.timing}`).join('\n')
+    ? patient.medications
+        .map((m) => `  - ${m.name} ${m.dose} ${m.frequency} ${m.timing}`)
+        .join('\n')
     : '  ไม่มีข้อมูล'
 
-  const conditions = patient.conditions?.map(c => c.name + (c.since ? ` (since ${c.since})` : '')).join(', ') || 'ไม่มีข้อมูล'
+  const conditions =
+    patient.conditions?.map((c) => c.name + (c.since ? ` (since ${c.since})` : '')).join(', ') ||
+    'ไม่มีข้อมูล'
   const allergies = patient.allergies?.join(', ') || 'ไม่มี'
 
   return `คุณคือ Nephrology Clinical Consultant สำหรับ nephrologist ไทย
@@ -88,7 +92,7 @@ export default function ChatTab({ patient, settings }) {
           max_tokens: 2048,
           stream: true,
           system: buildSystemPrompt(patient),
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
         }),
       })
 
@@ -98,7 +102,7 @@ export default function ChatTab({ patient, settings }) {
       }
 
       // Add empty placeholder for streaming text
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }])
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
       setLoading(false)
 
       const reader = res.body.getReader()
@@ -122,7 +126,7 @@ export default function ChatTab({ patient, settings }) {
             const parsed = JSON.parse(data)
             if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
               fullText += parsed.delta.text
-              setMessages(prev => {
+              setMessages((prev) => {
                 const updated = [...prev]
                 updated[updated.length - 1] = { role: 'assistant', content: fullText }
                 return updated
@@ -149,14 +153,12 @@ export default function ChatTab({ patient, settings }) {
             <p className="text-sm font-medium">AI Nephrology Consultant</p>
             <p className="text-xs mt-1">ถามได้ทุกเรื่องที่เกี่ยวกับคนไข้รายนี้</p>
             <div className="mt-4 space-y-2">
-              {[
-                'ควรปรับ EPO เท่าไหร่?',
-                'iPTH สูง ทำยังไงดี?',
-                'มี drug interaction ไหม?',
-              ].map(q => (
+              {['ควรปรับ EPO เท่าไหร่?', 'iPTH สูง ทำยังไงดี?', 'มี drug interaction ไหม?'].map((q) => (
                 <button
                   key={q}
-                  onClick={() => { setInput(q) }}
+                  onClick={() => {
+                    setInput(q)
+                  }}
                   className="block w-full text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-xl border border-blue-100 text-left"
                 >
                   {q}
@@ -177,9 +179,12 @@ export default function ChatTab({ patient, settings }) {
             >
               {msg.content}
               {/* Blinking cursor while streaming */}
-              {msg.role === 'assistant' && i === messages.length - 1 && !loading && msg.content === '' && (
-                <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse rounded-sm" />
-              )}
+              {msg.role === 'assistant' &&
+                i === messages.length - 1 &&
+                !loading &&
+                msg.content === '' && (
+                  <span className="inline-block w-2 h-4 bg-gray-400 ml-0.5 animate-pulse rounded-sm" />
+                )}
             </div>
           </div>
         ))}
@@ -188,9 +193,18 @@ export default function ChatTab({ patient, settings }) {
           <div className="flex justify-start">
             <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-md px-4 py-3">
               <div className="flex gap-1 items-center">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
+                <span
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                />
+                <span
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '300ms' }}
+                />
               </div>
             </div>
           </div>
@@ -206,8 +220,10 @@ export default function ChatTab({ patient, settings }) {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-4 pt-2 border-t border-gray-100 bg-gray-50"
-        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+      <div
+        className="px-4 pb-4 pt-2 border-t border-gray-100 bg-gray-50"
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+      >
         {!settings?.apiKey && (
           <p className="text-xs text-orange-600 mb-2 text-center">
             ⚠️ ยังไม่ได้ตั้ง API Key — ไปที่ ⚙️ ตั้งค่า
@@ -217,8 +233,8 @@ export default function ChatTab({ patient, settings }) {
           <textarea
             ref={inputRef}
             value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => {
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
                 send()
