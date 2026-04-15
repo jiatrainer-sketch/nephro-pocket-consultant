@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PatientDetail from './components/PatientDetail'
 import QuickMode from './components/QuickMode'
 import { hasAbnormal, hasCritical } from './recommendations'
 import {
   createEmptyPatient,
+  exportAllData,
   generateId,
   getCKDStage,
   getLatestLabEntry,
+  getStorageInfo,
+  importAllData,
   isLabOutdated,
   loadPatients,
   loadSettings,
@@ -108,6 +111,7 @@ export default function App() {
           setView('list')
         }}
         onBack={() => setView('list')}
+        onDataRestored={() => setPatients(loadPatients())}
       />
     )
   }
@@ -337,8 +341,57 @@ function PatientCard({ patient, onClick }) {
 // ============================================================
 // Settings View
 // ============================================================
-function SettingsView({ settings, onSave, onBack }) {
+function SettingsView({ settings, onSave, onBack, onDataRestored }) {
   const [apiKey, setApiKey] = useState(settings.apiKey || '')
+  const [storage, setStorage] = useState(null)
+  const [restoreMsg, setRestoreMsg] = useState('')
+  const fileRef = useRef(null)
+
+  useEffect(() => {
+    getStorageInfo().then(setStorage)
+  }, [])
+
+  const handleDownload = () => {
+    const json = exportAllData()
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const date = new Date().toISOString().slice(0, 10)
+    a.href = url
+    a.download = `nephro-backup-${date}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleRestore = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const preview = JSON.parse(text)
+      const n = Array.isArray(preview?.patients) ? preview.patients.length : 0
+      const ok = window.confirm(`ไฟล์นี้มีคนไข้ ${n} คน\nการ restore จะ **เขียนทับ** ข้อมูลปัจจุบัน\nยืนยันไหม?`)
+      if (!ok) {
+        e.target.value = ''
+        return
+      }
+      const result = importAllData(text, { overwriteSettings: false })
+      setRestoreMsg(`✅ Restore สำเร็จ — ${result.patients} คนไข้`)
+      onDataRestored?.()
+    } catch (err) {
+      setRestoreMsg(`❌ ${err.message || 'Restore ไม่สำเร็จ'}`)
+    }
+    e.target.value = ''
+  }
+
+  const fmtBytes = (n) => {
+    if (!n) return '0 B'
+    if (n < 1024) return `${n} B`
+    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
+    return `${(n / 1024 / 1024).toFixed(1)} MB`
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -346,7 +399,7 @@ function SettingsView({ settings, onSave, onBack }) {
         className="bg-blue-700 text-white px-4 py-3 flex items-center gap-3 sticky top-0 z-20"
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
-        <button onClick={onBack} className="text-2xl leading-none">
+        <button type="button" onClick={onBack} className="text-2xl leading-none">
           ←
         </button>
         <h1 className="font-bold text-lg">ตั้งค่า</h1>
@@ -366,11 +419,65 @@ function SettingsView({ settings, onSave, onBack }) {
             className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-mono mb-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
           <button
+            type="button"
             onClick={() => onSave({ ...settings, apiKey })}
             className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium"
           >
             บันทึก
           </button>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+          <div>
+            <h3 className="font-semibold text-sm text-gray-700 mb-1">💾 ข้อมูล & Backup</h3>
+            <p className="text-xs text-gray-500">
+              ข้อมูลอยู่ใน browser เครื่องนี้เท่านั้น — ดาวน์โหลดไฟล์ไว้กันข้อมูลหาย
+            </p>
+          </div>
+
+          {storage?.supported && (
+            <div className="bg-gray-50 rounded-xl p-3 text-xs space-y-1">
+              <div className="flex justify-between">
+                <span className="text-gray-600">สถานะ Persistent</span>
+                <span
+                  className={storage.persisted ? 'text-green-600 font-medium' : 'text-amber-600'}
+                >
+                  {storage.persisted ? '✅ browser สัญญาจะไม่ลบ' : '⚠️ browser อาจลบเองได้'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">ใช้งาน</span>
+                <span className="text-gray-800">
+                  {fmtBytes(storage.usage)} / {fmtBytes(storage.quota)} ({storage.percent}%)
+                </span>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium"
+          >
+            💾 ดาวน์โหลด backup JSON
+          </button>
+
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-medium border border-gray-200"
+          >
+            ⬆️ Restore จากไฟล์ backup
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/json,.json"
+            onChange={handleRestore}
+            className="hidden"
+          />
+
+          {restoreMsg && <p className="text-xs text-center mt-1">{restoreMsg}</p>}
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">

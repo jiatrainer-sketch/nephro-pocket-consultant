@@ -142,3 +142,100 @@ export function createEmptyPatient(id) {
     updated_at: new Date().toISOString(),
   }
 }
+
+// ----------------------------------------------------------------------
+// Browser storage durability + backup/restore
+// ----------------------------------------------------------------------
+
+/**
+ * Ask the browser to mark this site's storage as persistent so it is NOT
+ * auto-evicted when the device runs low on space. Safe to call every boot.
+ * Returns { supported, persisted }.
+ */
+export async function requestPersistentStorage() {
+  if (typeof navigator === 'undefined' || !navigator.storage?.persist) {
+    return { supported: false, persisted: false }
+  }
+  try {
+    const persisted = await navigator.storage.persist()
+    return { supported: true, persisted }
+  } catch {
+    return { supported: true, persisted: false }
+  }
+}
+
+/**
+ * Report current storage usage so the UI can show a bar + persistent flag.
+ * Returns { supported, persisted, usage, quota, percent }. Values in bytes.
+ */
+export async function getStorageInfo() {
+  if (typeof navigator === 'undefined' || !navigator.storage?.estimate) {
+    return { supported: false, persisted: false, usage: 0, quota: 0, percent: 0 }
+  }
+  try {
+    const { usage = 0, quota = 0 } = await navigator.storage.estimate()
+    const persisted = navigator.storage.persisted ? await navigator.storage.persisted() : false
+    return {
+      supported: true,
+      persisted,
+      usage,
+      quota,
+      percent: quota > 0 ? Math.round((usage / quota) * 100) : 0,
+    }
+  } catch {
+    return { supported: false, persisted: false, usage: 0, quota: 0, percent: 0 }
+  }
+}
+
+const BACKUP_VERSION = 1
+
+/**
+ * Serialise all patient + settings data to a JSON string. Shape:
+ *   { version, exportedAt, patients: [...], settings: {...} }
+ * Stays on the user's device unless they choose to send it somewhere.
+ */
+export function exportAllData() {
+  return JSON.stringify(
+    {
+      version: BACKUP_VERSION,
+      exportedAt: new Date().toISOString(),
+      patients: loadPatients(),
+      settings: loadSettings(),
+    },
+    null,
+    2
+  )
+}
+
+/**
+ * Restore data from a backup JSON string.
+ *   opts.overwriteSettings  include settings (API key) from the backup
+ * Throws on malformed input. Returns { patients, settings }.
+ */
+export function importAllData(jsonString, { overwriteSettings = false } = {}) {
+  let parsed
+  try {
+    parsed = JSON.parse(jsonString)
+  } catch {
+    throw new Error('ไฟล์ backup อ่านไม่ได้ (JSON ผิดรูปแบบ)')
+  }
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('ไฟล์ backup ไม่ถูกต้อง')
+  }
+  if (!Array.isArray(parsed.patients)) {
+    throw new Error('ไฟล์ backup ไม่มี patients array')
+  }
+  for (const p of parsed.patients) {
+    if (!p || typeof p !== 'object' || typeof p.id !== 'string') {
+      throw new Error('ข้อมูล patient ในไฟล์ไม่ครบ (missing id)')
+    }
+  }
+  savePatients(parsed.patients)
+  if (overwriteSettings && parsed.settings && typeof parsed.settings === 'object') {
+    saveSettings(parsed.settings)
+  }
+  return {
+    patients: parsed.patients.length,
+    settings: overwriteSettings && !!parsed.settings,
+  }
+}
