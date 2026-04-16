@@ -473,6 +473,12 @@ export const MEDICATIONS = [
     dosage: '50-100 mg PO; SC 6 mg; no renal adj; avoid in uncontrolled HTN', source: 'AI-seed', verified: false },
   { name: 'Amitriptyline', generic: 'Amitriptyline', category: 'Neuro',
     dosage: 'Migraine prophylaxis: 10-25 mg hs → titrate; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Cafergot', generic: 'Ergotamine + Caffeine', category: 'Neuro',
+    dosage: '1-2 tabs at onset; max 6 tabs/attack, 10 tabs/wk; avoid in CKD (vasoconstriction)', source: 'AI-seed', verified: false },
+  { name: 'Flunarizine', generic: 'Flunarizine', category: 'Neuro',
+    dosage: '5-10 mg hs; migraine prophylaxis; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Hyoscine', generic: 'Hyoscine butylbromide', category: 'Other',
+    dosage: '10-20 mg TID-QID PO; IV 20 mg; no renal adj', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
@@ -714,6 +720,9 @@ export const BRAND_MAP = {
   'Lamotrigine': ['Lamictal', 'LTG'],
   'Sumatriptan': ['Imigran', 'Imitrex'],
   'Amitriptyline': ['Elavil', 'Tryptanol', 'Ami'],
+  'Cafergot': ['Cafergot', 'Ergotamine', 'คาเฟอร์กอต'],
+  'Flunarizine': ['Sibelium', 'Flunar'],
+  'Hyoscine': ['Buscopan', 'บัสโคพาน', 'Hyoscine-N-butylbromide'],
 }
 
 export const TIMING_OPTIONS = [

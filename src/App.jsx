@@ -103,7 +103,7 @@ export default function App() {
   }
 
   if (view === 'pregnancy') {
-    return <PregnancyTab onBack={() => setView('list')} />
+    return <PregnancyTab onBack={() => setView('list')} settings={settings} />
   }
 
   if (view === 'settings') {

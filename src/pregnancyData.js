@@ -259,6 +259,9 @@ const D = {
   'Lamotrigine': { p: 'safe', pN: 'Preferred AED; increase dose in pregnancy (clearance rises)', pAlt: [], l: 'safe', lN: 'Excreted but generally compatible', ind: ['seizure'] },
   'Sumatriptan': { p: 'caution', pN: 'Registry data reassuring; use if migraine severe', pAlt: ['Paracetamol'], l: 'safe', lN: 'Withhold BF 12h or use; low levels', ind: ['headache'] },
   'Amitriptyline': { p: 'caution', pN: 'Limited data; neonatal withdrawal possible', pAlt: ['Paracetamol'], l: 'caution', lN: 'Low levels; monitor sedation', ind: ['headache', 'depression', 'insomnia'] },
+  'Cafergot': { p: 'contraindicated', pN: 'Ergotamine = uterine contraction → abortion risk; absolutely avoid', pAlt: ['Paracetamol', 'Sumatriptan'], l: 'contraindicated', lN: 'Ergotamine suppresses lactation + infant ergotism risk', ind: ['headache'] },
+  'Flunarizine': { p: 'avoid', pN: 'Limited data; avoid in pregnancy', pAlt: ['Paracetamol'], l: 'avoid', lN: 'Excreted in milk; long half-life', ind: ['headache'] },
+  'Hyoscine': { p: 'caution', pN: 'Use if needed; limited data but long experience', pAlt: [], l: 'safe', lN: 'Poorly absorbed; compatible', ind: ['abdominal-pain', 'nausea'] },
 }
 
 /** Lookup pregnancy/lactation info by drug name */
