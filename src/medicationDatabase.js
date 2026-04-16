@@ -633,6 +633,70 @@ export const MEDICATIONS = [
     dosage: 'Low: 2-5 mcg/kg/min; Mid: 5-10; High: 10-20 mcg/kg/min IV', source: 'AI-seed', verified: false },
   { name: 'Norepinephrine', generic: 'Norepinephrine', category: 'CV',
     dosage: '0.1-0.5 mcg/kg/min IV; titrate to MAP ≥65', source: 'AI-seed', verified: false },
+
+  // === Psych เพิ่ม ===
+  { name: 'Risperidone', generic: 'Risperidone', category: 'Psych',
+    dosage: '0.5-2 mg BD; CKD: start 0.5 mg BD; reduce dose', source: 'AI-seed', verified: false },
+  { name: 'Olanzapine', generic: 'Olanzapine', category: 'Psych',
+    dosage: '5-20 mg hs; no renal adj; metabolic syndrome risk', source: 'AI-seed', verified: false },
+  { name: 'Lithium', generic: 'Lithium carbonate', category: 'Psych',
+    dosage: '300-600 mg BD-TID; target 0.6-1.2 mEq/L; CKD: avoid or low dose + frequent level', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+  { name: 'Clonazepam', generic: 'Clonazepam', category: 'Psych',
+    dosage: '0.25-0.5 mg BD-TID; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Alprazolam', generic: 'Alprazolam', category: 'Psych',
+    dosage: '0.25-0.5 mg TID; no renal adj; short-term only', source: 'AI-seed', verified: false },
+  { name: 'Mirtazapine', generic: 'Mirtazapine', category: 'Psych',
+    dosage: '15-45 mg hs; CrCl<40: reduce dose; appetite stimulant', source: 'AI-seed', verified: false },
+  { name: 'Trazodone', generic: 'Trazodone', category: 'Psych',
+    dosage: '50-150 mg hs; insomnia: 25-50 mg; no renal adj', source: 'AI-seed', verified: false },
+
+  // === Muscle/Pain เพิ่ม ===
+  { name: 'Orphenadrine', generic: 'Orphenadrine', category: 'Pain',
+    dosage: '100 mg BD; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Eperisone', generic: 'Eperisone', category: 'Pain',
+    dosage: '50 mg TID; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Tizanidine', generic: 'Tizanidine', category: 'Pain',
+    dosage: '2-4 mg TID; CrCl<25: start 2 mg OD', source: 'AI-seed', verified: false },
+  { name: 'Capsaicin cream', generic: 'Capsaicin topical', category: 'Pain',
+    dosage: '0.025-0.075% cream TID-QID; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Morphine', generic: 'Morphine', category: 'Pain',
+    dosage: 'PO: 5-15 mg q4h; IV: 2-5 mg q4h; CKD: reduce 50-75%; HD: give post-HD', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+  { name: 'Fentanyl', generic: 'Fentanyl', category: 'Pain',
+    dosage: 'Patch: 12.5-25 mcg/hr; IV: 25-100 mcg; CKD: reduce dose (active metabolites)', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+
+  // === HIV/TB ===
+  { name: 'TDF/FTC', generic: 'Tenofovir DF + Emtricitabine', category: 'Other',
+    dosage: '300/200 mg OD; CrCl 30-49: q48h; CrCl<30: avoid TDF → use TAF', source: 'AI-seed', verified: false },
+  { name: 'TAF/FTC', generic: 'Tenofovir AF + Emtricitabine', category: 'Other',
+    dosage: '25/200 mg OD; safe in CKD (no renal toxicity vs TDF)', source: 'AI-seed', verified: false },
+  { name: 'Dolutegravir', generic: 'Dolutegravir', category: 'Other',
+    dosage: '50 mg OD; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Efavirenz', generic: 'Efavirenz', category: 'Other',
+    dosage: '600 mg hs; no renal adj; CNS side effects', source: 'AI-seed', verified: false },
+  { name: 'Isoniazid', generic: 'Isoniazid', category: 'Other',
+    dosage: '5 mg/kg (max 300 mg) OD; no renal adj; + pyridoxine 25 mg', source: 'AI-seed', verified: false },
+  { name: 'Rifampicin', generic: 'Rifampicin', category: 'Other',
+    dosage: '10 mg/kg (max 600 mg) OD; no renal adj; CYP inducer — check interactions', source: 'AI-seed', verified: false },
+  { name: 'Pyrazinamide', generic: 'Pyrazinamide', category: 'Other',
+    dosage: '25 mg/kg OD; CrCl<30: dose 3x/wk post-HD', source: 'AI-seed', verified: false },
+  { name: 'Ethambutol', generic: 'Ethambutol', category: 'Other',
+    dosage: '15-20 mg/kg OD; CrCl<30: 15-25 mg/kg 3x/wk; monitor vision', source: 'AI-seed', verified: false },
+
+  // === Hormone เพิ่ม ===
+  { name: 'Testosterone', generic: 'Testosterone undecanoate', category: 'Endo',
+    dosage: 'IM: 1000 mg q10-14wk; gel: 50 mg/day; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Estrogen (CEE)', generic: 'Conjugated equine estrogen', category: 'Endo',
+    dosage: '0.3-0.625 mg OD; no renal adj; with progesterone if intact uterus', source: 'AI-seed', verified: false },
+  { name: 'Raloxifene', generic: 'Raloxifene', category: 'Endo',
+    dosage: '60 mg OD; no renal adj; VTE risk', source: 'AI-seed', verified: false },
+  { name: 'Clomifene', generic: 'Clomifene', category: 'Endo',
+    dosage: '50-150 mg OD day 3-7 of cycle; no renal adj', source: 'AI-seed', verified: false },
+
+  // === Local anesthetic / Procedure ===
+  { name: 'Lidocaine', generic: 'Lidocaine', category: 'Other',
+    dosage: 'Local: max 4.5 mg/kg (with epi 7 mg/kg); IV anti-arrhythmic: 1-1.5 mg/kg bolus', source: 'AI-seed', verified: false },
+  { name: 'Bupivacaine', generic: 'Bupivacaine', category: 'Other',
+    dosage: 'Local: max 2 mg/kg; spinal: 7.5-15 mg; no renal adj', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
