@@ -327,6 +327,32 @@ export const MEDICATIONS = [
     dosage: '15-30 mL OD-BD; titrate to 2-3 soft stools/day', source: 'AI-seed', verified: false },
   { name: 'Loperamide', generic: 'Loperamide', category: 'Other',
     dosage: '4 mg init → 2 mg after each loose stool; max 16 mg/day', source: 'AI-seed', verified: false },
+
+  // === Antibiotics gap-fill ===
+  { name: 'Azithromycin', generic: 'Azithromycin', category: 'Other',
+    dosage: '500 mg day 1 → 250 mg OD days 2-5; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Doxycycline', generic: 'Doxycycline', category: 'Other',
+    dosage: '100 mg BD; no renal adj (fecal excretion)', source: 'AI-seed', verified: false },
+  { name: 'Metronidazole', generic: 'Metronidazole', category: 'Other',
+    dosage: '400-500 mg TID; HD: supplement post-HD; no dose adj mild CKD', source: 'AI-seed', verified: false },
+  { name: 'Bactrim (TMP-SMX)', generic: 'Trimethoprim-Sulfamethoxazole', category: 'Other',
+    dosage: 'DS tab BD; CrCl 15-30: 50% dose; avoid CrCl<15; monitor K+', source: 'AI-seed', verified: false },
+  { name: 'Nitrofurantoin', generic: 'Nitrofurantoin', category: 'Other',
+    dosage: '100 mg BD × 5-7 days; avoid if eGFR<30 (ineffective + toxic)', source: 'AI-seed', verified: false },
+  { name: 'Erythromycin', generic: 'Erythromycin', category: 'Other',
+    dosage: '250-500 mg QID; no renal adj; GI side effects common', source: 'AI-seed', verified: false },
+  { name: 'Clindamycin', generic: 'Clindamycin', category: 'Other',
+    dosage: '150-450 mg QID PO; IV 600-900 mg q8h; no renal adj', source: 'AI-seed', verified: false },
+
+  // === Hematology ===
+  { name: 'Ferrous sulfate', generic: 'Ferrous sulfate', category: 'Other',
+    dosage: '200-325 mg (65 mg elem Fe) OD-TID; space from PO4 binders', source: 'AI-seed', verified: false },
+  { name: 'Folic acid', generic: 'Folic acid', category: 'Other',
+    dosage: '1-5 mg OD; HD: 5 mg post-HD or daily (dialyzable)', source: 'AI-seed', verified: false },
+  { name: 'Vitamin K (Phytonadione)', generic: 'Phytonadione', category: 'Other',
+    dosage: 'Warfarin reversal: 2.5-10 mg PO/IV; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Tranexamic acid', generic: 'Tranexamic acid', category: 'Other',
+    dosage: '1 g IV/PO TID; CrCl<30: reduce to 50%; HD: 500 mg BD', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
