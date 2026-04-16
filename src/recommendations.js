@@ -21,10 +21,11 @@ export function getRecommendations(patient) {
   recs.push(...getCriticalAlerts(v))
 
   // eGFR trend (Quick Mode explicit + Record Mode lab history)
-  recs.push(...getEgfrTrendRecs(patient, v, meds))
+  const { recs: egfrTrendRecs, egfrDropPct } = getEgfrTrendRecs(patient, v, meds)
+  recs.push(...egfrTrendRecs)
 
-  // Renoprotection: ARB/ACEi dose + SGLT2i
-  recs.push(...getRenoprotectionRecs(v, meds, patient.conditions))
+  // Renoprotection: ARB/ACEi dose + SGLT2i (suppress up-titrate if eGFR dropping)
+  recs.push(...getRenoprotectionRecs(v, meds, patient.conditions, egfrDropPct))
 
   // Drug-eGFR adjustment alerts
   recs.push(...getDrugEgfrRecs(v, meds))
@@ -46,6 +47,7 @@ export function getRecommendations(patient) {
 // ---- eGFR trend: % drop + rate of decline per year ----
 function getEgfrTrendRecs(patient, v, meds) {
   const recs = []
+  let egfrDropPct = 0
   const cur = Number.parseFloat(v.eGFR)
   let prev = null
   let months = null
@@ -82,11 +84,12 @@ function getEgfrTrendRecs(patient, v, meds) {
     Number.isNaN(months) ||
     months <= 0
   ) {
-    return recs
+    return { recs, egfrDropPct }
   }
 
   const diff = cur - prev
   const pct = (diff / prev) * 100
+  egfrDropPct = pct
   const ratePerYear = (diff / months) * 12
 
   const hasACEiARB = findMed(meds, [
@@ -171,7 +174,7 @@ function getEgfrTrendRecs(patient, v, meds) {
     })
   }
 
-  return recs
+  return { recs, egfrDropPct }
 }
 
 // ---- helpers ----
@@ -203,7 +206,7 @@ const ARB_ACEi_MAX = {
   perindopril: 8,
 }
 
-function getRenoprotectionRecs(v, meds, conditions) {
+function getRenoprotectionRecs(v, meds, conditions, egfrDropPct = 0) {
   const recs = []
 
   // เฉพาะคนไข้ CKD (มี eGFR) หรือที่มี FBS/HbA1C (DM clinic)
@@ -258,6 +261,17 @@ function getRenoprotectionRecs(v, meds, conditions) {
           recommendation: `${med.name} ${med.dose} = max dose (${maxDose} mg/day) ✓\nRenoprotection เต็ม dose ตาม KDIGO 2024`,
           target: 'Max tolerated ACEi/ARB',
           warning: 'Monitor K/eGFR ทุก 3–6 เดือน',
+        })
+      } else if (egfrDropPct <= -30) {
+        // Suppress up-titrate when eGFR dropped >30% — conflict with dose reduction
+        recs.push({
+          id: 'renop-arb-hold',
+          severity: 'yellow',
+          domain: 'CKD Progression',
+          title: `${med.name} — ชะลอ up-titrate (eGFR drop ${Math.abs(egfrDropPct).toFixed(0)}%)`,
+          recommendation: `${med.name} dose ปัจจุบัน: ${med.dose} (${pct}% ของ max ${maxDose} mg)\neGFR ลดลง >30% — ไม่ควร up-titrate ตอนนี้\nรอ eGFR stable + recheck K/Cr ก่อนพิจารณาปรับ dose`,
+          target: `เป้าหมาย: eGFR stable แล้วค่อย up-titrate → ${maxDose} mg`,
+          warning: 'ห้าม up-titrate ขณะ eGFR กำลังลดลง',
         })
       } else {
         const uptitrate =
