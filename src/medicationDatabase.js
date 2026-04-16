@@ -253,6 +253,32 @@ export const MEDICATIONS = [
     dosage: '500-750 mg OD; CrCl 20-49: 250-500 mg q24h; CrCl<20: 250-500 mg q48h', source: 'AI-seed', verified: false },
   { name: 'Fluconazole', generic: 'Fluconazole', category: 'Other',
     dosage: '100-400 mg OD; CrCl<50: 50% dose; HD: full dose post-HD', source: 'AI-seed', verified: false },
+
+  // === Pain / NSAIDs ===
+  { name: 'Ibuprofen', generic: 'Ibuprofen', category: 'Pain',
+    dosage: '200-400 mg TID; avoid in CKD 4-5/HD (nephrotoxic)', source: 'AI-seed', verified: false },
+  { name: 'Naproxen', generic: 'Naproxen', category: 'Pain',
+    dosage: '250-500 mg BD; avoid in CKD 4-5/HD', source: 'AI-seed', verified: false },
+  { name: 'Diclofenac', generic: 'Diclofenac', category: 'Pain',
+    dosage: '25-50 mg BD-TID; avoid in CKD 4-5/HD', source: 'AI-seed', verified: false },
+  { name: 'Mefenamic acid', generic: 'Mefenamic acid', category: 'Pain',
+    dosage: '250-500 mg TID; avoid in CKD (nephrotoxic + GI risk)', source: 'AI-seed', verified: false },
+  { name: 'Celecoxib', generic: 'Celecoxib', category: 'Pain',
+    dosage: '100-200 mg OD-BD; avoid in severe CKD/HD', source: 'AI-seed', verified: false },
+  { name: 'Etoricoxib', generic: 'Etoricoxib', category: 'Pain',
+    dosage: '60-120 mg OD; avoid in CrCl<30', source: 'AI-seed', verified: false },
+  { name: 'Piroxicam', generic: 'Piroxicam', category: 'Pain',
+    dosage: '10-20 mg OD; avoid in CKD 4-5/HD', source: 'AI-seed', verified: false },
+  { name: 'Indomethacin', generic: 'Indomethacin', category: 'Pain',
+    dosage: '25-50 mg BD-TID; avoid in CKD 4-5/HD', source: 'AI-seed', verified: false },
+  { name: 'Tramadol', generic: 'Tramadol', category: 'Pain',
+    dosage: '50-100 mg q4-6h; CrCl<30: 50-100 mg q12h; max 200 mg/d', source: 'AI-seed', verified: false },
+  { name: 'Codeine', generic: 'Codeine', category: 'Pain',
+    dosage: '15-60 mg q4-6h; CKD: reduce dose; avoid in HD', source: 'AI-seed', verified: false },
+  { name: 'Tolperisone', generic: 'Tolperisone', category: 'Pain',
+    dosage: '50-150 mg TID; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Baclofen', generic: 'Baclofen', category: 'Pain',
+    dosage: '5 mg TID → titrate; CrCl<30: 5 mg OD; avoid in HD (CNS toxicity)', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
