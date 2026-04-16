@@ -421,6 +421,30 @@ export const MEDICATIONS = [
     dosage: 'Wernicke: 200-500 mg IV TID × 3-5 days; maintenance: 100 mg PO OD', source: 'AI-seed', verified: false },
   { name: 'Chlordiazepoxide', generic: 'Chlordiazepoxide', category: 'Other',
     dosage: 'Alcohol withdrawal: 25-100 mg q6h taper; CKD: reduce dose; avoid in severe liver dz', source: 'AI-seed', verified: false },
+
+  // === Asthma / COPD ===
+  { name: 'Salbutamol', generic: 'Salbutamol', category: 'Resp',
+    dosage: 'MDI 2 puffs q4-6h prn; NEB 2.5-5 mg q4-6h; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Budesonide', generic: 'Budesonide', category: 'Resp',
+    dosage: 'ICS 200-400 mcg BD; NEB 0.5-1 mg BD; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Ipratropium', generic: 'Ipratropium', category: 'Resp',
+    dosage: 'MDI 2 puffs QID; NEB 250-500 mcg q6-8h; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Tiotropium', generic: 'Tiotropium', category: 'Resp',
+    dosage: '18 mcg DPI OD or 2.5 mcg Respimat 2 puffs OD; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Montelukast', generic: 'Montelukast', category: 'Resp',
+    dosage: '10 mg OD hs; no renal adj', source: 'AI-seed', verified: false },
+
+  // === Weight loss ===
+  { name: 'Tirzepatide (Mounjaro)', generic: 'Tirzepatide', category: 'DM',
+    dosage: '2.5 mg SC/wk → titrate q4wk to 5/7.5/10/12.5/15 mg; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Orlistat', generic: 'Orlistat', category: 'Other',
+    dosage: '120 mg TID with meals; no renal adj; may reduce fat-soluble vitamin absorption', source: 'AI-seed', verified: false },
+
+  // === Bone ===
+  { name: 'Alendronate', generic: 'Alendronate', category: 'Other',
+    dosage: '70 mg PO weekly; avoid eGFR<35; take with water 30min before food', source: 'AI-seed', verified: false },
+  { name: 'Risedronate', generic: 'Risedronate', category: 'Other',
+    dosage: '35 mg PO weekly; avoid eGFR<30; take with water 30min before food', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
