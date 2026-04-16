@@ -399,6 +399,28 @@ export const MEDICATIONS = [
     dosage: 'Induction: 2-6 mU/min IV titrate; PPH: 10-40 U in 1L NS', source: 'AI-seed', verified: false },
   { name: 'Misoprostol', generic: 'Misoprostol', category: 'OB',
     dosage: 'PPH: 600-800 mcg SL/rectal; ulcer: 200 mcg QID; no renal adj', source: 'AI-seed', verified: false },
+
+  // === Emergency extras ===
+  { name: 'Atropine', generic: 'Atropine', category: 'Emergency',
+    dosage: 'Bradycardia: 0.5-1 mg IV q3-5min; max 3 mg; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Adenosine', generic: 'Adenosine', category: 'Emergency',
+    dosage: 'SVT: 6 mg rapid IV push → 12 mg × 2 if needed; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Calcium gluconate', generic: 'Calcium gluconate', category: 'Emergency',
+    dosage: 'Hyperkalemia: 10 mL 10% IV over 2-3 min; may repeat; cardiac protection', source: 'AI-seed', verified: false },
+  { name: 'Naloxone', generic: 'Naloxone', category: 'Emergency',
+    dosage: '0.4-2 mg IV/IM/SC; repeat q2-3min; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Flumazenil', generic: 'Flumazenil', category: 'Emergency',
+    dosage: '0.2 mg IV over 30s → 0.3 mg → 0.5 mg q1min; max 3 mg; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Epinephrine', generic: 'Epinephrine', category: 'Emergency',
+    dosage: 'Anaphylaxis: 0.3-0.5 mg IM; cardiac arrest: 1 mg IV q3-5min', source: 'AI-seed', verified: false },
+
+  // === Smoking / Alcohol cessation ===
+  { name: 'Varenicline', generic: 'Varenicline', category: 'Other',
+    dosage: '0.5 mg OD × 3d → 0.5 mg BD × 4d → 1 mg BD × 12wk; eGFR<30: max 0.5 mg BD', source: 'AI-seed', verified: false },
+  { name: 'Thiamine (Vitamin B1)', generic: 'Thiamine', category: 'Other',
+    dosage: 'Wernicke: 200-500 mg IV TID × 3-5 days; maintenance: 100 mg PO OD', source: 'AI-seed', verified: false },
+  { name: 'Chlordiazepoxide', generic: 'Chlordiazepoxide', category: 'Other',
+    dosage: 'Alcohol withdrawal: 25-100 mg q6h taper; CKD: reduce dose; avoid in severe liver dz', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
