@@ -305,6 +305,28 @@ export const MEDICATIONS = [
     dosage: '10 mg OD; CrCl<30: 5 mg OD', source: 'AI-seed', verified: false },
   { name: 'Fexofenadine', generic: 'Fexofenadine', category: 'Other',
     dosage: '60 mg BD or 180 mg OD; CrCl<30: 60 mg OD', source: 'AI-seed', verified: false },
+
+  // === Cough / Cold ===
+  { name: 'Dextromethorphan', generic: 'Dextromethorphan', category: 'Resp',
+    dosage: '10-30 mg q4-8h; no renal adj; max 120 mg/day', source: 'AI-seed', verified: false },
+  { name: 'Ambroxol', generic: 'Ambroxol', category: 'Resp',
+    dosage: '30 mg BD-TID; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Bromhexine', generic: 'Bromhexine', category: 'Resp',
+    dosage: '8 mg TID; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Guaifenesin', generic: 'Guaifenesin', category: 'Resp',
+    dosage: '200-400 mg q4h; no renal adj; max 2.4 g/day', source: 'AI-seed', verified: false },
+
+  // === GI extras ===
+  { name: 'Ondansetron', generic: 'Ondansetron', category: 'Other',
+    dosage: '4-8 mg IV/PO q8h; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Metoclopramide', generic: 'Metoclopramide', category: 'Other',
+    dosage: '10 mg TID ac; CrCl<40: reduce 50%; max 5 days', source: 'AI-seed', verified: false },
+  { name: 'Domperidone', generic: 'Domperidone', category: 'Other',
+    dosage: '10 mg TID ac; no renal adj; max 30 mg/day (QTc risk)', source: 'AI-seed', verified: false },
+  { name: 'Lactulose', generic: 'Lactulose', category: 'Other',
+    dosage: '15-30 mL OD-BD; titrate to 2-3 soft stools/day', source: 'AI-seed', verified: false },
+  { name: 'Loperamide', generic: 'Loperamide', category: 'Other',
+    dosage: '4 mg init → 2 mg after each loose stool; max 16 mg/day', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
