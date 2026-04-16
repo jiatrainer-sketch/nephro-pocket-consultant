@@ -279,6 +279,32 @@ export const MEDICATIONS = [
     dosage: '50-150 mg TID; no renal adj', source: 'AI-seed', verified: false },
   { name: 'Baclofen', generic: 'Baclofen', category: 'Pain',
     dosage: '5 mg TID → titrate; CrCl<30: 5 mg OD; avoid in HD (CNS toxicity)', source: 'AI-seed', verified: false },
+
+  // === Steroids ===
+  { name: 'Prednisolone', generic: 'Prednisolone', category: 'Other',
+    dosage: '5-60 mg/day; no renal adj; taper gradually', source: 'AI-seed', verified: false },
+  { name: 'Prednisone', generic: 'Prednisone', category: 'Other',
+    dosage: '5-60 mg/day; no renal adj; taper gradually', source: 'AI-seed', verified: false },
+  { name: 'Methylprednisolone', generic: 'Methylprednisolone', category: 'Other',
+    dosage: 'PO 4-48 mg/day; pulse IV 500-1000 mg/day × 3 days', source: 'AI-seed', verified: false },
+  { name: 'Dexamethasone', generic: 'Dexamethasone', category: 'Other',
+    dosage: '0.5-10 mg/day; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Hydrocortisone', generic: 'Hydrocortisone', category: 'Other',
+    dosage: 'PO 10-20 mg/day div; IV stress dose 50-100 mg q8h', source: 'AI-seed', verified: false },
+  { name: 'Fludrocortisone', generic: 'Fludrocortisone', category: 'Other',
+    dosage: '0.05-0.2 mg OD; monitor K+/BP; avoid in HF', source: 'AI-seed', verified: false },
+  { name: 'Betamethasone', generic: 'Betamethasone', category: 'Other',
+    dosage: '0.5-5 mg/day PO; IM 12 mg × 2 doses for fetal lung maturity', source: 'AI-seed', verified: false },
+
+  // === Antihistamine ===
+  { name: 'Chlorpheniramine', generic: 'Chlorpheniramine', category: 'Other',
+    dosage: '4 mg q4-6h; CKD: no adj; sedating', source: 'AI-seed', verified: false },
+  { name: 'Loratadine', generic: 'Loratadine', category: 'Other',
+    dosage: '10 mg OD; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Cetirizine', generic: 'Cetirizine', category: 'Other',
+    dosage: '10 mg OD; CrCl<30: 5 mg OD', source: 'AI-seed', verified: false },
+  { name: 'Fexofenadine', generic: 'Fexofenadine', category: 'Other',
+    dosage: '60 mg BD or 180 mg OD; CrCl<30: 60 mg OD', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
