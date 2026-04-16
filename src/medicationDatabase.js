@@ -373,6 +373,32 @@ export const MEDICATIONS = [
     dosage: '0.25-1 mg twice/wk; no renal adj', source: 'AI-seed', verified: false },
   { name: 'Calcitonin', generic: 'Calcitonin', category: 'Endo',
     dosage: 'Hypercalcemia: 4 IU/kg SC/IM q12h; osteoporosis: 200 IU intranasal OD', source: 'AI-seed', verified: false },
+
+  // === Contraceptives ===
+  { name: 'COC (Combined oral contraceptive)', generic: 'Ethinylestradiol + Levonorgestrel', category: 'OB',
+    dosage: '1 tab OD × 21 days + 7 day break; avoid in CKD with uncontrolled HTN', source: 'AI-seed', verified: false },
+  { name: 'POP (Progestin-only pill)', generic: 'Desogestrel', category: 'OB',
+    dosage: '75 mcg OD continuous; safe in CKD', source: 'AI-seed', verified: false },
+  { name: 'DMPA (Depo-Provera)', generic: 'Medroxyprogesterone acetate', category: 'OB',
+    dosage: '150 mg IM q12wk; safe in CKD; bone density concern long-term', source: 'AI-seed', verified: false },
+  { name: 'Levonorgestrel EC', generic: 'Levonorgestrel', category: 'OB',
+    dosage: '1.5 mg PO single dose within 72h; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Ulipristal EC', generic: 'Ulipristal acetate', category: 'OB',
+    dosage: '30 mg PO single dose within 120h; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Etonogestrel implant', generic: 'Etonogestrel', category: 'OB',
+    dosage: '68 mg subdermal implant q3yr; safe in CKD', source: 'AI-seed', verified: false },
+
+  // === OB crossover ===
+  { name: 'MgSO4', generic: 'Magnesium sulfate', category: 'OB',
+    dosage: 'Eclampsia: 4-6 g IV load → 1-2 g/hr; CKD: reduce maint, monitor Mg level', source: 'AI-seed', verified: false },
+  { name: 'Methyldopa', generic: 'Methyldopa', category: 'OB',
+    dosage: '250-500 mg BD-TID; CrCl<30: q8-12h; safe in pregnancy', source: 'AI-seed', verified: false },
+  { name: 'Labetalol', generic: 'Labetalol', category: 'OB',
+    dosage: '100-400 mg BD-TID PO; IV acute: 20 mg → double q10min; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Oxytocin', generic: 'Oxytocin', category: 'OB',
+    dosage: 'Induction: 2-6 mU/min IV titrate; PPH: 10-40 U in 1L NS', source: 'AI-seed', verified: false },
+  { name: 'Misoprostol', generic: 'Misoprostol', category: 'OB',
+    dosage: 'PPH: 600-800 mcg SL/rectal; ulcer: 200 mcg QID; no renal adj', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
