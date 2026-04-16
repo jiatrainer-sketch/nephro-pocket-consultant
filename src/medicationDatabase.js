@@ -353,6 +353,26 @@ export const MEDICATIONS = [
     dosage: 'Warfarin reversal: 2.5-10 mg PO/IV; no renal adj', source: 'AI-seed', verified: false },
   { name: 'Tranexamic acid', generic: 'Tranexamic acid', category: 'Other',
     dosage: '1 g IV/PO TID; CrCl<30: reduce to 50%; HD: 500 mg BD', source: 'AI-seed', verified: false },
+
+  // === Thyroid ===
+  { name: 'Levothyroxine', generic: 'Levothyroxine', category: 'Endo',
+    dosage: '25-200 mcg OD empty stomach; start 25-50 mcg in elderly/cardiac', source: 'AI-seed', verified: false },
+  { name: 'PTU (Propylthiouracil)', generic: 'Propylthiouracil', category: 'Endo',
+    dosage: '50-150 mg TID; no renal adj; preferred 1st trimester pregnancy', source: 'AI-seed', verified: false },
+  { name: 'Methimazole', generic: 'Methimazole', category: 'Endo',
+    dosage: '5-30 mg OD; no renal adj; avoid 1st trimester pregnancy', source: 'AI-seed', verified: false },
+
+  // === Endocrine misc ===
+  { name: 'Desmopressin (DDAVP)', generic: 'Desmopressin', category: 'Endo',
+    dosage: 'DI: 10-40 mcg intranasal BD or 0.1-0.4 mg PO BD; uremia bleeding: 0.3 mcg/kg IV', source: 'AI-seed', verified: false },
+  { name: 'Octreotide', generic: 'Octreotide', category: 'Endo',
+    dosage: '50-200 mcg SC TID; GI bleed: 25-50 mcg/hr IV; HD: no adj', source: 'AI-seed', verified: false },
+  { name: 'Bromocriptine', generic: 'Bromocriptine', category: 'Endo',
+    dosage: '1.25-2.5 mg OD → titrate; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Cabergoline', generic: 'Cabergoline', category: 'Endo',
+    dosage: '0.25-1 mg twice/wk; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Calcitonin', generic: 'Calcitonin', category: 'Endo',
+    dosage: 'Hypercalcemia: 4 IU/kg SC/IM q12h; osteoporosis: 200 IU intranasal OD', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
