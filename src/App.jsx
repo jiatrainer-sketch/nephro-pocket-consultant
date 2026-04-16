@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import PatientDetail from './components/PatientDetail'
+import PregnancyTab from './components/PregnancyTab'
 import QuickMode from './components/QuickMode'
 import { hasAbnormal, hasCritical } from './recommendations'
 import {
@@ -21,7 +22,7 @@ import {
 // App Root
 // ============================================================
 export default function App() {
-  const [view, setView] = useState('list') // 'list' | 'detail' | 'quick' | 'settings'
+  const [view, setView] = useState('list') // 'list' | 'detail' | 'quick' | 'pregnancy' | 'settings'
   const [patients, setPatients] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [settings, setSettings] = useState({ apiKey: '' })
@@ -101,6 +102,10 @@ export default function App() {
     return <QuickMode onBack={() => setView('list')} settings={settings} />
   }
 
+  if (view === 'pregnancy') {
+    return <PregnancyTab onBack={() => setView('list')} />
+  }
+
   if (view === 'settings') {
     return (
       <SettingsView
@@ -134,7 +139,13 @@ export default function App() {
               onClick={() => setView('quick')}
               className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
             >
-              Quick Mode
+              Quick
+            </button>
+            <button
+              onClick={() => setView('pregnancy')}
+              className="bg-pink-500 hover:bg-pink-400 active:bg-pink-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Preg
             </button>
             <button
               onClick={() => setView('settings')}
