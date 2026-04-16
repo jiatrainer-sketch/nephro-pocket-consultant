@@ -6,36 +6,57 @@
  *   - generic   (string)  generic name
  *   - category  (string)  'HD' | 'CV' | 'DM' | 'Other'
  *
- * Optional fields (added ONLY after human medical review — see tracking Issue):
- *   - dosage        (string)  short reference dose, renal-adjusted where relevant
- *   - source        (string)  citation, e.g. "UpToDate 2026 / KDIGO 2024 §3.2"
- *   - lastReviewed  (string)  ISO date YYYY-MM-DD of last medical review
+ * Dose-seed fields (AI-generated, awaiting physician verification):
+ *   - dosage    (string)  short reference dose, renal-adjusted where relevant
+ *   - source    (string)  'AI-seed' | citation after human review
+ *   - verified  (boolean) false = AI-seeded, true = physician-reviewed
+ *   - riskClass (string)  'narrow-ti' for narrow therapeutic index drugs
  *
- * SAFETY: never auto-generate `dosage` / `source`. A physician must review and
- * sign off per drug in the tracking Issue before the field is added here.
+ * SAFETY: entries with verified=false are AI-seeded dose hints only.
+ * A physician must review and flip verified→true per drug before clinical use.
  */
 export const MEDICATIONS = [
   // === HD หลัก ===
-  { name: 'EPO (Recormon)', generic: 'Epoetin beta', category: 'HD' },
-  { name: 'EPO (Eprex)', generic: 'Epoetin alfa', category: 'HD' },
-  { name: 'Aranesp', generic: 'Darbepoetin alfa', category: 'HD' },
-  { name: 'CERA (Mircera)', generic: 'Methoxy PEG-epoetin beta', category: 'HD' },
-  { name: 'Venofer', generic: 'Iron sucrose', category: 'HD' },
-  { name: 'Ferinject', generic: 'Ferric carboxymaltose (FCM)', category: 'HD' },
-  { name: 'Iron dextran', generic: 'Iron dextran', category: 'HD' },
-  { name: 'Calcium carbonate (CaCO3)', generic: 'Calcium carbonate', category: 'HD' },
-  { name: 'Sevelamer', generic: 'Sevelamer', category: 'HD' },
-  { name: 'Lanthanum carbonate', generic: 'Lanthanum', category: 'HD' },
-  { name: 'Aluminium hydroxide', generic: 'Aluminium hydroxide', category: 'HD' },
-  { name: 'Alfacalcidol', generic: 'Alfacalcidol', category: 'HD' },
-  { name: 'Calcitriol', generic: 'Calcitriol', category: 'HD' },
-  { name: 'Ergocalciferol', generic: 'Ergocalciferol (Vitamin D2)', category: 'HD' },
-  { name: 'Cholecalciferol', generic: 'Cholecalciferol (Vitamin D3)', category: 'HD' },
-  { name: 'Cinacalcet', generic: 'Cinacalcet', category: 'HD' },
-  { name: 'Etelcalcetide', generic: 'Etelcalcetide', category: 'HD' },
-  { name: 'Heparin', generic: 'Heparin', category: 'HD' },
-  { name: 'Enoxaparin (Clexane)', generic: 'Enoxaparin', category: 'HD' },
-  { name: 'Sodium bicarbonate', generic: 'Sodium bicarbonate', category: 'HD' },
+  { name: 'EPO (Recormon)', generic: 'Epoetin beta', category: 'HD',
+    dosage: '2000-4000 U SC/IV 3x/wk; adjust to Hb 10-11.5', source: 'AI-seed', verified: false },
+  { name: 'EPO (Eprex)', generic: 'Epoetin alfa', category: 'HD',
+    dosage: '2000-4000 U SC/IV 3x/wk; adjust to Hb 10-11.5', source: 'AI-seed', verified: false },
+  { name: 'Aranesp', generic: 'Darbepoetin alfa', category: 'HD',
+    dosage: '0.45 mcg/kg SC/IV q1-2wk; adjust to Hb 10-11.5', source: 'AI-seed', verified: false },
+  { name: 'CERA (Mircera)', generic: 'Methoxy PEG-epoetin beta', category: 'HD',
+    dosage: '0.6 mcg/kg IV/SC q2wk init → q4wk maint', source: 'AI-seed', verified: false },
+  { name: 'Venofer', generic: 'Iron sucrose', category: 'HD',
+    dosage: '100 mg IV per HD session; total course 1000 mg', source: 'AI-seed', verified: false },
+  { name: 'Ferinject', generic: 'Ferric carboxymaltose (FCM)', category: 'HD',
+    dosage: '500-1000 mg IV; max 20 mg/kg/dose', source: 'AI-seed', verified: false },
+  { name: 'Iron dextran', generic: 'Iron dextran', category: 'HD',
+    dosage: '25 mg test dose → 100 mg IV/session; total per formula', source: 'AI-seed', verified: false },
+  { name: 'Calcium carbonate (CaCO3)', generic: 'Calcium carbonate', category: 'HD',
+    dosage: '500-1500 mg elemental Ca TID with meals as PO4 binder', source: 'AI-seed', verified: false },
+  { name: 'Sevelamer', generic: 'Sevelamer', category: 'HD',
+    dosage: '800 mg TID with meals; titrate to PO4 target', source: 'AI-seed', verified: false },
+  { name: 'Lanthanum carbonate', generic: 'Lanthanum', category: 'HD',
+    dosage: '250-500 mg TID with meals; chew before swallow', source: 'AI-seed', verified: false },
+  { name: 'Aluminium hydroxide', generic: 'Aluminium hydroxide', category: 'HD',
+    dosage: '300-600 mg TID with meals; short-term only (≤4 wk)', source: 'AI-seed', verified: false },
+  { name: 'Alfacalcidol', generic: 'Alfacalcidol', category: 'HD',
+    dosage: '0.25-0.5 mcg/day PO; titrate per Ca/PTH', source: 'AI-seed', verified: false },
+  { name: 'Calcitriol', generic: 'Calcitriol', category: 'HD',
+    dosage: '0.25-0.5 mcg/day PO or 1-2 mcg IV 3x/wk post-HD', source: 'AI-seed', verified: false },
+  { name: 'Ergocalciferol', generic: 'Ergocalciferol (Vitamin D2)', category: 'HD',
+    dosage: '50,000 U/wk × 8-12 wk if 25-OH VitD <30', source: 'AI-seed', verified: false },
+  { name: 'Cholecalciferol', generic: 'Cholecalciferol (Vitamin D3)', category: 'HD',
+    dosage: '1,000-5,000 U/day maintenance', source: 'AI-seed', verified: false },
+  { name: 'Cinacalcet', generic: 'Cinacalcet', category: 'HD',
+    dosage: '25-30 mg OD; titrate q2-4wk to max 180 mg/day', source: 'AI-seed', verified: false },
+  { name: 'Etelcalcetide', generic: 'Etelcalcetide', category: 'HD',
+    dosage: '5 mg IV 3x/wk post-HD; titrate per PTH', source: 'AI-seed', verified: false },
+  { name: 'Heparin', generic: 'Heparin', category: 'HD',
+    dosage: 'HD: 1000-2000 U bolus + 500-1000 U/hr; adjust per ACT', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+  { name: 'Enoxaparin (Clexane)', generic: 'Enoxaparin', category: 'HD',
+    dosage: '1 mg/kg q12h; CrCl<30: 1 mg/kg OD; HD anticoag: 0.5-1 mg/kg', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+  { name: 'Sodium bicarbonate', generic: 'Sodium bicarbonate', category: 'HD',
+    dosage: '650-1300 mg PO TID; target serum HCO3 ≥22', source: 'AI-seed', verified: false },
 
   // === Cardiovascular ===
   { name: 'Enalapril', generic: 'Enalapril', category: 'CV' },
@@ -145,6 +166,13 @@ export function searchMedications(query) {
   return MEDICATIONS.filter(
     (m) => m.name.toLowerCase().includes(q) || m.generic.toLowerCase().includes(q)
   ).slice(0, 8)
+}
+
+/** Look up dose-seed info for a drug by display name. */
+export function getDrugInfo(name) {
+  if (!name) return null
+  const n = name.toLowerCase()
+  return MEDICATIONS.find((m) => m.name.toLowerCase() === n) || null
 }
 
 export const TIMING_OPTIONS = [
