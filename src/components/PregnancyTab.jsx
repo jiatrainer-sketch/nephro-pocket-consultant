@@ -253,7 +253,7 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
 
     const userMsg = { role: 'user', content: text }
     const newMsgs = [...messages, userMsg]
-    setMessages(newMsgs)
+    setMessages([...newMsgs, { role: 'assistant', content: '' }])
     setInput('')
     setLoading(true)
 
@@ -268,16 +268,55 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
         },
         body: JSON.stringify({
           model: MODEL,
-          max_tokens: 1024,
+          max_tokens: 2048,
+          stream: true,
           system: systemPrompt,
           messages: newMsgs.map(m => ({ role: m.role, content: m.content })),
         }),
       })
-      const data = await res.json()
-      const reply = data.content?.[0]?.text || 'ไม่สามารถตอบได้'
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let accumulated = ''
+      let buf = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop()
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const json = line.slice(6)
+          if (json === '[DONE]') continue
+          try {
+            const evt = JSON.parse(json)
+            if (evt.type === 'content_block_delta' && evt.delta?.text) {
+              accumulated += evt.delta.text
+              setMessages(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { role: 'assistant', content: accumulated }
+                return updated
+              })
+            }
+          } catch {}
+        }
+      }
+
+      if (!accumulated) {
+        setMessages(prev => {
+          const updated = [...prev]
+          updated[updated.length - 1] = { role: 'assistant', content: 'ไม่สามารถตอบได้' }
+          return updated
+        })
+      }
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ไม่สามารถเชื่อมต่อ API ได้' }])
+      setMessages(prev => {
+        const updated = [...prev]
+        updated[updated.length - 1] = { role: 'assistant', content: 'Error: ไม่สามารถเชื่อมต่อ API ได้' }
+        return updated
+      })
     } finally {
       setLoading(false)
     }
@@ -314,10 +353,10 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
             </div>
           </div>
         ))}
-        {loading && (
+        {loading && messages.length > 0 && messages[messages.length - 1].content === '' && (
           <div className="flex justify-start">
-            <div className="bg-white border border-gray-200 rounded-2xl px-3 py-2 text-sm text-gray-400">
-              กำลังคิด...
+            <div className="bg-white border border-gray-200 rounded-2xl px-3 py-2 text-sm text-gray-400 animate-pulse">
+              กำลังเชื่อมต่อ...
             </div>
           </div>
         )}
