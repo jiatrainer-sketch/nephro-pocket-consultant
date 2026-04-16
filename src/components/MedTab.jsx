@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FREQUENCY_OPTIONS, TIMING_OPTIONS, searchMedications } from '../medicationDatabase'
+import { FREQUENCY_OPTIONS, TIMING_OPTIONS, getDrugInfo, searchMedications } from '../medicationDatabase'
 import { generateId } from '../storage'
 
 export default function MedTab({ patient, onUpdate }) {
@@ -72,13 +72,36 @@ export default function MedTab({ patient, onUpdate }) {
 // Med Card
 // ============================================================
 function MedCard({ med, onEdit, onDelete }) {
+  const info = getDrugInfo(med.name)
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 flex items-start gap-3">
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm text-gray-900">{med.name}</div>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="font-medium text-sm text-gray-900">{med.name}</span>
+          {info?.riskClass === 'narrow-ti' && (
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">
+              Narrow TI
+            </span>
+          )}
+          {info?.verified && (
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">
+              Verified
+            </span>
+          )}
+          {info?.source === 'AI-seed' && !info?.verified && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600">
+              AI-seed
+            </span>
+          )}
+        </div>
         <div className="text-xs text-gray-600 mt-0.5">
           {[med.dose, med.frequency, med.timing].filter(Boolean).join(' · ')}
         </div>
+        {info?.dosage && (
+          <div className="text-[11px] text-blue-600 mt-0.5 leading-snug">
+            💊 {info.dosage}
+          </div>
+        )}
         {med.note && <div className="text-xs text-gray-400 mt-0.5">{med.note}</div>}
       </div>
       <div className="flex gap-1 shrink-0">
@@ -129,8 +152,14 @@ function MedForm({ initial, onSave, onCancel }) {
     setShowSuggestions(val.trim().length >= 1)
   }
 
+  const [doseHint, setDoseHint] = useState(() => {
+    const info = initial ? getDrugInfo(initial.name) : null
+    return info?.dosage || ''
+  })
+
   const selectMed = (med) => {
     setName(med.name)
+    setDoseHint(med.dosage || '')
     setSuggestions([])
     setShowSuggestions(false)
   }
@@ -188,6 +217,14 @@ function MedForm({ initial, onSave, onCancel }) {
             </div>
           )}
         </div>
+
+        {/* Dose hint from database */}
+        {doseHint && (
+          <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-xs text-blue-700 leading-relaxed">
+            💊 <span className="font-medium">Ref dose:</span> {doseHint}
+            <span className="text-blue-400 ml-1">(AI-seed, ยังไม่ verified)</span>
+          </div>
+        )}
 
         {/* Dose */}
         <div>
