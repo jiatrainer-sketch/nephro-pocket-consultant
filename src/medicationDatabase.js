@@ -479,15 +479,241 @@ export function searchMedications(query) {
   if (!query || query.trim().length < 1) return []
   const q = query.toLowerCase()
   return MEDICATIONS.filter(
-    (m) => m.name.toLowerCase().includes(q) || m.generic.toLowerCase().includes(q)
+    (m) => m.name.toLowerCase().includes(q)
+      || m.generic.toLowerCase().includes(q)
+      || (BRAND_MAP[m.name] && BRAND_MAP[m.name].some(b => b.toLowerCase().includes(q)))
   ).slice(0, 8)
 }
 
-/** Look up dose-seed info for a drug by display name. */
+/** Look up dose-seed info for a drug by display name or brand. */
 export function getDrugInfo(name) {
   if (!name) return null
   const n = name.toLowerCase()
-  return MEDICATIONS.find((m) => m.name.toLowerCase() === n) || null
+  return MEDICATIONS.find((m) =>
+    m.name.toLowerCase() === n
+    || (BRAND_MAP[m.name] && BRAND_MAP[m.name].some(b => b.toLowerCase() === n))
+  ) || null
+}
+
+/** Thai/international brand name aliases for search */
+export const BRAND_MAP = {
+  // === HD ===
+  'EPO (Recormon)': ['Recormon'],
+  'EPO (Eprex)': ['Eprex', 'Epogen'],
+  'Aranesp': ['Darbepoetin'],
+  'CERA (Mircera)': ['Mircera'],
+  'Venofer': ['Iron sucrose'],
+  'Ferinject': ['FCM', 'Ferric carboxymaltose'],
+  'Calcium carbonate (CaCO3)': ['CaCO3', 'Calcium', 'แคลเซียม', 'Cal-D-Vita', 'Caltrate'],
+  'Sevelamer': ['Renagel', 'Renvela'],
+  'Lanthanum carbonate': ['Fosrenol'],
+  'Alfacalcidol': ['One-Alpha', 'Bon-One'],
+  'Calcitriol': ['Rocaltrol', 'Calcijex'],
+  'Ergocalciferol': ['Vitamin D2', 'Calciferol'],
+  'Cholecalciferol': ['Vitamin D3', 'D3'],
+  'Cinacalcet': ['Sensipar', 'Mimpara'],
+  'Etelcalcetide': ['Parsabiv'],
+  'Heparin': ['UFH'],
+  'Enoxaparin (Clexane)': ['Clexane', 'Lovenox', 'LMWH'],
+  'Sodium bicarbonate': ['NaHCO3', 'โซดาไบคาร์บ'],
+  // === CV: ACEi/ARB ===
+  'Enalapril': ['Renitec', 'Vasotec', 'Enam'],
+  'Ramipril': ['Triatec', 'Altace', 'Tritace'],
+  'Lisinopril': ['Zestril', 'Prinivil'],
+  'Perindopril': ['Coversyl', 'Aceon'],
+  'Losartan': ['Cozaar', 'Losa'],
+  'Valsartan': ['Diovan', 'Valtan'],
+  'Irbesartan': ['Aprovel', 'Avapro'],
+  'Telmisartan': ['Micardis', 'Pritor'],
+  'Olmesartan': ['Olmetec', 'Benicar'],
+  'Candesartan': ['Atacand', 'Blopress'],
+  // === CV: CCB ===
+  'Amlodipine': ['Norvasc', 'Amlo', 'Amlor'],
+  'Nifedipine': ['Adalat', 'Procardia', 'Nifedipress'],
+  'Diltiazem': ['Herbesser', 'Cardizem', 'Dilzem'],
+  'Verapamil': ['Isoptin', 'Calan'],
+  'Manidipine (Madiplot)': ['Madiplot'],
+  // === CV: BB ===
+  'Atenolol': ['Tenormin', 'Atenol'],
+  'Metoprolol': ['Betaloc', 'Lopressor', 'Toprol'],
+  'Bisoprolol': ['Concor', 'Bisopro'],
+  'Carvedilol': ['Dilatrend', 'Carloc', 'Coreg'],
+  'Propranolol': ['Inderal', 'Pranol'],
+  // === CV: Diuretics/Vasodilators ===
+  'Furosemide': ['Lasix', 'Frusemide'],
+  'HCTZ': ['Hydrochlorothiazide', 'Esidrex', 'HCT'],
+  'Spironolactone': ['Aldactone', 'Spiron'],
+  'Finerenone': ['Kerendia'],
+  'Hydralazine': ['Apresoline'],
+  'Minoxidil': ['Loniten'],
+  'Prazosin': ['Minipress'],
+  'Doxazosin': ['Cardura'],
+  // === CV: Antiplatelets/Anticoag ===
+  'Aspirin (ASA)': ['ASA', 'Aspent', 'Astrix', 'แอสไพริน'],
+  'Clopidogrel': ['Plavix', 'Clopivas', 'Pidogrel'],
+  'Ticagrelor': ['Brilinta', 'Brilique'],
+  'Prasugrel': ['Effient'],
+  'Warfarin': ['Coumadin', 'Orfarin', 'วาร์ฟาริน'],
+  'Rivaroxaban': ['Xarelto'],
+  'Apixaban': ['Eliquis'],
+  'Dabigatran': ['Pradaxa'],
+  // === CV: Statins/Lipids ===
+  'Atorvastatin': ['Lipitor', 'Atorva', 'Atova'],
+  'Rosuvastatin': ['Crestor', 'Rosuva'],
+  'Simvastatin': ['Zocor', 'Simva', 'Bestatin'],
+  'Pravastatin': ['Pravachol'],
+  'Ezetimibe': ['Ezetrol', 'Zetia'],
+  'Fenofibrate': ['Lipanthyl', 'Tricor'],
+  'Gemfibrozil': ['Lopid'],
+  // === CV: Other ===
+  'ISDN': ['Isordil', 'Sorbitrate'],
+  'ISMN': ['Imdur', 'Monoket'],
+  'Digoxin': ['Lanoxin'],
+  'Amiodarone': ['Cordarone', 'Amio'],
+  // === DM ===
+  'Insulin RI': ['RI', 'Actrapid', 'Humulin R', 'Regular'],
+  'Insulin NPH': ['NPH', 'Insulatard', 'Humulin N'],
+  'Insulin Glargine': ['Lantus', 'Basaglar', 'Toujeo'],
+  'Insulin Detemir': ['Levemir'],
+  'Insulin Degludec': ['Tresiba'],
+  'Insulin Aspart': ['NovoRapid', 'Fiasp'],
+  'Insulin Lispro': ['Humalog', 'Admelog'],
+  'Metformin': ['Glucophage', 'Diaformin', 'Metfin', 'Glumet'],
+  'Dapagliflozin (Forxiga)': ['Forxiga', 'Farxiga', 'Dapa'],
+  'Empagliflozin (Jardiance)': ['Jardiance', 'Empa'],
+  'Canagliflozin (Invokana)': ['Invokana'],
+  'Semaglutide (Ozempic)': ['Ozempic', 'Wegovy', 'Rybelsus'],
+  'Liraglutide (Victoza)': ['Victoza', 'Saxenda'],
+  'Dulaglutide (Trulicity)': ['Trulicity'],
+  'Linagliptin (Trajenta)': ['Trajenta'],
+  'Sitagliptin (Januvia)': ['Januvia'],
+  'Vildagliptin (Galvus)': ['Galvus', 'Galvusmet'],
+  'Glipizide (Minidiab)': ['Minidiab'],
+  'Gliclazide (Diamicron)': ['Diamicron', 'Glizid'],
+  'Glimepiride (Amaryl)': ['Amaryl', 'Glimep'],
+  'Acarbose (Glucobay)': ['Glucobay', 'Precose'],
+  'Pioglitazone (Actos)': ['Actos', 'Pioglit'],
+  'Tirzepatide (Mounjaro)': ['Mounjaro', 'Zepbound'],
+  // === Other: GI ===
+  'Omeprazole': ['Miracid', 'Losec', 'Prilosec', 'Ome', 'Omez'],
+  'Esomeprazole': ['Nexium', 'Esome'],
+  'Pantoprazole': ['Controloc', 'Pantoloc', 'Protonix', 'Panto'],
+  'Ranitidine': ['Zantac', 'Rani'],
+  'Famotidine': ['Pepcid', 'Famoc'],
+  'Ondansetron': ['Zofran', 'Onsia'],
+  'Metoclopramide': ['Plasil', 'Primperan', 'Reglan'],
+  'Domperidone': ['Motilium', 'Molax'],
+  'Lactulose': ['Duphalac', 'Laxbene'],
+  'Loperamide': ['Imodium', 'Lopermid'],
+  // === Other: Gout ===
+  'Allopurinol': ['Zyloric', 'Alloprim', 'Zyloprim'],
+  'Febuxostat': ['Adenuric', 'Feburic', 'Uloric'],
+  'Colchicine': ['Colcine', 'Colchis'],
+  // === Other: Neuro/Psych (in Other cat) ===
+  'Gabapentin': ['Neurontin', 'Gabaran', 'Gabantin'],
+  'Pregabalin': ['Lyrica', 'Pregaba'],
+  'Sertraline': ['Zoloft', 'Lustral'],
+  'Fluoxetine': ['Prozac', 'Fluox'],
+  'Escitalopram': ['Lexapro', 'Cipralex'],
+  // === Other: Analgesic/Abx ===
+  'Paracetamol': ['Tylenol', 'Sara', 'Calpol', 'พาราเซตามอล', 'Tempra'],
+  'Amoxicillin': ['Amoxy', 'Amoxil', 'Moxcin'],
+  'Augmentin': ['Augmentin', 'Clavox', 'Amoxclav'],
+  'Cephalexin': ['Keflex', 'Cefalex', 'Sporidex'],
+  'Ceftriaxone': ['Rocephin', 'Cef-3'],
+  'Tazocin': ['Tazocin', 'Zosyn', 'Pip-Tazo'],
+  'Meropenem': ['Meronem', 'Merozan'],
+  'Vancomycin': ['Vancocin', 'Vanco'],
+  'Ciprofloxacin': ['Cipro', 'Ciproxin', 'Ciprobay'],
+  'Levofloxacin': ['Levaquin', 'Cravit', 'Tavanic'],
+  'Fluconazole': ['Diflucan', 'Fluco'],
+  'Azithromycin': ['Zithromax', 'Azithro', 'Zmax'],
+  'Doxycycline': ['Doxin', 'Vibramycin'],
+  'Metronidazole': ['Flagyl', 'Metro'],
+  'Bactrim (TMP-SMX)': ['Bactrim', 'Septrin', 'Co-trimoxazole', 'TMP-SMX'],
+  'Nitrofurantoin': ['Macrobid', 'Macrodantin', 'Furadantin'],
+  'Erythromycin': ['Erythrocin', 'E-mycin', 'Eryc'],
+  'Clindamycin': ['Dalacin', 'Cleocin'],
+  // === Pain / NSAIDs ===
+  'Ibuprofen': ['Brufen', 'Advil', 'Nurofen', 'ไอบูโพรเฟน'],
+  'Naproxen': ['Naprosyn', 'Aleve', 'Synflex'],
+  'Diclofenac': ['Voltaren', 'Diclofar', 'Cataflam'],
+  'Mefenamic acid': ['Ponstan', 'Ponmel', 'พอนสแตน'],
+  'Celecoxib': ['Celebrex'],
+  'Etoricoxib': ['Arcoxia'],
+  'Piroxicam': ['Feldene'],
+  'Indomethacin': ['Indocin', 'Indo'],
+  'Tramadol': ['Tramol', 'Ultram', 'Tramal'],
+  'Codeine': ['Codiphen'],
+  'Baclofen': ['Lioresal'],
+  // === Steroids ===
+  'Prednisolone': ['Pred', 'Solone', 'เพร็ด'],
+  'Prednisone': ['Deltasone'],
+  'Methylprednisolone': ['Medrol', 'Solu-Medrol', 'Depo-Medrol'],
+  'Dexamethasone': ['Dexa', 'Decadron'],
+  'Hydrocortisone': ['Solu-Cortef', 'Cortisol'],
+  'Betamethasone': ['Celestone'],
+  // === Antihistamines ===
+  'Chlorpheniramine': ['CPM', 'Chlor-Trimeton', 'คลอเฟน'],
+  'Loratadine': ['Claritin', 'Clarityne', 'Lorin'],
+  'Cetirizine': ['Zyrtec', 'Cetrizin', 'เซทิริซีน'],
+  'Fexofenadine': ['Telfast', 'Allegra'],
+  // === Cough/Cold ===
+  'Dextromethorphan': ['DM', 'Robitussin DM'],
+  'Ambroxol': ['Mucosolvan', 'Ambrox'],
+  'Bromhexine': ['Bisolvon'],
+  'Guaifenesin': ['Robitussin', 'Mucinex'],
+  // === Hematology ===
+  'Ferrous sulfate': ['FeSO4', 'Ferli', 'Ferosul', 'ยาเหล็ก'],
+  'Folic acid': ['Folvite', 'โฟลิก'],
+  'Vitamin K (Phytonadione)': ['Vitamin K', 'K1', 'Konakion'],
+  'Tranexamic acid': ['Transamin', 'TXA', 'Cyklokapron'],
+  // === Endo ===
+  'Levothyroxine': ['Eltroxin', 'Synthroid', 'Euthyrox', 'T4'],
+  'PTU (Propylthiouracil)': ['PTU'],
+  'Methimazole': ['Tapazole', 'Thiamazole', 'Thyrozol'],
+  'Desmopressin (DDAVP)': ['DDAVP', 'Minirin'],
+  'Octreotide': ['Sandostatin'],
+  'Bromocriptine': ['Parlodel'],
+  'Cabergoline': ['Dostinex', 'Cabaser'],
+  'Calcitonin': ['Miacalcin', 'Fortical'],
+  // === OB ===
+  'COC (Combined oral contraceptive)': ['COC', 'ยาคุม', 'Microgynon', 'Yasmin', 'Diane'],
+  'POP (Progestin-only pill)': ['POP', 'Cerazette', 'Exluton'],
+  'DMPA (Depo-Provera)': ['Depo', 'Depo-Provera', 'ยาฉีดคุม'],
+  'MgSO4': ['Magnesium sulfate', 'แมกซัลเฟต'],
+  'Methyldopa': ['Aldomet'],
+  'Labetalol': ['Trandate'],
+  'Misoprostol': ['Cytotec'],
+  // === Emergency ===
+  'Epinephrine': ['Adrenaline', 'EpiPen'],
+  'Naloxone': ['Narcan'],
+  'Calcium gluconate': ['Ca gluconate', 'แคลเซียมกลูโคเนต'],
+  // === Resp ===
+  'Salbutamol': ['Ventolin', 'Proventil', 'Asthalin'],
+  'Budesonide': ['Pulmicort', 'Symbicort'],
+  'Ipratropium': ['Atrovent'],
+  'Tiotropium': ['Spiriva'],
+  'Montelukast': ['Singulair', 'Montair'],
+  // === Other misc ===
+  'Varenicline': ['Champix', 'Chantix'],
+  'Orlistat': ['Xenical', 'Alli'],
+  'Alendronate': ['Fosamax'],
+  'Risedronate': ['Actonel'],
+  // === Psych ===
+  'Haloperidol': ['Haldol', 'Serenace'],
+  'Quetiapine': ['Seroquel', 'Ketipinor'],
+  'Lorazepam': ['Ativan', 'Lorax'],
+  'Diazepam': ['Valium', 'Diapam'],
+  'Chlordiazepoxide': ['Librium'],
+  // === Neuro ===
+  'Phenytoin': ['Dilantin', 'Epanutin'],
+  'Carbamazepine': ['Tegretol', 'CBZ'],
+  'Valproic acid': ['Depakine', 'Depakote', 'VPA', 'Epilim'],
+  'Levetiracetam': ['Keppra', 'LEV'],
+  'Lamotrigine': ['Lamictal', 'LTG'],
+  'Sumatriptan': ['Imigran', 'Imitrex'],
+  'Amitriptyline': ['Elavil', 'Tryptanol', 'Ami'],
 }
 
 export const TIMING_OPTIONS = [
