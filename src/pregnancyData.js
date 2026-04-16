@@ -2,7 +2,7 @@
  * Pregnancy / Lactation safety + symptom-indication mapping.
  * AI-seeded from FDA labels + LactMed (NIH). source='AI-seed', verified=false.
  */
-import { MEDICATIONS } from './medicationDatabase'
+import { BRAND_MAP, MEDICATIONS } from './medicationDatabase'
 
 export const SYMPTOMS = [
   { key: 'headache', label: 'ปวดหัว' },
@@ -284,12 +284,16 @@ export function searchBySymptom(symptomKey, context) {
   return results
 }
 
-/** Quick search: find drug by name and return pregnancy/lactation status */
+/** Quick search: find drug by name/generic/brand and return pregnancy/lactation status */
 export function searchDrugPregnancy(query) {
   if (!query || query.trim().length < 1) return []
   const q = query.toLowerCase()
   return MEDICATIONS
-    .filter(m => m.name.toLowerCase().includes(q) || m.generic.toLowerCase().includes(q))
+    .filter(m =>
+      m.name.toLowerCase().includes(q)
+      || m.generic.toLowerCase().includes(q)
+      || (BRAND_MAP[m.name] && BRAND_MAP[m.name].some(b => b.toLowerCase().includes(q)))
+    )
     .map(m => ({ ...m, ...D[m.name] }))
     .slice(0, 10)
 }
