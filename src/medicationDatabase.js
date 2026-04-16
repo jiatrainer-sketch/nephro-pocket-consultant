@@ -445,6 +445,34 @@ export const MEDICATIONS = [
     dosage: '70 mg PO weekly; avoid eGFR<35; take with water 30min before food', source: 'AI-seed', verified: false },
   { name: 'Risedronate', generic: 'Risedronate', category: 'Other',
     dosage: '35 mg PO weekly; avoid eGFR<30; take with water 30min before food', source: 'AI-seed', verified: false },
+
+  // === Psych extras ===
+  { name: 'Haloperidol', generic: 'Haloperidol', category: 'Psych',
+    dosage: '0.5-5 mg PO/IM BD-TID; delirium: 0.5-2 mg IV; no renal adj', source: 'AI-seed', verified: false },
+  { name: 'Quetiapine', generic: 'Quetiapine', category: 'Psych',
+    dosage: '25-200 mg OD-BD; no renal adj; start low in elderly', source: 'AI-seed', verified: false },
+  { name: 'Lorazepam', generic: 'Lorazepam', category: 'Psych',
+    dosage: '0.5-2 mg PO/IV q6-8h; no renal adj; preferred benzo in CKD (no active metab)', source: 'AI-seed', verified: false },
+  { name: 'Diazepam', generic: 'Diazepam', category: 'Psych',
+    dosage: '2-10 mg PO/IV BD-TID; CKD: reduce dose (active metabolites accumulate)', source: 'AI-seed', verified: false },
+
+  // === Neuro / Seizure ===
+  { name: 'Phenytoin', generic: 'Phenytoin', category: 'Neuro',
+    dosage: 'Load 15-20 mg/kg IV; maint 100 mg TID; CKD: adjust for free level; target 1-2 mcg/mL free', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+  { name: 'Carbamazepine', generic: 'Carbamazepine', category: 'Neuro',
+    dosage: '200 mg BD → titrate; target 4-12 mcg/mL; no renal adj but monitor', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+  { name: 'Valproic acid', generic: 'Valproic acid', category: 'Neuro',
+    dosage: '250-500 mg BD → titrate; target 50-100 mcg/mL; free level in CKD/HD', source: 'AI-seed', verified: false, riskClass: 'narrow-ti' },
+  { name: 'Levetiracetam', generic: 'Levetiracetam', category: 'Neuro',
+    dosage: '500-1500 mg BD; CrCl 30-49: 250-750 mg BD; CrCl<30: 250-500 mg BD; HD: supplement', source: 'AI-seed', verified: false },
+  { name: 'Lamotrigine', generic: 'Lamotrigine', category: 'Neuro',
+    dosage: '25-200 mg BD; CKD: reduce 25-50%; caution slow titration (rash)', source: 'AI-seed', verified: false },
+
+  // === Migraine ===
+  { name: 'Sumatriptan', generic: 'Sumatriptan', category: 'Neuro',
+    dosage: '50-100 mg PO; SC 6 mg; no renal adj; avoid in uncontrolled HTN', source: 'AI-seed', verified: false },
+  { name: 'Amitriptyline', generic: 'Amitriptyline', category: 'Neuro',
+    dosage: 'Migraine prophylaxis: 10-25 mg hs → titrate; no renal adj', source: 'AI-seed', verified: false },
 ]
 
 export function searchMedications(query) {
