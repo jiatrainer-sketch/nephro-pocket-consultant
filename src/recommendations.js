@@ -307,15 +307,28 @@ function getRenoprotectionRecs(v, meds, conditions, egfrDropPct = 0) {
       const indication = [hasDM ? 'DM' : null, hasProteinuria ? `UACR ${v.UACR} mg/g` : null]
         .filter(Boolean)
         .join(' + ')
-      recs.push({
-        id: 'renop-sglt2-add',
-        severity: 'yellow',
-        domain: 'CKD Progression',
-        title: 'แนะนำเพิ่ม SGLT2i (KDIGO 2024)',
-        recommendation: `มี ${indication} + ใช้ ACEi/ARB อยู่แล้ว\nแนะนำ add SGLT2i ตาม KDIGO 2024:\n• Dapagliflozin (Forxiga) 10 mg OD (eGFR ≥25)\n• Empagliflozin (Jardiance) 10 mg OD (eGFR ≥20)`,
-        target: 'ACEi/ARB + SGLT2i combination (KDIGO 2024)',
-        warning: `eGFR ปัจจุบัน: ${v.eGFR ?? '—'} mL/min — ห้ามใช้ถ้า eGFR <20`,
-      })
+      if (egfrDropPct <= -30) {
+        // eGFR dropping — defer adding SGLT2i
+        recs.push({
+          id: 'renop-sglt2-defer',
+          severity: 'yellow',
+          domain: 'CKD Progression',
+          title: 'SGLT2i — รอ eGFR stable ก่อนเพิ่ม',
+          recommendation: `มี ${indication} → SGLT2i มี indication ตาม KDIGO 2024\nแต่ eGFR ลดลง >30% — ไม่ควรเพิ่มยาที่ลด eGFR เพิ่มตอนนี้\nรอ eGFR stable แล้วค่อย add:\n• Dapagliflozin (Forxiga) 10 mg OD (eGFR ≥25)\n• Empagliflozin (Jardiance) 10 mg OD (eGFR ≥20)`,
+          target: 'รอ eGFR stable → add SGLT2i ตาม KDIGO 2024',
+          warning: 'SGLT2i จะทำให้ eGFR ลดเพิ่มอีก 3-5 mL/min (hemodynamic dip) — ไม่ควรเพิ่มขณะ eGFR ไม่ stable',
+        })
+      } else {
+        recs.push({
+          id: 'renop-sglt2-add',
+          severity: 'yellow',
+          domain: 'CKD Progression',
+          title: 'แนะนำเพิ่ม SGLT2i (KDIGO 2024)',
+          recommendation: `มี ${indication} + ใช้ ACEi/ARB อยู่แล้ว\nแนะนำ add SGLT2i ตาม KDIGO 2024:\n• Dapagliflozin (Forxiga) 10 mg OD (eGFR ≥25)\n• Empagliflozin (Jardiance) 10 mg OD (eGFR ≥20)`,
+          target: 'ACEi/ARB + SGLT2i combination (KDIGO 2024)',
+          warning: `eGFR ปัจจุบัน: ${v.eGFR ?? '—'} mL/min — ห้ามใช้ถ้า eGFR <20`,
+        })
+      }
     }
   } else {
     // ไม่ได้ใช้ ARB/ACEi — แนะนำเริ่มถ้ามี indication
