@@ -222,10 +222,17 @@ function DrugCard({ drug, isBF }) {
 }
 
 function AIChat({ settings, contextLabel, aiContext, onClose }) {
-  const [messages, setMessages] = useState([])
+  const chatKey = 'chat_pregnancy'
+  const [messages, setMessages] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(chatKey)) || [] } catch { return [] }
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef(null)
+
+  useEffect(() => {
+    if (messages.length > 0) localStorage.setItem(chatKey, JSON.stringify(messages))
+  }, [messages])
 
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight)
@@ -381,6 +388,14 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
           >
             ส่ง
           </button>
+        {messages.length > 0 && (
+          <button
+            onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
+            className="w-full mt-2 text-xs text-gray-400 py-1"
+          >
+            ล้างประวัติแชท
+          </button>
+        )}
         </div>
       </div>
     </div>
