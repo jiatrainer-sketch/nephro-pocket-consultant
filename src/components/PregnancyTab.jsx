@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SYMPTOMS, getPregnancyInfo, searchBySymptom, searchDrugPregnancy } from '../pregnancyData'
 
 const SAFETY_STYLE = {
@@ -24,23 +24,29 @@ export default function PregnancyTab({ onBack, settings }) {
   const [showAI, setShowAI] = useState(false)
 
   const isBF = context === 'breastfeeding'
-  const contextLabel = isBF
-    ? 'ให้นมบุตร'
-    : `ตั้งครรภ์ ไตรมาส ${context.split('-')[1]}`
+  const contextLabel = isBF ? 'ให้นมบุตร' : `ตั้งครรภ์ ไตรมาส ${context.split('-')[1]}`
 
-  const results = mode === 'symptom' && selectedSymptom
-    ? searchBySymptom(selectedSymptom, isBF ? 'breastfeeding' : 'pregnant')
-    : mode === 'search' && query.trim().length >= 1
-      ? searchDrugPregnancy(query)
-      : []
+  const results =
+    mode === 'symptom' && selectedSymptom
+      ? searchBySymptom(selectedSymptom, isBF ? 'breastfeeding' : 'pregnant')
+      : mode === 'search' && query.trim().length >= 1
+        ? searchDrugPregnancy(query)
+        : []
 
-  const aiContext = `สถานะ: ${contextLabel}\n` +
-    (selectedSymptom ? `อาการ: ${SYMPTOMS.find(s => s.key === selectedSymptom)?.label || selectedSymptom}\n` : '') +
-    (results.length > 0 ? `ยาที่แนะนำ:\n${results.map(d => {
-      const info = getPregnancyInfo(d.name) || {}
-      const s = isBF ? info.l : info.p
-      return `- ${d.name} (${d.generic}) — ${SAFETY_LABEL[s] || '?'}: ${(isBF ? info.lN : info.pN) || ''}`
-    }).join('\n')}` : '')
+  const aiContext =
+    `สถานะ: ${contextLabel}\n` +
+    (selectedSymptom
+      ? `อาการ: ${SYMPTOMS.find((s) => s.key === selectedSymptom)?.label || selectedSymptom}\n`
+      : '') +
+    (results.length > 0
+      ? `ยาที่แนะนำ:\n${results
+          .map((d) => {
+            const info = getPregnancyInfo(d.name) || {}
+            const s = isBF ? info.l : info.p
+            return `- ${d.name} (${d.generic}) — ${SAFETY_LABEL[s] || '?'}: ${(isBF ? info.lN : info.pN) || ''}`
+          })
+          .join('\n')}`
+      : '')
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -49,7 +55,9 @@ export default function PregnancyTab({ onBack, settings }) {
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="text-xl leading-none">←</button>
+          <button type="button" onClick={onBack} className="text-xl leading-none">
+            ←
+          </button>
           <div>
             <div className="text-lg font-bold leading-tight">Pregnancy / Lactation</div>
             <div className="text-xs text-pink-200">ยาปลอดภัยสำหรับคนท้อง/ให้นม</div>
@@ -60,7 +68,7 @@ export default function PregnancyTab({ onBack, settings }) {
       <main className="flex-1 max-w-lg mx-auto w-full px-4 py-4 space-y-4 pb-24">
         {/* Context selector */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
-          <label className="block text-xs text-gray-500 mb-2 font-medium">สถานะผู้ป่วย</label>
+          <span className="block text-xs text-gray-500 mb-2 font-medium">สถานะผู้ป่วย</span>
           <div className="flex flex-wrap gap-1.5">
             {[
               { v: 'pregnant-1', l: 'ท้อง T1' },
@@ -69,6 +77,7 @@ export default function PregnancyTab({ onBack, settings }) {
               { v: 'breastfeeding', l: 'ให้นม' },
             ].map(({ v, l }) => (
               <button
+                type="button"
                 key={v}
                 onClick={() => setContext(v)}
                 className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
@@ -86,17 +95,27 @@ export default function PregnancyTab({ onBack, settings }) {
         {/* Mode toggle */}
         <div className="flex gap-2">
           <button
-            onClick={() => { setMode('symptom'); setQuery('') }}
+            onClick={() => {
+              setMode('symptom')
+              setQuery('')
+            }}
             className={`flex-1 text-sm py-2 rounded-xl font-medium transition-colors ${
-              mode === 'symptom' ? 'bg-pink-600 text-white' : 'bg-white text-gray-600 border border-gray-200'
+              mode === 'symptom'
+                ? 'bg-pink-600 text-white'
+                : 'bg-white text-gray-600 border border-gray-200'
             }`}
           >
             เลือกอาการ
           </button>
           <button
-            onClick={() => { setMode('search'); setSelectedSymptom(null) }}
+            onClick={() => {
+              setMode('search')
+              setSelectedSymptom(null)
+            }}
             className={`flex-1 text-sm py-2 rounded-xl font-medium transition-colors ${
-              mode === 'search' ? 'bg-pink-600 text-white' : 'bg-white text-gray-600 border border-gray-200'
+              mode === 'search'
+                ? 'bg-pink-600 text-white'
+                : 'bg-white text-gray-600 border border-gray-200'
             }`}
           >
             ค้นชื่อยา
@@ -136,16 +155,14 @@ export default function PregnancyTab({ onBack, settings }) {
 
         {/* Results */}
         {mode === 'symptom' && selectedSymptom && results.length === 0 && (
-          <div className="text-center text-gray-400 py-8 text-sm">
-            ไม่มียาที่ tagged สำหรับอาการนี้
-          </div>
+          <div className="text-center text-gray-400 py-8 text-sm">ไม่มียาที่ tagged สำหรับอาการนี้</div>
         )}
 
         {results.length > 0 && (
           <div className="space-y-2">
             <div className="text-xs text-gray-500 font-medium">
               {mode === 'symptom'
-                ? `ยาสำหรับ "${SYMPTOMS.find(s => s.key === selectedSymptom)?.label}" — ${contextLabel}`
+                ? `ยาสำหรับ "${SYMPTOMS.find((s) => s.key === selectedSymptom)?.label}" — ${contextLabel}`
                 : `ผลค้นหา "${query}" — ${contextLabel}`}
             </div>
             {results.map((drug, i) => (
@@ -188,14 +205,16 @@ function DrugCard({ drug, isBF }) {
   const info = getPregnancyInfo(drug.name) || {}
   const safety = isBF ? info.l : info.p
   const note = isBF ? info.lN : info.pN
-  const alts = (!isBF && info.pAlt?.length > 0) ? info.pAlt : []
+  const alts = !isBF && info.pAlt?.length > 0 ? info.pAlt : []
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="font-medium text-sm text-gray-900">{drug.name}</span>
         {safety && (
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${SAFETY_STYLE[safety]}`}>
+          <span
+            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${SAFETY_STYLE[safety]}`}
+          >
             {SAFETY_LABEL[safety]}
           </span>
         )}
@@ -207,15 +226,9 @@ function DrugCard({ drug, isBF }) {
       </div>
       <div className="text-xs text-gray-500 mt-0.5">{drug.generic}</div>
       {note && <div className="text-xs text-gray-600 mt-1">{note}</div>}
-      {drug.dosage && (
-        <div className="text-[11px] text-blue-600 mt-1">
-          Dose: {drug.dosage}
-        </div>
-      )}
+      {drug.dosage && <div className="text-[11px] text-blue-600 mt-1">Dose: {drug.dosage}</div>}
       {alts.length > 0 && (
-        <div className="text-[11px] text-green-700 mt-1">
-          Alternatives: {alts.join(', ')}
-        </div>
+        <div className="text-[11px] text-green-700 mt-1">Alternatives: {alts.join(', ')}</div>
       )}
     </div>
   )
@@ -224,7 +237,11 @@ function DrugCard({ drug, isBF }) {
 function AIChat({ settings, contextLabel, aiContext, onClose }) {
   const chatKey = 'chat_pregnancy'
   const [messages, setMessages] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(chatKey)) || [] } catch { return [] }
+    try {
+      return JSON.parse(localStorage.getItem(chatKey)) || []
+    } catch {
+      return []
+    }
   })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -278,7 +295,7 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
           max_tokens: 2048,
           stream: true,
           system: systemPrompt,
-          messages: newMsgs.map(m => ({ role: m.role, content: m.content })),
+          messages: newMsgs.map((m) => ({ role: m.role, content: m.content })),
         }),
       })
 
@@ -301,7 +318,7 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
             const evt = JSON.parse(json)
             if (evt.type === 'content_block_delta' && evt.delta?.text) {
               accumulated += evt.delta.text
-              setMessages(prev => {
+              setMessages((prev) => {
                 const updated = [...prev]
                 updated[updated.length - 1] = { role: 'assistant', content: accumulated }
                 return updated
@@ -312,14 +329,14 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
       }
 
       if (!accumulated) {
-        setMessages(prev => {
+        setMessages((prev) => {
           const updated = [...prev]
           updated[updated.length - 1] = { role: 'assistant', content: 'ไม่สามารถตอบได้' }
           return updated
         })
       }
     } catch {
-      setMessages(prev => {
+      setMessages((prev) => {
         const updated = [...prev]
         updated[updated.length - 1] = { role: 'assistant', content: 'Error: ไม่สามารถเชื่อมต่อ API ได้' }
         return updated
@@ -333,7 +350,9 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
     <div className="fixed inset-0 z-40 flex flex-col bg-gray-50">
       {/* AI Header */}
       <div className="bg-purple-600 text-white px-4 py-3 flex items-center gap-3 shadow-md">
-        <button onClick={onClose} className="text-xl leading-none">←</button>
+        <button onClick={onClose} className="text-xl leading-none">
+          ←
+        </button>
         <div>
           <div className="text-sm font-bold">AI Recheck — {contextLabel}</div>
           <div className="text-xs text-purple-200">ถามเกี่ยวกับยาในคนท้อง/ให้นม</div>
@@ -351,11 +370,13 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
         )}
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${
-              msg.role === 'user'
-                ? 'bg-purple-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-800'
-            }`}>
+            <div
+              className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${
+                msg.role === 'user'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white border border-gray-200 text-gray-800'
+              }`}
+            >
               {msg.content}
             </div>
           </div>
@@ -388,14 +409,17 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
           >
             ส่ง
           </button>
-        {messages.length > 0 && (
-          <button
-            onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
-            className="w-full mt-2 text-xs text-gray-400 py-1"
-          >
-            ล้างประวัติแชท
-          </button>
-        )}
+          {messages.length > 0 && (
+            <button
+              onClick={() => {
+                setMessages([])
+                localStorage.removeItem(chatKey)
+              }}
+              className="w-full mt-2 text-xs text-gray-400 py-1"
+            >
+              ล้างประวัติแชท
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { FREQUENCY_OPTIONS, TIMING_OPTIONS, getDrugInfo, searchMedications } from '../medicationDatabase'
+import {
+  FREQUENCY_OPTIONS,
+  TIMING_OPTIONS,
+  getDrugInfo,
+  searchMedications,
+} from '../medicationDatabase'
 import { generateId } from '../storage'
 
 export default function MedTab({ patient, onUpdate }) {
@@ -98,9 +103,7 @@ function MedCard({ med, onEdit, onDelete }) {
           {[med.dose, med.frequency, med.timing].filter(Boolean).join(' · ')}
         </div>
         {info?.dosage && (
-          <div className="text-[11px] text-blue-600 mt-0.5 leading-snug">
-            💊 {info.dosage}
-          </div>
+          <div className="text-[11px] text-blue-600 mt-0.5 leading-snug">💊 {info.dosage}</div>
         )}
         {med.note && <div className="text-xs text-gray-400 mt-0.5">{med.note}</div>}
       </div>
@@ -203,9 +206,9 @@ function MedForm({ initial, onSave, onCancel }) {
           )}
           {showSuggestions && suggestions.length > 0 && (
             <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-56 overflow-y-auto">
-              {suggestions.map((med, i) => (
+              {suggestions.map((med) => (
                 <button
-                  key={i}
+                  key={med.name}
                   type="button"
                   onMouseDown={() => selectMed(med)}
                   className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0"
@@ -347,6 +350,7 @@ function MedForm({ initial, onSave, onCancel }) {
 
       <div className="flex gap-2 pb-8">
         <button
+          type="button"
           onClick={() => canSave && onSave({ name: name.trim(), dose, frequency, timing, note })}
           disabled={!canSave}
           className={`flex-1 py-3 rounded-2xl text-sm font-medium ${
@@ -356,6 +360,7 @@ function MedForm({ initial, onSave, onCancel }) {
           บันทึก
         </button>
         <button
+          type="button"
           onClick={onCancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
