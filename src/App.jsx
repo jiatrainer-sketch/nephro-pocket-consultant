@@ -356,7 +356,9 @@ function SettingsView({ settings, onSave, onBack, onDataRestored }) {
   const [apiKey, setApiKey] = useState(settings.apiKey || '')
   const [storage, setStorage] = useState(null)
   const [restoreMsg, setRestoreMsg] = useState('')
+  const [importMsg, setImportMsg] = useState('')
   const fileRef = useRef(null)
+  const importFileRef = useRef(null)
 
   useEffect(() => {
     getStorageInfo().then(setStorage)
@@ -393,6 +395,31 @@ function SettingsView({ settings, onSave, onBack, onDataRestored }) {
       onDataRestored?.()
     } catch (err) {
       setRestoreMsg(`❌ ${err.message || 'Restore ไม่สำเร็จ'}`)
+    }
+    e.target.value = ''
+  }
+
+  const handleImportPatients = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const parsed = JSON.parse(text)
+      // รองรับทั้ง plain array และ full backup format
+      const incoming = Array.isArray(parsed)
+        ? parsed
+        : Array.isArray(parsed?.patients)
+          ? parsed.patients
+          : null
+      if (!incoming) throw new Error('ไม่พบ patients array ในไฟล์')
+      const current = loadPatients()
+      const existingIds = new Set(current.map((p) => p.id))
+      const toAdd = incoming.filter((p) => p?.id && !existingIds.has(p.id))
+      savePatients([...current, ...toAdd])
+      setImportMsg(`✅ นำเข้าสำเร็จ — เพิ่ม ${toAdd.length} คน (ซ้ำ ${incoming.length - toAdd.length} คน)`)
+      onDataRestored?.()
+    } catch (err) {
+      setImportMsg(`❌ ${err.message || 'นำเข้าไม่สำเร็จ'}`)
     }
     e.target.value = ''
   }
@@ -489,6 +516,27 @@ function SettingsView({ settings, onSave, onBack, onDataRestored }) {
           />
 
           {restoreMsg && <p className="text-xs text-center mt-1">{restoreMsg}</p>}
+
+          <div className="border-t border-gray-100 pt-3">
+            <p className="text-xs text-gray-500 mb-2">
+              📥 นำเข้าคนไข้จากไฟล์ JSON (เพิ่มเข้ามา ไม่เขียนทับข้อมูลเดิม)
+            </p>
+            <button
+              type="button"
+              onClick={() => importFileRef.current?.click()}
+              className="w-full bg-green-50 text-green-700 py-2.5 rounded-xl text-sm font-medium border border-green-200"
+            >
+              📥 นำเข้าคนไข้ (merge)
+            </button>
+            <input
+              ref={importFileRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportPatients}
+              className="hidden"
+            />
+            {importMsg && <p className="text-xs text-center mt-1">{importMsg}</p>}
+          </div>
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">

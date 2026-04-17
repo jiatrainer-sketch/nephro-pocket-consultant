@@ -219,6 +219,10 @@ export function importAllData(jsonString, { overwriteSettings = false } = {}) {
   } catch {
     throw new Error('ไฟล์ backup อ่านไม่ได้ (JSON ผิดรูปแบบ)')
   }
+  // รองรับทั้ง plain array และ full backup format
+  if (Array.isArray(parsed)) {
+    parsed = { patients: parsed }
+  }
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('ไฟล์ backup ไม่ถูกต้อง')
   }
