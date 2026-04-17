@@ -54,12 +54,23 @@ ${labs}
 }
 
 export default function ChatTab({ patient, settings }) {
-  const [messages, setMessages] = useState([])
+  const chatKey = `chat_${patient?.id || 'quick'}`
+  const [messages, setMessages] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(chatKey)) || [] } catch { return [] }
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    try { const saved = JSON.parse(localStorage.getItem(chatKey)); setMessages(saved || []) } catch { setMessages([]) }
+  }, [chatKey])
+
+  useEffect(() => {
+    if (messages.length > 0) localStorage.setItem(chatKey, JSON.stringify(messages))
+  }, [messages, chatKey])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -260,7 +271,7 @@ export default function ChatTab({ patient, settings }) {
         </div>
         {messages.length > 0 && (
           <button
-            onClick={() => setMessages([])}
+            onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
             className="w-full mt-2 text-xs text-gray-400 py-1"
           >
             ล้างประวัติแชท
