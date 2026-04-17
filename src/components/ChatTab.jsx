@@ -63,6 +63,7 @@ export default function ChatTab({ patient, settings }) {
   const [error, setError] = useState('')
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+  const abortRef = useRef(null)
 
   useEffect(() => {
     try { const saved = JSON.parse(localStorage.getItem(chatKey)); setMessages(saved || []) } catch { setMessages([]) }
@@ -92,8 +93,11 @@ export default function ChatTab({ patient, settings }) {
     setError('')
 
     try {
+      const controller = new AbortController()
+      abortRef.current = controller
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': settings.apiKey,
@@ -150,10 +154,17 @@ export default function ChatTab({ patient, settings }) {
       }
     } catch (e) {
       setLoading(false)
-      setError(`เกิดข้อผิดพลาด: ${e.message}`)
+      if (e.name !== 'AbortError') setError(`เกิดข้อผิดพลาด: ${e.message}`)
     } finally {
+      abortRef.current = null
       setTimeout(() => inputRef.current?.focus(), 100)
     }
+  }
+
+  const stopGeneration = () => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setLoading(false)
   }
 
   return (
@@ -247,27 +258,30 @@ export default function ChatTab({ patient, settings }) {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                send()
-              }
-            }}
-            placeholder="ถามเกี่ยวกับคนไข้..."
+            placeholder="ถามเกี่ยวกับคนไข้... (Enter = ขึ้นบรรทัดใหม่)"
             rows={2}
             className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
-          <button
-            onClick={send}
-            disabled={loading || !input.trim()}
-            className={`px-4 rounded-xl text-sm font-medium transition-colors shrink-0 ${
-              loading || !input.trim()
-                ? 'bg-gray-100 text-gray-400'
-                : 'bg-blue-600 text-white active:bg-blue-700'
-            }`}
-          >
-            ส่ง
-          </button>
+          {loading ? (
+            <button
+              onClick={stopGeneration}
+              className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white active:bg-red-700 shrink-0"
+            >
+              หยุด
+            </button>
+          ) : (
+            <button
+              onClick={send}
+              disabled={!input.trim()}
+              className={`px-4 rounded-xl text-sm font-medium transition-colors shrink-0 ${
+                !input.trim()
+                  ? 'bg-gray-100 text-gray-400'
+                  : 'bg-blue-600 text-white active:bg-blue-700'
+              }`}
+            >
+              ส่ง
+            </button>
+          )}
         </div>
         {messages.length > 0 && (
           <button

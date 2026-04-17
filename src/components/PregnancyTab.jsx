@@ -229,6 +229,7 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef(null)
+  const abortRef = useRef(null)
 
   useEffect(() => {
     if (messages.length > 0) localStorage.setItem(chatKey, JSON.stringify(messages))
@@ -265,8 +266,11 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
     setLoading(true)
 
     try {
+      const controller = new AbortController()
+      abortRef.current = controller
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'content-type': 'application/json',
           'x-api-key': settings.apiKey,
@@ -318,15 +322,24 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
           return updated
         })
       }
-    } catch {
-      setMessages(prev => {
-        const updated = [...prev]
-        updated[updated.length - 1] = { role: 'assistant', content: 'Error: ไม่สามารถเชื่อมต่อ API ได้' }
-        return updated
-      })
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        setMessages(prev => {
+          const updated = [...prev]
+          updated[updated.length - 1] = { role: 'assistant', content: 'Error: ไม่สามารถเชื่อมต่อ API ได้' }
+          return updated
+        })
+      }
     } finally {
+      abortRef.current = null
       setLoading(false)
     }
+  }
+
+  const stopGeneration = () => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setLoading(false)
   }
 
   return (
@@ -372,22 +385,30 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
       {/* Input */}
       <div className="border-t border-gray-200 bg-white px-4 py-3">
         <div className="max-w-lg mx-auto flex gap-2">
-          <input
-            type="text"
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && send()}
-            placeholder={settings?.apiKey ? 'ถาม AI เกี่ยวกับยา...' : 'ใส่ API Key ใน Settings ก่อน'}
+            placeholder={settings?.apiKey ? 'ถาม AI เกี่ยวกับยา... (Enter = ขึ้นบรรทัดใหม่)' : 'ใส่ API Key ใน Settings ก่อน'}
             disabled={!settings?.apiKey}
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 disabled:bg-gray-100"
+            rows={2}
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-300 disabled:bg-gray-100"
           />
-          <button
-            onClick={send}
-            disabled={!settings?.apiKey || loading || !input.trim()}
-            className="bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50"
-          >
-            ส่ง
-          </button>
+          {loading ? (
+            <button
+              onClick={stopGeneration}
+              className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white active:bg-red-700 shrink-0"
+            >
+              หยุด
+            </button>
+          ) : (
+            <button
+              onClick={send}
+              disabled={!settings?.apiKey || !input.trim()}
+              className="bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 shrink-0"
+            >
+              ส่ง
+            </button>
+          )}
         {messages.length > 0 && (
           <button
             onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
