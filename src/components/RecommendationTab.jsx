@@ -173,7 +173,12 @@ function ProtocolCard({ title, onClose, children }) {
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
         <h3 className="font-bold text-sm text-gray-800">{title}</h3>
-        <button onClick={onClose} className="text-gray-400 text-lg leading-none px-1">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-gray-400 text-lg leading-none px-1"
+          aria-label="ปิด"
+        >
           ✕
         </button>
       </div>

@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { FREQUENCY_OPTIONS, TIMING_OPTIONS, getDrugInfo, searchMedications } from '../medicationDatabase'
+import {
+  FREQUENCY_OPTIONS,
+  TIMING_OPTIONS,
+  getDrugInfo,
+  searchMedications,
+} from '../medicationDatabase'
 import { generateId } from '../storage'
 
 export default function MedTab({ patient, onUpdate }) {
@@ -98,9 +103,7 @@ function MedCard({ med, onEdit, onDelete }) {
           {[med.dose, med.frequency, med.timing].filter(Boolean).join(' · ')}
         </div>
         {info?.dosage && (
-          <div className="text-[11px] text-blue-600 mt-0.5 leading-snug">
-            💊 {info.dosage}
-          </div>
+          <div className="text-[11px] text-blue-600 mt-0.5 leading-snug">💊 {info.dosage}</div>
         )}
         {med.note && <div className="text-xs text-gray-400 mt-0.5">{med.note}</div>}
       </div>

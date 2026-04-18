@@ -421,11 +421,13 @@ function QuickLabInput({ patient, onUpdate }) {
                 {c.name}
                 {!QUICK_CONDITIONS.includes(c.name) && (
                   <button
+                    type="button"
                     onClick={() => {
                       const next = patient.conditions.filter((_, idx) => idx !== i)
                       onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
                     }}
                     className="text-teal-400 ml-0.5"
+                    aria-label={`ลบ ${c.name}`}
                   >
                     ✕
                   </button>
