@@ -416,7 +416,9 @@ function SettingsView({ settings, onSave, onBack, onDataRestored }) {
       const existingIds = new Set(current.map((p) => p.id))
       const toAdd = incoming.filter((p) => p?.id && !existingIds.has(p.id))
       savePatients([...current, ...toAdd])
-      setImportMsg(`✅ นำเข้าสำเร็จ — เพิ่ม ${toAdd.length} คน (ซ้ำ ${incoming.length - toAdd.length} คน)`)
+      setImportMsg(
+        `✅ นำเข้าสำเร็จ — เพิ่ม ${toAdd.length} คน (ซ้ำ ${incoming.length - toAdd.length} คน)`
+      )
       onDataRestored?.()
     } catch (err) {
       setImportMsg(`❌ ${err.message || 'นำเข้าไม่สำเร็จ'}`)

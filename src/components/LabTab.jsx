@@ -313,7 +313,12 @@ function LabCard({ entry, onEdit, onDelete }) {
           <button onClick={onDelete} className="text-xs text-red-400  px-2 py-1">
             ลบ
           </button>
-          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 text-lg px-1">
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="text-gray-400 text-lg px-1"
+            aria-label={expanded ? 'ย่อ' : 'ขยาย'}
+          >
             {expanded ? '▲' : '▼'}
           </button>
         </div>
