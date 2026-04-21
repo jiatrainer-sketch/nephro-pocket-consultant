@@ -10,7 +10,7 @@ const TABS = [
   { id: 'info', label: '👤 ข้อมูล', title: 'ข้อมูลคนไข้' },
   { id: 'lab', label: '🧪 Lab', title: 'Lab' },
   { id: 'med', label: '💊 ยา', title: 'ยา' },
-  { id: 'chat', label: '💬 AI', title: 'AI Chat' },
+  { id: 'chat', label: '💬 Dr. AI', title: 'Dr. AI' },
 ]
 
 export default function PatientDetail({ patient, onUpdate, onDelete, onBack, settings }) {
