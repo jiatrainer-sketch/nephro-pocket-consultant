@@ -1,57 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-
-const MODEL = 'claude-sonnet-4-6'
-
-function buildSystemPrompt(patient) {
-  const labs = patient.labs?.length
-    ? patient.labs
-        .slice()
-        .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-        .slice(0, 3)
-        .map((l) => `  - ${l.date || 'ไม่ระบุวันที่'}: ${JSON.stringify(l.values)}`)
-        .join('\n')
-    : '  ไม่มีข้อมูล lab'
-
-  const meds = patient.medications?.length
-    ? patient.medications
-        .map((m) => `  - ${m.name} ${m.dose} ${m.frequency} ${m.timing}`)
-        .join('\n')
-    : '  ไม่มีข้อมูล'
-
-  const conditions =
-    patient.conditions?.map((c) => c.name + (c.since ? ` (since ${c.since})` : '')).join(', ') ||
-    'ไม่มีข้อมูล'
-  const allergies = patient.allergies?.join(', ') || 'ไม่มี'
-
-  return `คุณคือ Internal Medicine & Nephrology Consultant สำหรับแพทย์ไทย
-มีความเชี่ยวชาญครอบคลุมทุก subspecialty (Cardio, Endo, ID, Rheum, Neuro, Hemato ฯลฯ)
-แต่ต้องคำนึงถึง CKD/HD context เสมอ — ปรับ dose ตาม eGFR/CrCl ทุกยา
-
-ข้อมูลคนไข้:
-- ชื่อ/HN: ${patient.name || '—'} / ${patient.hn || '—'}
-- อายุ: ${patient.age || '—'} ปี
-- น้ำหนัก: ${patient.weight_kg || '—'} kg, ส่วนสูง: ${patient.height_cm || '—'} cm, Dry weight: ${patient.dry_weight_kg || '—'} kg
-- เริ่ม HD: ${patient.hd_start_date || '—'}
-- สาเหตุ ESRD: ${patient.esrd_cause || '—'}
-- Vascular access: ${patient.vascular_access?.type || '—'} (${patient.vascular_access?.created_date || '—'})
-- โรคประจำตัว: ${conditions}
-- Allergy: ${allergies}
-- ยาปัจจุบัน:
-${meds}
-- Lab (ล่าสุด 3 ครั้ง):
-${labs}
-
-หลักการตอบ:
-1. ตอบเป็นภาษาไทย ชื่อยาและศัพท์เฉพาะทางใช้ภาษาอังกฤษ
-2. อ้างอิง CPG: Thailand CPG Anemia 2021, KDIGO 2026 Anemia, KDIGO 2024 CKD, KDIGO 2017/2025 MBD, AHA/ACC, ADA, ACR, IDSA guidelines ตามสาขาที่ถาม
-3. คำนวณ dose จริงจากข้อมูลยาปัจจุบัน
-4. บอกเป้าหมาย + ข้อระวัง + monitor หลังปรับยา
-5. ถ้าคนไข้มี allergy → ห้ามแนะนำยาที่แพ้
-6. ถ้า lab เก่า >3 เดือน → เตือนควรเจาะใหม่
-7. ตอบสั้นกระชับ เว้นแต่ถูกถามให้ขยาย
-8. คุณเป็น clinical decision support — แพทย์ต้อง confirm ก่อนสั่งยาเสมอ
-9. ดูคนไข้ให้ครอบทุกมุม: ไต + เบาหวาน + ความดัน + หัวใจ + drug interaction`
-}
+import { DR_AI_MODEL, buildDrAIPrompt, buildPatientContext } from '../drAIPrompt'
 
 export default function ChatTab({ patient, settings }) {
   const chatKey = `chat_${patient?.id || 'quick'}`
@@ -105,10 +53,10 @@ export default function ChatTab({ patient, settings }) {
           'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
-          model: MODEL,
-          max_tokens: 2048,
+          model: DR_AI_MODEL,
+          max_tokens: 4096,
           stream: true,
-          system: buildSystemPrompt(patient),
+          system: buildDrAIPrompt(buildPatientContext(patient)),
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
         }),
       })
@@ -174,7 +122,7 @@ export default function ChatTab({ patient, settings }) {
         {messages.length === 0 && (
           <div className="text-center py-10 text-gray-400">
             <div className="text-4xl mb-3">💬</div>
-            <p className="text-sm font-medium">AI Nephrology Consultant</p>
+            <p className="text-sm font-medium">Dr. AI — Internal Medicine Consultant</p>
             <p className="text-xs mt-1">ถามได้ทุกเรื่องที่เกี่ยวกับคนไข้รายนี้</p>
             <div className="mt-4 space-y-2">
               {['ควรปรับ EPO เท่าไหร่?', 'iPTH สูง ทำยังไงดี?', 'มี drug interaction ไหม?'].map((q) => (
