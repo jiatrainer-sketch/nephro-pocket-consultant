@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { FREQUENCY_OPTIONS, TIMING_OPTIONS, getDrugInfo, searchMedications } from '../medicationDatabase'
 import { generateId } from '../storage'
 
-export default function MedTab({ patient, onUpdate }) {
+export default function MedTab({ patient, onUpdate, settings }) {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [showScan, setShowScan] = useState(false)
 
   const openAdd = () => {
     setEditingId(null)
@@ -31,6 +32,17 @@ export default function MedTab({ patient, onUpdate }) {
     onUpdate({ ...patient, medications: patient.medications.filter((m) => m.id !== id) })
   }
 
+  const addScannedMeds = (medsArr) => {
+    const existing = patient.medications || []
+    const newMeds = medsArr.map(m => ({ ...m, id: generateId() }))
+    onUpdate({ ...patient, medications: [...existing, ...newMeds] })
+    setShowScan(false)
+  }
+
+  if (showScan) {
+    return <MedScan settings={settings} onConfirm={addScannedMeds} onCancel={() => setShowScan(false)} />
+  }
+
   if (showForm) {
     const existing = editingId ? patient.medications.find((m) => m.id === editingId) : null
     return <MedForm initial={existing} onSave={saveMed} onCancel={() => setShowForm(false)} />
@@ -40,12 +52,20 @@ export default function MedTab({ patient, onUpdate }) {
 
   return (
     <div className="p-4 space-y-3">
-      <button
-        onClick={openAdd}
-        className="w-full bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
-      >
-        <span className="text-lg leading-none">+</span> เพิ่มยา
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={openAdd}
+          className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
+        >
+          <span className="text-lg leading-none">+</span> เพิ่มยา
+        </button>
+        <button
+          onClick={() => setShowScan(true)}
+          className="bg-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-1"
+        >
+          <span className="text-base leading-none">📷</span> สแกนยา
+        </button>
+      </div>
 
       {meds.length === 0 && (
         <div className="text-center text-gray-400 py-12 text-sm">ยังไม่มียา — กด + เพิ่มยา</div>
@@ -166,8 +186,7 @@ function MedForm({ initial, onSave, onCancel }) {
 
   const canSave = name.trim().length > 0
 
-  const inp =
-    'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
+  const inp = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
 
   return (
     <div className="p-4 space-y-4">
@@ -359,6 +378,181 @@ function MedForm({ initial, onSave, onCancel }) {
           onClick={onCancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
+          ยกเลิก
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// Med Scan — photo → AI reads drug names → confirm
+// ============================================================
+const SCAN_MODEL = 'claude-sonnet-4-6'
+
+function MedScan({ settings, onConfirm, onCancel }) {
+  const [image, setImage] = useState(null)
+  const [preview, setPreview] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [scannedDrugs, setScannedDrugs] = useState([])
+  const [selected, setSelected] = useState(new Set())
+  const [error, setError] = useState('')
+  const fileRef = useRef(null)
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPreview(URL.createObjectURL(file))
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1]
+      setImage({ data: base64, type: file.type })
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const scan = async () => {
+    if (!image || !settings?.apiKey) return
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': settings.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: SCAN_MODEL,
+          max_tokens: 1024,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: image.type, data: image.data } },
+              { type: 'text', text: `อ่านชื่อยาทั้งหมดจากรูปนี้ (ซองยา/ฉลาก/ใบสั่งยา)
+ตอบเป็น JSON array เท่านั้น ห้ามมีข้อความอื่น:
+[{"name":"ชื่อยา generic ภาษาอังกฤษ","dose":"dose ถ้าเห็น","frequency":"frequency ถ้าเห็น","timing":"เวลากิน ถ้าเห็น"}]
+ถ้าไม่เห็น dose/frequency/timing ใส่ ""
+ถ้าเป็นชื่อการค้า ให้แปลงเป็น generic name ด้วย` },
+            ],
+          }],
+        }),
+      })
+      const data = await res.json()
+      const text = data.content?.[0]?.text || ''
+      const match = text.match(/\[[\s\S]*\]/)
+      if (match) {
+        const drugs = JSON.parse(match[0])
+        setScannedDrugs(drugs)
+        setSelected(new Set(drugs.map((_, i) => i)))
+      } else {
+        setError('AI ไม่สามารถอ่านชื่อยาจากรูปได้ — ลองถ่ายใหม่ให้ชัดขึ้น')
+      }
+    } catch (e) {
+      setError(`Error: ${e.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const toggle = (i) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(i) ? next.delete(i) : next.add(i)
+      return next
+    })
+  }
+
+  const confirmSelected = () => {
+    const meds = scannedDrugs
+      .filter((_, i) => selected.has(i))
+      .map(d => ({ name: d.name, dose: d.dose || '', frequency: d.frequency || '', timing: d.timing || '', note: 'สแกนจากรูป' }))
+    onConfirm(meds)
+  }
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+        <h3 className="font-semibold text-sm text-gray-700">สแกนยาจากรูป</h3>
+
+        {!settings?.apiKey && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-xs text-orange-700">
+            ใส่ API Key ใน Settings ก่อนใช้สแกน
+          </div>
+        )}
+
+        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
+
+        {!preview ? (
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={!settings?.apiKey}
+            className="w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm disabled:opacity-50"
+          >
+            <div className="text-3xl mb-2">📷</div>
+            กดเพื่อถ่ายรูป / เลือกรูปยา
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <img src={preview} alt="ยา" className="w-full rounded-xl max-h-60 object-contain bg-gray-100" />
+            <div className="flex gap-2">
+              <button onClick={() => { fileRef.current?.click(); setScannedDrugs([]); setError('') }} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs">
+                เปลี่ยนรูป
+              </button>
+              {scannedDrugs.length === 0 && (
+                <button
+                  onClick={scan}
+                  disabled={loading}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50"
+                >
+                  {loading ? 'กำลังอ่าน...' : 'AI อ่านชื่อยา'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">{error}</div>
+        )}
+
+        {scannedDrugs.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-xs text-gray-500 font-medium">AI อ่านได้ {scannedDrugs.length} ตัว — เลือกที่ต้องการเพิ่ม:</div>
+            {scannedDrugs.map((drug, i) => (
+              <button
+                key={i}
+                onClick={() => toggle(i)}
+                className={`w-full text-left px-3 py-2.5 rounded-xl border text-sm transition-colors ${
+                  selected.has(i)
+                    ? 'bg-purple-50 border-purple-300 text-purple-800'
+                    : 'bg-gray-50 border-gray-200 text-gray-400 line-through'
+                }`}
+              >
+                <span className="font-medium">{drug.name}</span>
+                {drug.dose && <span className="text-xs ml-2">{drug.dose}</span>}
+                {drug.frequency && <span className="text-xs ml-1">· {drug.frequency}</span>}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2 pb-8">
+        {scannedDrugs.length > 0 && (
+          <button
+            onClick={confirmSelected}
+            disabled={selected.size === 0}
+            className={`flex-1 py-3 rounded-2xl text-sm font-medium ${
+              selected.size > 0 ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-400'
+            }`}
+          >
+            เพิ่ม {selected.size} ยา
+          </button>
+        )}
+        <button onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">
           ยกเลิก
         </button>
       </div>
