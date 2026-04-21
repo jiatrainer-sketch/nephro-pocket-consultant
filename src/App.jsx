@@ -18,6 +18,7 @@ import {
   savePatients,
   saveSettings,
 } from './storage'
+import { useTheme } from './useTheme'
 
 // ============================================================
 // App Root
@@ -27,6 +28,7 @@ export default function App() {
   const [patients, setPatients] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [settings, setSettings] = useState({ apiKey: '' })
+  const { theme, toggle: toggleTheme, isDark } = useTheme()
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('name')
   const [showAdd, setShowAdd] = useState(false)
@@ -126,6 +128,8 @@ export default function App() {
         }}
         onBack={() => setView('list')}
         onDataRestored={() => setPatients(loadPatients())}
+        isDark={isDark}
+        onToggleTheme={toggleTheme}
       />
     )
   }
@@ -156,6 +160,13 @@ export default function App() {
               className="bg-pink-500 hover:bg-pink-400 active:bg-pink-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
             >
               Preg
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 w-9 h-9 rounded-lg flex items-center justify-center text-lg"
+              aria-label={isDark ? 'โหมดกลางวัน' : 'โหมดกลางคืน'}
+            >
+              {isDark ? '☀️' : '🌙'}
             </button>
             <button
               onClick={() => setView('settings')}
@@ -364,7 +375,7 @@ function PatientCard({ patient, onClick }) {
 // ============================================================
 // Settings View
 // ============================================================
-function SettingsView({ settings, onSave, onBack, onDataRestored }) {
+function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onToggleTheme }) {
   const [apiKey, setApiKey] = useState(settings.apiKey || '')
   const [storage, setStorage] = useState(null)
   const [restoreMsg, setRestoreMsg] = useState('')
@@ -456,6 +467,30 @@ function SettingsView({ settings, onSave, onBack, onDataRestored }) {
       </header>
 
       <div className="max-w-lg mx-auto p-4 space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <h3 className="font-semibold text-sm text-gray-700 mb-1">ธีม / Theme</h3>
+          <div className="flex gap-2 mt-2">
+            <button
+              type="button"
+              onClick={() => isDark && onToggleTheme()}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                !isDark ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+              }`}
+            >
+              ☀️ กลางวัน
+            </button>
+            <button
+              type="button"
+              onClick={() => !isDark && onToggleTheme()}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                isDark ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-300'
+              }`}
+            >
+              🌙 กลางคืน
+            </button>
+          </div>
+        </div>
+
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
           <h3 className="font-semibold text-sm text-gray-700 mb-1">Anthropic API Key</h3>
           <p className="text-xs text-gray-500 mb-3">
