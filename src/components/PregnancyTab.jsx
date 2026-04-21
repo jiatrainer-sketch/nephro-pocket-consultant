@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
+import { DR_AI_MODEL, buildDrAIPrompt, buildPregnancyContext } from '../drAIPrompt'
 import { SYMPTOMS, getPregnancyInfo, searchBySymptom, searchDrugPregnancy } from '../pregnancyData'
 
 const SAFETY_STYLE = {
@@ -14,7 +15,7 @@ const SAFETY_LABEL = {
   contraindicated: 'Contraindicated',
 }
 
-const MODEL = 'claude-sonnet-4-6'
+// uses DR_AI_MODEL from drAIPrompt
 
 export default function PregnancyTab({ onBack, settings }) {
   const [context, setContext] = useState('pregnant-1')
@@ -239,20 +240,7 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight)
   }, [messages, loading])
 
-  const systemPrompt = `คุณคือ Pregnancy/Lactation Drug Safety Consultant สำหรับแพทย์ไทย
-
-สถานะผู้ป่วยปัจจุบัน: ${contextLabel}
-
-${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\n${aiContext}` : ''}
-
-หลักการตอบ:
-1. ตอบเป็นภาษาไทย ชื่อยาใช้ภาษาอังกฤษ
-2. อ้างอิง FDA pregnancy category, LactMed (NIH), ACOG guidelines
-3. ระบุ safety level: Safe / Caution / Avoid / Contraindicated
-4. แนะนำทางเลือกที่ปลอดภัยกว่าเสมอ
-5. ระบุ trimester-specific risk ถ้ามี
-6. ตอบสั้นกระชับ
-7. คุณเป็น clinical decision support — แพทย์ต้อง confirm ก่อนสั่งยาเสมอ`
+  const systemPrompt = buildDrAIPrompt(buildPregnancyContext(contextLabel, aiContext))
 
   const send = async () => {
     const text = input.trim()
@@ -278,7 +266,7 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
           'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
-          model: MODEL,
+          model: DR_AI_MODEL,
           max_tokens: 2048,
           stream: true,
           system: systemPrompt,
@@ -348,7 +336,7 @@ ${aiContext ? `ข้อมูลที่ระบบแนะนำไว้:\
       <div className="bg-purple-600 text-white px-4 py-3 flex items-center gap-3 shadow-md">
         <button onClick={onClose} className="text-xl leading-none">←</button>
         <div>
-          <div className="text-sm font-bold">AI Recheck — {contextLabel}</div>
+          <div className="text-sm font-bold">Dr. AI — {contextLabel}</div>
           <div className="text-xs text-purple-200">ถามเกี่ยวกับยาในคนท้อง/ให้นม</div>
         </div>
       </div>

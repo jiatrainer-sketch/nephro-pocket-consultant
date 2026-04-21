@@ -95,7 +95,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
       {/* Content */}
       <main className="flex-1 max-w-lg mx-auto w-full">
         {tab === 'info' && <InfoTab patient={patient} onUpdate={onUpdate} />}
-        {tab === 'lab' && <LabTab patient={patient} onUpdate={onUpdate} />}
+        {tab === 'lab' && <LabTab patient={patient} onUpdate={onUpdate} settings={settings} />}
         {tab === 'med' && <MedTab patient={patient} onUpdate={onUpdate} settings={settings} />}
         {tab === 'rec' && <RecommendationTab patient={patient} />}
         {tab === 'chat' && <ChatTab patient={patient} settings={settings} />}

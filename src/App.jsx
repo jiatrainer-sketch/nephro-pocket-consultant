@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import DrAIFloat from './components/DrAIFloat'
 import PatientDetail from './components/PatientDetail'
 import PregnancyTab from './components/PregnancyTab'
 import QuickMode from './components/QuickMode'
@@ -85,21 +86,29 @@ export default function App() {
 
   if (view === 'detail' && selectedPatient) {
     return (
-      <PatientDetail
-        patient={selectedPatient}
-        onUpdate={updatePatient}
-        onDelete={() => {
-          deletePatient(selectedPatient.id)
-          setView('list')
-        }}
-        onBack={() => setView('list')}
-        settings={settings}
-      />
+      <>
+        <PatientDetail
+          patient={selectedPatient}
+          onUpdate={updatePatient}
+          onDelete={() => {
+            deletePatient(selectedPatient.id)
+            setView('list')
+          }}
+          onBack={() => setView('list')}
+          settings={settings}
+        />
+        <DrAIFloat settings={settings} />
+      </>
     )
   }
 
   if (view === 'quick') {
-    return <QuickMode onBack={() => setView('list')} settings={settings} />
+    return (
+      <>
+        <QuickMode onBack={() => setView('list')} settings={settings} />
+        <DrAIFloat settings={settings} />
+      </>
+    )
   }
 
   if (view === 'pregnancy') {
@@ -123,6 +132,7 @@ export default function App() {
 
   // ---- patient list ----
   return (
+    <>
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header
@@ -266,6 +276,8 @@ export default function App() {
         </p>
       </main>
     </div>
+    <DrAIFloat settings={settings} />
+    </>
   )
 }
 

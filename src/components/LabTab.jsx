@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { DR_AI_MODEL } from '../drAIPrompt'
 import { generateId, isLabOutdated, parseLabDate } from '../storage'
 
 // ============================================================
@@ -212,9 +213,10 @@ function TrendSection({ labs }) {
 // ============================================================
 // LabTab
 // ============================================================
-export default function LabTab({ patient, onUpdate }) {
+export default function LabTab({ patient, onUpdate, settings }) {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [showScan, setShowScan] = useState(false)
 
   const sortedLabs = [...(patient.labs || [])].sort((a, b) => {
     const da = parseLabDate(a.date) || new Date(0)
@@ -247,6 +249,10 @@ export default function LabTab({ patient, onUpdate }) {
     onUpdate({ ...patient, labs: patient.labs.filter((l) => l.id !== id) })
   }
 
+  if (showScan) {
+    return <LabScan settings={settings} onConfirm={(entry) => { saveEntry(entry); setShowScan(false) }} onCancel={() => setShowScan(false)} />
+  }
+
   if (showForm) {
     const existing = editingId ? patient.labs.find((l) => l.id === editingId) : null
     return <LabForm initial={existing} onSave={saveEntry} onCancel={() => setShowForm(false)} />
@@ -254,12 +260,20 @@ export default function LabTab({ patient, onUpdate }) {
 
   return (
     <div className="p-4 space-y-3">
-      <button
-        onClick={openAdd}
-        className="w-full bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
-      >
-        <span className="text-lg leading-none">+</span> บันทึก Lab ใหม่
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={openAdd}
+          className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
+        >
+          <span className="text-lg leading-none">+</span> บันทึก Lab
+        </button>
+        <button
+          onClick={() => setShowScan(true)}
+          className="bg-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-1"
+        >
+          <span className="text-base leading-none">📷</span> สแกน Lab
+        </button>
+      </div>
 
       <TrendSection labs={patient.labs} />
 
@@ -509,6 +523,113 @@ function LabForm({ initial, onSave, onCancel }) {
         >
           ยกเลิก
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// Lab Scan — photo → AI reads lab values → confirm
+// ============================================================
+const LAB_KEYS = 'Hb, Hct, Ferritin, TSAT, Iron, TIBC, KtV, URR, BUN_pre, BUN_post, BUN, Cr, eGFR, Na, K, Cl, HCO3, Ca, PO4, iPTH, VitD25, ALP, Albumin, FBS, HbA1C, UACR, LDL, TG, AST, ALT, UricAcid, PT_INR'
+
+function LabScan({ settings, onConfirm, onCancel }) {
+  const [image, setImage] = useState(null)
+  const [preview, setPreview] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [scannedValues, setScannedValues] = useState(null)
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [error, setError] = useState('')
+  const fileRef = useRef(null)
+
+  const handleFile = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPreview(URL.createObjectURL(file))
+    const reader = new FileReader()
+    reader.onload = () => setImage({ data: reader.result.split(',')[1], type: file.type })
+    reader.readAsDataURL(file)
+    setScannedValues(null)
+    setError('')
+  }
+
+  const scan = async () => {
+    if (!image || !settings?.apiKey) return
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-api-key': settings.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({
+          model: DR_AI_MODEL, max_tokens: 1024,
+          messages: [{ role: 'user', content: [
+            { type: 'image', source: { type: 'base64', media_type: image.type, data: image.data } },
+            { type: 'text', text: `อ่านค่า Lab จากรูปนี้ (ใบ Lab/หน้าจอ EMR/ผลเลือด)
+ตอบเป็น JSON object เท่านั้น:
+{${LAB_KEYS.split(', ').map(k => `"${k}":number|null`).join(',')}}
+ใส่เฉพาะค่าที่เห็น ค่าที่ไม่เห็นใส่ null
+ถ้าเห็นวันที่ lab ใส่ "date":"YYYY-MM-DD"` },
+          ] }],
+        }),
+      })
+      const data = await res.json()
+      const text = data.content?.[0]?.text || ''
+      const match = text.match(/\{[\s\S]*\}/)
+      if (match) {
+        const parsed = JSON.parse(match[0])
+        if (parsed.date) { setDate(parsed.date); delete parsed.date }
+        const filtered = {}
+        for (const [k, v] of Object.entries(parsed)) { if (v !== null && v !== undefined && v !== '') filtered[k] = v }
+        setScannedValues(filtered)
+      } else { setError('AI ไม่สามารถอ่านค่า Lab ได้ — ลองถ่ายใหม่') }
+    } catch (e) { setError(`Error: ${e.message}`) }
+    finally { setLoading(false) }
+  }
+
+  const updateValue = (key, val) => setScannedValues(prev => ({ ...prev, [key]: val === '' ? undefined : Number(val) || val }))
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+        <h3 className="font-semibold text-sm text-gray-700">สแกน Lab จากรูป</h3>
+        {!settings?.apiKey && <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-xs text-orange-700">ใส่ API Key ใน Settings ก่อนใช้สแกน</div>}
+        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
+        {!preview ? (
+          <button onClick={() => fileRef.current?.click()} disabled={!settings?.apiKey} className="w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm disabled:opacity-50">
+            <div className="text-3xl mb-2">📷</div>กดเพื่อถ่ายรูป / เลือกรูปผล Lab
+          </button>
+        ) : (
+          <div className="space-y-3">
+            <img src={preview} alt="Lab" className="w-full rounded-xl max-h-60 object-contain bg-gray-100" />
+            <div className="flex gap-2">
+              <button onClick={() => { fileRef.current?.click(); setScannedValues(null) }} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs">เปลี่ยนรูป</button>
+              {!scannedValues && <button onClick={scan} disabled={loading} className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50">{loading ? 'กำลังอ่าน...' : 'AI อ่านค่า Lab'}</button>}
+            </div>
+          </div>
+        )}
+        {error && <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">{error}</div>}
+        {scannedValues && (
+          <div className="space-y-3">
+            <div className="text-xs text-gray-500 font-medium">AI อ่านได้ {Object.keys(scannedValues).length} ค่า — แก้ไขได้:</div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">วันที่ Lab</label>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(scannedValues).map(([key, val]) => (
+                <div key={key} className="bg-purple-50 border border-purple-200 rounded-xl px-3 py-2">
+                  <label className="block text-[10px] text-purple-600 font-medium">{key}</label>
+                  <input type="text" value={val ?? ''} onChange={(e) => updateValue(key, e.target.value)} className="w-full text-sm font-medium bg-transparent border-none p-0 focus:outline-none" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="flex gap-2 pb-8">
+        {scannedValues && <button onClick={() => { const values = {}; for (const [k,v] of Object.entries(scannedValues)) { if (v !== undefined && v !== null && v !== '') values[k] = v }; onConfirm({ date, values }) }} className="flex-1 py-3 rounded-2xl text-sm font-medium bg-purple-600 text-white">บันทึก Lab</button>}
+        <button onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">ยกเลิก</button>
       </div>
     </div>
   )
