@@ -115,7 +115,7 @@ export default function DrAIFloat({ settings }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 flex items-center gap-3 shadow-md">
-        <button onClick={() => setOpen(false)} className="text-xl leading-none">←</button>
+        <button onClick={() => setOpen(false)} className="text-xl leading-none" aria-label="ปิด Dr. AI">←</button>
         <div className="flex-1">
           <div className="text-sm font-bold">Dr. AI</div>
           <div className="text-xs text-blue-200">Senior Internal Medicine Consultant</div>
