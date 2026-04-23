@@ -125,12 +125,15 @@ html.dark .text-red-100  { color: #fecaca; }
 html.dark .text-red-50   { color: #fef2f2; }
 
 /* -- Inputs & selects -- */
-html.dark input,
+html.dark input:not(.border-none),
 html.dark textarea,
 html.dark select {
   background-color: #0f172a;
   color: #e2e8f0;
   border-color: #475569;
+}
+html.dark input.border-none {
+  color: #e2e8f0;
 }
 html.dark input::placeholder,
 html.dark textarea::placeholder {
