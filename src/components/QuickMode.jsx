@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { DR_AI_MODEL } from '../drAIPrompt'
 import { searchMedications } from '../medicationDatabase'
 import ChatTab from './ChatTab'
@@ -141,28 +141,38 @@ function QuickLabInput({ patient, onUpdate, settings }) {
   const [date, setDate] = useState(existingLab?.date || today)
   const [scanLoading, setScanLoading] = useState(false)
   const [scanError, setScanError] = useState('')
-  const scanFileRef = useRef(null)
 
   const handleScanFile = async (e) => {
     const file = e.target.files?.[0]
     if (!file || !settings?.apiKey) return
     setScanLoading(true)
     setScanError('')
+    e.target.value = ''
     try {
-      const base64 = await new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.readAsDataURL(file) })
+      const mediaType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg'
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader()
+        r.onload = () => res(r.result.split(',')[1])
+        r.onerror = () => rej(new Error('ไม่สามารถอ่านไฟล์ได้'))
+        r.readAsDataURL(file)
+      })
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': settings.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
         body: JSON.stringify({
           model: DR_AI_MODEL, max_tokens: 1024,
           messages: [{ role: 'user', content: [
-            { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
             { type: 'text', text: `อ่านค่า Lab จากรูป ตอบเป็น JSON object เท่านั้น:
 {"Hb":number|null,"Hct":null,"Ferritin":null,"TSAT":null,"BUN":null,"Cr":null,"eGFR":null,"Na":null,"K":null,"Cl":null,"HCO3":null,"Ca":null,"PO4":null,"iPTH":null,"VitD25":null,"ALP":null,"Albumin":null,"FBS":null,"HbA1C":null,"UACR":null,"LDL":null,"TG":null,"AST":null,"ALT":null,"UricAcid":null,"PT_INR":null}
 ใส่เฉพาะค่าที่เห็น` },
           ] }],
         }),
       })
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}))
+        throw new Error(err.error?.message || `API error ${resp.status}`)
+      }
       const data = await resp.json()
       const text = data.content?.[0]?.text || ''
       const match = text.match(/\{[\s\S]*\}/)
@@ -173,7 +183,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
         setRawVals(newRaw)
       } else { setScanError('ไม่สามารถอ่านได้ — ลองถ่ายใหม่') }
     } catch (err) { setScanError(`Error: ${err.message}`) }
-    finally { setScanLoading(false); e.target.value = '' }
+    finally { setScanLoading(false) }
   }
   const [rawAge, setRawAge] = useState(patient.age ? String(patient.age) : '')
   const [rawWeight, setRawWeight] = useState(patient.weight_kg ? String(patient.weight_kg) : '')
@@ -333,14 +343,13 @@ function QuickLabInput({ patient, onUpdate, settings }) {
   return (
     <div className="p-4 space-y-4">
       {/* Scan Lab button */}
-      <input ref={scanFileRef} type="file" accept="image/*" capture="environment" onChange={handleScanFile} className="hidden" />
-      <button
-        onClick={() => scanFileRef.current?.click()}
-        disabled={!settings?.apiKey || scanLoading}
-        className="w-full bg-purple-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+      <input id="quick-scan-input" type="file" accept="image/*" onChange={handleScanFile} className="sr-only" />
+      <label
+        htmlFor={settings?.apiKey && !scanLoading ? 'quick-scan-input' : undefined}
+        className={`w-full bg-purple-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 ${!settings?.apiKey || scanLoading ? 'opacity-50' : 'cursor-pointer active:bg-purple-700'}`}
       >
         <span className="text-base leading-none">📷</span> {scanLoading ? 'กำลังอ่าน Lab...' : 'สแกน Lab จากรูป'}
-      </button>
+      </label>
       {scanError && <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">{scanError}</div>}
 
       {/* Date + Age + Weight */}

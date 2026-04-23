@@ -397,7 +397,6 @@ function MedScan({ settings, onConfirm, onCancel }) {
   const [scannedDrugs, setScannedDrugs] = useState([])
   const [selected, setSelected] = useState(new Set())
   const [error, setError] = useState('')
-  const fileRef = useRef(null)
 
   const handleFile = (e) => {
     const file = e.target.files?.[0]
@@ -405,10 +404,14 @@ function MedScan({ settings, onConfirm, onCancel }) {
     setPreview(URL.createObjectURL(file))
     const reader = new FileReader()
     reader.onload = () => {
-      const base64 = reader.result.split(',')[1]
-      setImage({ data: base64, type: file.type })
+      const mediaType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg'
+      setImage({ data: reader.result.split(',')[1], type: mediaType })
     }
+    reader.onerror = () => setError('ไม่สามารถอ่านไฟล์ได้')
     reader.readAsDataURL(file)
+    setScannedDrugs([])
+    setError('')
+    e.target.value = ''
   }
 
   const scan = async () => {
@@ -440,6 +443,10 @@ function MedScan({ settings, onConfirm, onCancel }) {
           }],
         }),
       })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error?.message || `API error ${res.status}`)
+      }
       const data = await res.json()
       const text = data.content?.[0]?.text || ''
       const match = text.match(/\[[\s\S]*\]/)
@@ -483,24 +490,23 @@ function MedScan({ settings, onConfirm, onCancel }) {
           </div>
         )}
 
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
+        <input id="med-scan-input" type="file" accept="image/*" onChange={handleFile} className="sr-only" />
 
         {!preview ? (
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={!settings?.apiKey}
-            className="w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm disabled:opacity-50"
+          <label
+            htmlFor={settings?.apiKey ? 'med-scan-input' : undefined}
+            className={`w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm block ${!settings?.apiKey ? 'opacity-50' : 'cursor-pointer active:bg-gray-50'}`}
           >
             <div className="text-3xl mb-2">📷</div>
             กดเพื่อถ่ายรูป / เลือกรูปยา
-          </button>
+          </label>
         ) : (
           <div className="space-y-3">
             <img src={preview} alt="ยา" className="w-full rounded-xl max-h-60 object-contain bg-gray-100" />
             <div className="flex gap-2">
-              <button onClick={() => { fileRef.current?.click(); setScannedDrugs([]); setError('') }} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs">
+              <label htmlFor="med-scan-input" onClick={() => { setScannedDrugs([]); setError('') }} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs text-center cursor-pointer">
                 เปลี่ยนรูป
-              </button>
+              </label>
               {scannedDrugs.length === 0 && (
                 <button
                   onClick={scan}
