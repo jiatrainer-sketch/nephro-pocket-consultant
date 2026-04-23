@@ -20,6 +20,10 @@ export default function DrAIFloat({ settings }) {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight)
   }, [messages, loading])
 
+  useEffect(() => {
+    return () => { abortRef.current?.abort() }
+  }, [])
+
   const send = async () => {
     const text = input.trim()
     if (!text || loading) return

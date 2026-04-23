@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DR_AI_MODEL } from '../drAIPrompt'
 import { generateId, isLabOutdated, parseLabDate } from '../storage'
 
@@ -541,9 +541,14 @@ function LabScan({ settings, onConfirm, onCancel }) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    return () => { if (preview) URL.revokeObjectURL(preview) }
+  }, [preview])
+
   const handleFile = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (preview) URL.revokeObjectURL(preview)
     setPreview(URL.createObjectURL(file))
     const reader = new FileReader()
     reader.onload = () => {

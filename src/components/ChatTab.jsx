@@ -25,6 +25,10 @@ export default function ChatTab({ patient, settings }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading, error])
 
+  useEffect(() => {
+    return () => { abortRef.current?.abort() }
+  }, [])
+
   const send = async () => {
     const text = input.trim()
     if (!text || loading) return

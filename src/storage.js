@@ -52,7 +52,12 @@ export function loadPatients() {
 }
 
 export function savePatients(patients) {
-  localStorage.setItem(PATIENTS_KEY, JSON.stringify(patients))
+  try {
+    localStorage.setItem(PATIENTS_KEY, JSON.stringify(patients))
+  } catch (e) {
+    alert('ไม่สามารถบันทึกได้ — พื้นที่เก็บข้อมูลเต็ม กรุณา backup แล้วล้าง browser storage')
+    throw e
+  }
 }
 
 export function loadSettings() {
@@ -65,7 +70,11 @@ export function loadSettings() {
 }
 
 export function saveSettings(settings) {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  } catch {
+    alert('ไม่สามารถบันทึก settings ได้ — พื้นที่เก็บข้อมูลเต็ม')
+  }
 }
 
 export function generateId() {
