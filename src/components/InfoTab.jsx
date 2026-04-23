@@ -117,7 +117,8 @@ export default function InfoTab({ patient, onUpdate }) {
       setConditionSuggestions([])
       return
     }
-    const already = new Set((form.conditions || []).map((c) => c.name.toLowerCase()))
+    const src = editing ? (form.conditions || []) : (patient.conditions || [])
+    const already = new Set(src.map((c) => c.name.toLowerCase()))
     const results = CONDITION_SUGGESTIONS.filter(
       (c) => c.toLowerCase().includes(q) && !already.has(c.toLowerCase())
     ).slice(0, 6)
@@ -125,14 +126,20 @@ export default function InfoTab({ patient, onUpdate }) {
   }
 
   const addCondition = (name) => {
-    // Read from DOM ref as fallback (avoids stale state from mobile keyboards / race conditions)
     const fromRef = conditionInputRef.current?.value || ''
     const n = (name || newCondition || fromRef).trim()
     if (!n) return
-    setForm((f) => ({
-      ...f,
-      conditions: [...(f.conditions || []), { name: n, since: conditionSince.trim() }],
-    }))
+    if (editing) {
+      setForm((f) => ({
+        ...f,
+        conditions: [...(f.conditions || []), { name: n, since: conditionSince.trim() }],
+      }))
+    } else {
+      onUpdate({
+        ...patient,
+        conditions: [...(patient.conditions || []), { name: n, since: conditionSince.trim() }],
+      })
+    }
     setNewCondition('')
     setConditionSince('')
     setConditionSuggestions([])
@@ -140,7 +147,14 @@ export default function InfoTab({ patient, onUpdate }) {
   }
 
   const removeCondition = (i) => {
-    setForm((f) => ({ ...f, conditions: f.conditions.filter((_, idx) => idx !== i) }))
+    if (editing) {
+      setForm((f) => ({ ...f, conditions: f.conditions.filter((_, idx) => idx !== i) }))
+    } else {
+      onUpdate({
+        ...patient,
+        conditions: patient.conditions.filter((_, idx) => idx !== i),
+      })
+    }
   }
 
   const handleAllergyInput = (val) => {
@@ -152,14 +166,28 @@ export default function InfoTab({ patient, onUpdate }) {
     const fromRef = allergyInputRef.current?.value || ''
     const a = (name || newAllergy || fromRef).trim()
     if (!a) return
-    setForm((f) => ({ ...f, allergies: [...(f.allergies || []), a] }))
+    if (editing) {
+      setForm((f) => ({ ...f, allergies: [...(f.allergies || []), a] }))
+    } else {
+      onUpdate({
+        ...patient,
+        allergies: [...(patient.allergies || []), a],
+      })
+    }
     setNewAllergy('')
     setAllergySuggestions([])
     if (allergyInputRef.current) allergyInputRef.current.value = ''
   }
 
   const removeAllergy = (i) => {
-    setForm((f) => ({ ...f, allergies: f.allergies.filter((_, idx) => idx !== i) }))
+    if (editing) {
+      setForm((f) => ({ ...f, allergies: f.allergies.filter((_, idx) => idx !== i) }))
+    } else {
+      onUpdate({
+        ...patient,
+        allergies: patient.allergies.filter((_, idx) => idx !== i),
+      })
+    }
   }
 
   const save = () => {
@@ -222,40 +250,132 @@ export default function InfoTab({ patient, onUpdate }) {
           <Row label="วันที่สร้าง" value={patient.vascular_access?.created_date || '—'} />
         </Section>
 
-        <Section title="โรคประจำตัว">
-          {!patient.conditions || patient.conditions.length === 0 ? (
-            <p className="text-sm text-gray-400">—</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {patient.conditions.map((c, i) => (
-                <span
-                  key={i}
-                  className="bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full"
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-50">
+            <h3 className="font-semibold text-sm text-gray-700">โรคประจำตัว</h3>
+          </div>
+          <div className="px-4 py-3 space-y-3">
+            {patient.conditions?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {patient.conditions.map((c, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full"
+                  >
+                    {c.name}
+                    {c.since ? ` (${c.since})` : ''}
+                    <button onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5">✕</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1.5">
+              {COMMON_CONDITIONS.filter((c) => !patient.conditions?.some((x) => x.name === c)).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => addCondition(c)}
+                  className="text-xs px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 active:bg-blue-50"
                 >
-                  {c.name}
-                  {c.since ? ` (${c.since})` : ''}
-                </span>
+                  + {c}
+                </button>
               ))}
             </div>
-          )}
-        </Section>
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  ref={conditionInputRef}
+                  className={`${input} flex-1`}
+                  value={newCondition}
+                  onChange={(e) => handleConditionInput(e.target.value)}
+                  placeholder="พิมพ์โรคเพิ่ม..."
+                  onKeyDown={(e) => e.key === 'Enter' && addCondition()}
+                  onBlur={() => setTimeout(() => setConditionSuggestions([]), 200)}
+                />
+                <button
+                  type="button"
+                  onClick={() => addCondition()}
+                  className="bg-blue-600 text-white px-3 rounded-xl text-sm shrink-0 active:bg-blue-700"
+                >
+                  +
+                </button>
+              </div>
+              {conditionSuggestions.length > 0 && (
+                <div className="absolute left-0 right-24 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden max-h-56 overflow-y-auto">
+                  {conditionSuggestions.map((c, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => addCondition(c)}
+                      className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-        <Section title="Allergy ยา">
-          {!patient.allergies || patient.allergies.length === 0 ? (
-            <p className="text-sm text-gray-400">ไม่มี allergy</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {patient.allergies.map((a, i) => (
-                <span
-                  key={i}
-                  className="bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-50">
+            <h3 className="font-semibold text-sm text-gray-700">Allergy ยา</h3>
+          </div>
+          <div className="px-4 py-3 space-y-3">
+            {patient.allergies?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {patient.allergies.map((a, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
+                  >
+                    ⚠️ {a}
+                    <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">✕</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  ref={allergyInputRef}
+                  className={`${input} flex-1`}
+                  value={newAllergy}
+                  onChange={(e) => handleAllergyInput(e.target.value)}
+                  placeholder="พิมพ์ชื่อยา เช่น amlo, voltaren..."
+                  onKeyDown={(e) => e.key === 'Enter' && addAllergy()}
+                  onBlur={() => setTimeout(() => setAllergySuggestions([]), 200)}
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                />
+                <button
+                  type="button"
+                  onClick={() => addAllergy()}
+                  className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0 active:bg-red-600"
                 >
-                  ⚠️ {a}
-                </span>
-              ))}
+                  +
+                </button>
+              </div>
+              {allergySuggestions.length > 0 && (
+                <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
+                  {allergySuggestions.map((med, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => addAllergy(med.name)}
+                      className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
+                    >
+                      <span className="font-medium text-gray-800">{med.name}</span>
+                      <span className="text-xs text-gray-400 ml-2">{med.generic}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </Section>
+          </div>
+        </div>
 
         <button
           onClick={() => setEditing(true)}
