@@ -398,9 +398,14 @@ function MedScan({ settings, onConfirm, onCancel }) {
   const [selected, setSelected] = useState(new Set())
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    return () => { if (preview) URL.revokeObjectURL(preview) }
+  }, [preview])
+
   const handleFile = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (preview) URL.revokeObjectURL(preview)
     setPreview(URL.createObjectURL(file))
     const reader = new FileReader()
     reader.onload = () => {

@@ -240,6 +240,10 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight)
   }, [messages, loading])
 
+  useEffect(() => {
+    return () => { abortRef.current?.abort() }
+  }, [])
+
   const systemPrompt = buildDrAIPrompt(buildPregnancyContext(contextLabel, aiContext))
 
   const send = async () => {
