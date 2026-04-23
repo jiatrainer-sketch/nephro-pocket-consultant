@@ -472,6 +472,10 @@ function MedScan({ settings, onConfirm, onCancel }) {
     })
   }
 
+  const updateDrug = (i, field, value) => {
+    setScannedDrugs(prev => prev.map((d, idx) => idx === i ? { ...d, [field]: value } : d))
+  }
+
   const confirmSelected = () => {
     const meds = scannedDrugs
       .filter((_, i) => selected.has(i))
@@ -490,7 +494,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
           </div>
         )}
 
-        <input id="med-scan-input" type="file" accept="image/*" onChange={handleFile} className="sr-only" />
+        <input id="med-scan-input" type="file" accept="image/*" capture onChange={handleFile} className="sr-only" />
 
         {!preview ? (
           <label
@@ -526,21 +530,59 @@ function MedScan({ settings, onConfirm, onCancel }) {
 
         {scannedDrugs.length > 0 && (
           <div className="space-y-2">
-            <div className="text-xs text-gray-500 font-medium">AI อ่านได้ {scannedDrugs.length} ตัว — เลือกที่ต้องการเพิ่ม:</div>
+            <div className="text-xs text-gray-500 font-medium">AI อ่านได้ {scannedDrugs.length} ตัว — แก้ไขได้ กดปุ่มซ้ายเพื่อเลือก/ไม่เลือก:</div>
             {scannedDrugs.map((drug, i) => (
-              <button
+              <div
                 key={i}
-                onClick={() => toggle(i)}
-                className={`w-full text-left px-3 py-2.5 rounded-xl border text-sm transition-colors ${
+                className={`rounded-xl border text-sm transition-colors ${
                   selected.has(i)
-                    ? 'bg-purple-50 border-purple-300 text-purple-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-400 line-through'
+                    ? 'bg-purple-50 border-purple-300'
+                    : 'bg-gray-50 border-gray-200 opacity-50'
                 }`}
               >
-                <span className="font-medium">{drug.name}</span>
-                {drug.dose && <span className="text-xs ml-2">{drug.dose}</span>}
-                {drug.frequency && <span className="text-xs ml-1">· {drug.frequency}</span>}
-              </button>
+                <div className="flex items-center gap-2 px-3 pt-2">
+                  <button
+                    onClick={() => toggle(i)}
+                    className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center text-xs shrink-0 ${
+                      selected.has(i)
+                        ? 'bg-purple-600 border-purple-600 text-white'
+                        : 'border-gray-300 text-transparent'
+                    }`}
+                  >
+                    ✓
+                  </button>
+                  <input
+                    type="text"
+                    value={drug.name}
+                    onChange={(e) => updateDrug(i, 'name', e.target.value)}
+                    className="flex-1 font-medium text-sm bg-transparent border-none p-0 focus:outline-none focus:ring-0"
+                    placeholder="ชื่อยา"
+                  />
+                </div>
+                <div className="flex gap-2 px-3 pb-2 pt-1 pl-11">
+                  <input
+                    type="text"
+                    value={drug.dose || ''}
+                    onChange={(e) => updateDrug(i, 'dose', e.target.value)}
+                    className="flex-1 text-xs bg-transparent border-none p-0 focus:outline-none text-gray-600"
+                    placeholder="dose"
+                  />
+                  <input
+                    type="text"
+                    value={drug.frequency || ''}
+                    onChange={(e) => updateDrug(i, 'frequency', e.target.value)}
+                    className="flex-1 text-xs bg-transparent border-none p-0 focus:outline-none text-gray-600"
+                    placeholder="frequency"
+                  />
+                  <input
+                    type="text"
+                    value={drug.timing || ''}
+                    onChange={(e) => updateDrug(i, 'timing', e.target.value)}
+                    className="flex-1 text-xs bg-transparent border-none p-0 focus:outline-none text-gray-600"
+                    placeholder="เวลากิน"
+                  />
+                </div>
+              </div>
             ))}
           </div>
         )}

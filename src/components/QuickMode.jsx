@@ -343,7 +343,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
   return (
     <div className="p-4 space-y-4">
       {/* Scan Lab button */}
-      <input id="quick-scan-input" type="file" accept="image/*" onChange={handleScanFile} className="sr-only" />
+      <input id="quick-scan-input" type="file" accept="image/*" capture onChange={handleScanFile} className="sr-only" />
       <label
         htmlFor={settings?.apiKey && !scanLoading ? 'quick-scan-input' : undefined}
         className={`w-full bg-purple-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 ${!settings?.apiKey || scanLoading ? 'opacity-50' : 'cursor-pointer active:bg-purple-700'}`}

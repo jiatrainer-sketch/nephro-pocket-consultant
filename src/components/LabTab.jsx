@@ -602,7 +602,7 @@ function LabScan({ settings, onConfirm, onCancel }) {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
         <h3 className="font-semibold text-sm text-gray-700">สแกน Lab จากรูป</h3>
         {!settings?.apiKey && <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-xs text-orange-700">ใส่ API Key ใน Settings ก่อนใช้สแกน</div>}
-        <input id="lab-scan-input" type="file" accept="image/*" onChange={handleFile} className="sr-only" />
+        <input id="lab-scan-input" type="file" accept="image/*" capture onChange={handleFile} className="sr-only" />
         {!preview ? (
           <label htmlFor={settings?.apiKey ? 'lab-scan-input' : undefined} className={`w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm block ${!settings?.apiKey ? 'opacity-50' : 'cursor-pointer active:bg-gray-50'}`}>
             <div className="text-3xl mb-2">📷</div>กดเพื่อถ่ายรูป / เลือกรูปผล Lab
