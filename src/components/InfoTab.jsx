@@ -460,7 +460,6 @@ export default function InfoTab({ patient, onUpdate }) {
             />
             <button
               type="button"
-              onMouseDown={(e) => e.preventDefault()}
               onClick={() => addCondition()}
               className="bg-blue-600 text-white px-3 rounded-xl text-sm shrink-0 active:bg-blue-700"
             >
@@ -468,15 +467,12 @@ export default function InfoTab({ patient, onUpdate }) {
             </button>
           </div>
           {conditionSuggestions.length > 0 && (
-            <div className="absolute left-0 right-24 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden max-h-56 overflow-y-auto">
+            <div className="absolute left-0 right-24 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden max-h-56 overflow-y-auto">
               {conditionSuggestions.map((c, i) => (
                 <button
                   key={i}
                   type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    addCondition(c)
-                  }}
+                  onClick={() => addCondition(c)}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
                 >
                   {c}
@@ -527,7 +523,6 @@ export default function InfoTab({ patient, onUpdate }) {
             />
             <button
               type="button"
-              onMouseDown={(e) => e.preventDefault()}
               onClick={() => addAllergy()}
               className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0 active:bg-red-600"
             >
@@ -535,12 +530,12 @@ export default function InfoTab({ patient, onUpdate }) {
             </button>
           </div>
           {allergySuggestions.length > 0 && (
-            <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+            <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
               {allergySuggestions.map((med, i) => (
                 <button
                   key={i}
                   type="button"
-                  onMouseDown={() => addAllergy(med.name)}
+                  onClick={() => addAllergy(med.name)}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
                 >
                   <span className="font-medium text-gray-800">{med.name}</span>
@@ -602,7 +597,7 @@ function Row({ label, value }) {
 
 function FormCard({ title, children }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
       <div className="px-4 py-3 border-b border-gray-50">
         <h3 className="font-semibold text-sm text-gray-700">{title}</h3>
       </div>
