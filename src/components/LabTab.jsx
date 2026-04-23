@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { DR_AI_MODEL } from '../drAIPrompt'
 import { generateId, isLabOutdated, parseLabDate } from '../storage'
 
@@ -540,17 +540,21 @@ function LabScan({ settings, onConfirm, onCancel }) {
   const [scannedValues, setScannedValues] = useState(null)
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [error, setError] = useState('')
-  const fileRef = useRef(null)
 
   const handleFile = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
     setPreview(URL.createObjectURL(file))
     const reader = new FileReader()
-    reader.onload = () => setImage({ data: reader.result.split(',')[1], type: file.type })
+    reader.onload = () => {
+      const mediaType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg'
+      setImage({ data: reader.result.split(',')[1], type: mediaType })
+    }
+    reader.onerror = () => setError('ไม่สามารถอ่านไฟล์ได้')
     reader.readAsDataURL(file)
     setScannedValues(null)
     setError('')
+    e.target.value = ''
   }
 
   const scan = async () => {
@@ -573,6 +577,10 @@ function LabScan({ settings, onConfirm, onCancel }) {
           ] }],
         }),
       })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error?.message || `API error ${res.status}`)
+      }
       const data = await res.json()
       const text = data.content?.[0]?.text || ''
       const match = text.match(/\{[\s\S]*\}/)
@@ -594,16 +602,16 @@ function LabScan({ settings, onConfirm, onCancel }) {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
         <h3 className="font-semibold text-sm text-gray-700">สแกน Lab จากรูป</h3>
         {!settings?.apiKey && <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-xs text-orange-700">ใส่ API Key ใน Settings ก่อนใช้สแกน</div>}
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
+        <input id="lab-scan-input" type="file" accept="image/*" onChange={handleFile} className="sr-only" />
         {!preview ? (
-          <button onClick={() => fileRef.current?.click()} disabled={!settings?.apiKey} className="w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm disabled:opacity-50">
+          <label htmlFor={settings?.apiKey ? 'lab-scan-input' : undefined} className={`w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm block ${!settings?.apiKey ? 'opacity-50' : 'cursor-pointer active:bg-gray-50'}`}>
             <div className="text-3xl mb-2">📷</div>กดเพื่อถ่ายรูป / เลือกรูปผล Lab
-          </button>
+          </label>
         ) : (
           <div className="space-y-3">
             <img src={preview} alt="Lab" className="w-full rounded-xl max-h-60 object-contain bg-gray-100" />
             <div className="flex gap-2">
-              <button onClick={() => { fileRef.current?.click(); setScannedValues(null) }} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs">เปลี่ยนรูป</button>
+              <label htmlFor="lab-scan-input" onClick={() => setScannedValues(null)} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs text-center cursor-pointer">เปลี่ยนรูป</label>
               {!scannedValues && <button onClick={scan} disabled={loading} className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50">{loading ? 'กำลังอ่าน...' : 'AI อ่านค่า Lab'}</button>}
             </div>
           </div>
