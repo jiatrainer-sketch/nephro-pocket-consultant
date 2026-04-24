@@ -71,6 +71,7 @@ export default function RecommendationTab({ patient }) {
           { key: 'preop', icon: '🔪', label: 'Pre-op', color: 'blue' },
         ].map(({ key, icon, label, color }) => (
           <button
+            type="button"
             key={key}
             onClick={() => toggleProtocol(key)}
             className={`flex-1 flex flex-col items-center py-2.5 rounded-2xl text-xs font-semibold border transition-colors ${
@@ -173,7 +174,7 @@ function ProtocolCard({ title, onClose, children }) {
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
         <h3 className="font-bold text-sm text-gray-800">{title}</h3>
-        <button onClick={onClose} className="text-gray-400 text-lg leading-none px-1">
+        <button type="button" onClick={onClose} className="text-gray-400 text-lg leading-none px-1" aria-label="ปิด">
           ✕
         </button>
       </div>
@@ -183,7 +184,7 @@ function ProtocolCard({ title, onClose, children }) {
 }
 
 // ---- Sick Day ----
-function SickDayContent({ patient, latestLab }) {
+function SickDayContent({ patient }) {
   const meds = patient.medications || []
 
   const STOP_RULES = [
@@ -682,6 +683,7 @@ function PreopContent({ patient, latestLab }) {
           <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
             {surgSuggestions.map((s, i) => (
               <button
+                type="button"
                 key={i}
                 onMouseDown={() => selectSurgery(s)}
                 className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between border-b border-gray-50 last:border-0"
@@ -704,6 +706,7 @@ function PreopContent({ patient, latestLab }) {
           ['major', 'Major / High risk'],
         ].map(([k, label]) => (
           <button
+            type="button"
             key={k}
             onClick={() => setType(k)}
             className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${

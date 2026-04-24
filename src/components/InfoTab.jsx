@@ -264,7 +264,7 @@ export default function InfoTab({ patient, onUpdate }) {
                   >
                     {c.name}
                     {c.since ? ` (${c.since})` : ''}
-                    <button onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5">✕</button>
+                    <button type="button" onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5" aria-label={`ลบ ${c.name}`}>✕</button>
                   </span>
                 ))}
               </div>
@@ -331,7 +331,7 @@ export default function InfoTab({ patient, onUpdate }) {
                     className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
                   >
                     ⚠️ {a}
-                    <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">✕</button>
+                    <button type="button" onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5" aria-label={`ลบ ${a}`}>✕</button>
                   </span>
                 ))}
               </div>
@@ -378,6 +378,7 @@ export default function InfoTab({ patient, onUpdate }) {
         </div>
 
         <button
+          type="button"
           onClick={() => setEditing(true)}
           className="w-full border border-blue-300 text-blue-600 py-3 rounded-2xl text-sm font-medium"
         >
@@ -538,6 +539,7 @@ export default function InfoTab({ patient, onUpdate }) {
                 {c.name}
                 {c.since ? ` (${c.since})` : ''}
                 <button
+                  type="button"
                   onClick={() => removeCondition(i)}
                   className="text-blue-400 hover:text-red-500 ml-0.5"
                 >
@@ -618,6 +620,7 @@ export default function InfoTab({ patient, onUpdate }) {
               >
                 ⚠️ {a}
                 <button
+                  type="button"
                   onClick={() => removeAllergy(i)}
                   className="text-red-400 hover:text-red-600 ml-0.5"
                 >
