@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { DR_AI_MODEL } from '../drAIPrompt'
 import { FREQUENCY_OPTIONS, TIMING_OPTIONS, getDrugInfo, searchMedications } from '../medicationDatabase'
 import { generateId } from '../storage'
 
@@ -388,7 +389,7 @@ function MedForm({ initial, onSave, onCancel }) {
 // ============================================================
 // Med Scan — photo → AI reads drug names → confirm
 // ============================================================
-const SCAN_MODEL = 'claude-sonnet-4-6'
+const SCAN_MODEL = DR_AI_MODEL
 
 function MedScan({ settings, onConfirm, onCancel }) {
   const [image, setImage] = useState(null)

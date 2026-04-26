@@ -17,8 +17,6 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
   const [tab, setTab] = useState('rec')
   const [showMenu, setShowMenu] = useState(false)
 
-  const _activeTab = TABS.find((t) => t.id === tab)
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
@@ -74,7 +72,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
           </div>
 
           {/* Tab bar */}
-          <div className="flex gap-0 -mx-4 px-2 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-0 -mx-4 px-2 overflow-x-auto">
             {TABS.map((t) => (
               <button
                 key={t.id}

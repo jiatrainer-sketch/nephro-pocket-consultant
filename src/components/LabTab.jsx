@@ -190,7 +190,7 @@ function TrendSection({ labs }) {
       <div className="px-4 pt-3 pb-1">
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">📈 แนวโน้ม Lab</p>
       </div>
-      <div className="flex overflow-x-auto gap-0 px-2 pb-3 scrollbar-hide">
+      <div className="flex overflow-x-auto gap-0 px-2 pb-3">
         {cards.map(({ tl, points, latest, arrow, arrowColor }) => (
           <div
             key={tl.key}
