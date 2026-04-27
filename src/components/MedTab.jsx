@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { FREQUENCY_OPTIONS, TIMING_OPTIONS, getDrugInfo, searchMedications } from '../medicationDatabase'
+import {
+  FREQUENCY_OPTIONS,
+  TIMING_OPTIONS,
+  getDrugInfo,
+  searchMedications,
+} from '../medicationDatabase'
 import { generateId } from '../storage'
 
 export default function MedTab({ patient, onUpdate, settings }) {
@@ -34,13 +39,15 @@ export default function MedTab({ patient, onUpdate, settings }) {
 
   const addScannedMeds = (medsArr) => {
     const existing = patient.medications || []
-    const newMeds = medsArr.map(m => ({ ...m, id: generateId() }))
+    const newMeds = medsArr.map((m) => ({ ...m, id: generateId() }))
     onUpdate({ ...patient, medications: [...existing, ...newMeds] })
     setShowScan(false)
   }
 
   if (showScan) {
-    return <MedScan settings={settings} onConfirm={addScannedMeds} onCancel={() => setShowScan(false)} />
+    return (
+      <MedScan settings={settings} onConfirm={addScannedMeds} onCancel={() => setShowScan(false)} />
+    )
   }
 
   if (showForm) {
@@ -54,12 +61,14 @@ export default function MedTab({ patient, onUpdate, settings }) {
     <div className="p-4 space-y-3">
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={openAdd}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
         >
           <span className="text-lg leading-none">+</span> เพิ่มยา
         </button>
         <button
+          type="button"
           onClick={() => setShowScan(true)}
           className="bg-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-1"
         >
@@ -118,20 +127,20 @@ function MedCard({ med, onEdit, onDelete }) {
           {[med.dose, med.frequency, med.timing].filter(Boolean).join(' · ')}
         </div>
         {info?.dosage && (
-          <div className="text-[11px] text-blue-600 mt-0.5 leading-snug">
-            💊 {info.dosage}
-          </div>
+          <div className="text-[11px] text-blue-600 mt-0.5 leading-snug">💊 {info.dosage}</div>
         )}
         {med.note && <div className="text-xs text-gray-400 mt-0.5">{med.note}</div>}
       </div>
       <div className="flex gap-1 shrink-0">
         <button
+          type="button"
           onClick={onEdit}
           className="text-xs text-blue-500 px-2 py-1 rounded-lg active:bg-blue-50"
         >
           แก้
         </button>
         <button
+          type="button"
           onClick={onDelete}
           className="text-xs text-red-400 px-2 py-1 rounded-lg active:bg-red-50"
         >
@@ -186,7 +195,8 @@ function MedForm({ initial, onSave, onCancel }) {
 
   const canSave = name.trim().length > 0
 
-  const inp = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
+  const inp =
+    'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300'
 
   return (
     <div className="p-4 space-y-4">
@@ -366,6 +376,7 @@ function MedForm({ initial, onSave, onCancel }) {
 
       <div className="flex gap-2 pb-8">
         <button
+          type="button"
           onClick={() => canSave && onSave({ name: name.trim(), dose, frequency, timing, note })}
           disabled={!canSave}
           className={`flex-1 py-3 rounded-2xl text-sm font-medium ${
@@ -375,6 +386,7 @@ function MedForm({ initial, onSave, onCancel }) {
           บันทึก
         </button>
         <button
+          type="button"
           onClick={onCancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
@@ -399,7 +411,9 @@ function MedScan({ settings, onConfirm, onCancel }) {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    return () => { if (preview) URL.revokeObjectURL(preview) }
+    return () => {
+      if (preview) URL.revokeObjectURL(preview)
+    }
   }, [preview])
 
   const handleFile = (e) => {
@@ -409,7 +423,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
     setPreview(URL.createObjectURL(file))
     const reader = new FileReader()
     reader.onload = () => {
-      const mediaType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg'
+      const mediaType = file.type?.startsWith('image/') ? file.type : 'image/jpeg'
       setImage({ data: reader.result.split(',')[1], type: mediaType })
     }
     reader.onerror = () => setError('ไม่สามารถอ่านไฟล์ได้')
@@ -435,17 +449,25 @@ function MedScan({ settings, onConfirm, onCancel }) {
         body: JSON.stringify({
           model: SCAN_MODEL,
           max_tokens: 1024,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: image.type, data: image.data } },
-              { type: 'text', text: `อ่านชื่อยาทั้งหมดจากรูปนี้ (ซองยา/ฉลาก/ใบสั่งยา)
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'image',
+                  source: { type: 'base64', media_type: image.type, data: image.data },
+                },
+                {
+                  type: 'text',
+                  text: `อ่านชื่อยาทั้งหมดจากรูปนี้ (ซองยา/ฉลาก/ใบสั่งยา)
 ตอบเป็น JSON array เท่านั้น ห้ามมีข้อความอื่น:
 [{"name":"ชื่อยา generic ภาษาอังกฤษ","dose":"dose ถ้าเห็น","frequency":"frequency ถ้าเห็น","timing":"เวลากิน ถ้าเห็น"}]
 ถ้าไม่เห็น dose/frequency/timing ใส่ ""
-ถ้าเป็นชื่อการค้า ให้แปลงเป็น generic name ด้วย` },
-            ],
-          }],
+ถ้าเป็นชื่อการค้า ให้แปลงเป็น generic name ด้วย`,
+                },
+              ],
+            },
+          ],
         }),
       })
       if (!res.ok) {
@@ -470,7 +492,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
   }
 
   const toggle = (i) => {
-    setSelected(prev => {
+    setSelected((prev) => {
       const next = new Set(prev)
       next.has(i) ? next.delete(i) : next.add(i)
       return next
@@ -478,13 +500,19 @@ function MedScan({ settings, onConfirm, onCancel }) {
   }
 
   const updateDrug = (i, field, value) => {
-    setScannedDrugs(prev => prev.map((d, idx) => idx === i ? { ...d, [field]: value } : d))
+    setScannedDrugs((prev) => prev.map((d, idx) => (idx === i ? { ...d, [field]: value } : d)))
   }
 
   const confirmSelected = () => {
     const meds = scannedDrugs
       .filter((_, i) => selected.has(i))
-      .map(d => ({ name: d.name, dose: d.dose || '', frequency: d.frequency || '', timing: d.timing || '', note: 'สแกนจากรูป' }))
+      .map((d) => ({
+        name: d.name,
+        dose: d.dose || '',
+        frequency: d.frequency || '',
+        timing: d.timing || '',
+        note: 'สแกนจากรูป',
+      }))
     onConfirm(meds)
   }
 
@@ -499,7 +527,14 @@ function MedScan({ settings, onConfirm, onCancel }) {
           </div>
         )}
 
-        <input id="med-scan-input" type="file" accept="image/*" capture onChange={handleFile} className="sr-only" />
+        <input
+          id="med-scan-input"
+          type="file"
+          accept="image/*"
+          capture
+          onChange={handleFile}
+          className="sr-only"
+        />
 
         {!preview ? (
           <label
@@ -511,13 +546,25 @@ function MedScan({ settings, onConfirm, onCancel }) {
           </label>
         ) : (
           <div className="space-y-3">
-            <img src={preview} alt="ยา" className="w-full rounded-xl max-h-60 object-contain bg-gray-100" />
+            <img
+              src={preview}
+              alt="ยา"
+              className="w-full rounded-xl max-h-60 object-contain bg-gray-100"
+            />
             <div className="flex gap-2">
-              <label htmlFor="med-scan-input" onClick={() => { setScannedDrugs([]); setError('') }} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs text-center cursor-pointer">
+              <label
+                htmlFor="med-scan-input"
+                onClick={() => {
+                  setScannedDrugs([])
+                  setError('')
+                }}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs text-center cursor-pointer"
+              >
                 เปลี่ยนรูป
               </label>
               {scannedDrugs.length === 0 && (
                 <button
+                  type="button"
                   onClick={scan}
                   disabled={loading}
                   className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50"
@@ -530,12 +577,16 @@ function MedScan({ settings, onConfirm, onCancel }) {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">{error}</div>
+          <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
+            {error}
+          </div>
         )}
 
         {scannedDrugs.length > 0 && (
           <div className="space-y-2">
-            <div className="text-xs text-gray-500 font-medium">AI อ่านได้ {scannedDrugs.length} ตัว — แก้ไขได้ กดปุ่มซ้ายเพื่อเลือก/ไม่เลือก:</div>
+            <div className="text-xs text-gray-500 font-medium">
+              AI อ่านได้ {scannedDrugs.length} ตัว — แก้ไขได้ กดปุ่มซ้ายเพื่อเลือก/ไม่เลือก:
+            </div>
             {scannedDrugs.map((drug, i) => (
               <div
                 key={i}
@@ -547,6 +598,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
               >
                 <div className="flex items-center gap-2 px-3 pt-2">
                   <button
+                    type="button"
                     onClick={() => toggle(i)}
                     className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center text-xs shrink-0 ${
                       selected.has(i)
@@ -596,6 +648,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
       <div className="flex gap-2 pb-8">
         {scannedDrugs.length > 0 && (
           <button
+            type="button"
             onClick={confirmSelected}
             disabled={selected.size === 0}
             className={`flex-1 py-3 rounded-2xl text-sm font-medium ${
@@ -605,7 +658,11 @@ function MedScan({ settings, onConfirm, onCancel }) {
             เพิ่ม {selected.size} ยา
           </button>
         )}
-        <button onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
+        >
           ยกเลิก
         </button>
       </div>
