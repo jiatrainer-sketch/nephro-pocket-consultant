@@ -28,7 +28,7 @@ export default function App() {
   const [patients, setPatients] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [settings, setSettings] = useState({ apiKey: '' })
-  const { theme, toggle: toggleTheme, isDark } = useTheme()
+  const { toggle: toggleTheme, isDark } = useTheme()
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('name')
   const [showAdd, setShowAdd] = useState(false)
@@ -137,157 +137,165 @@ export default function App() {
   // ---- patient list ----
   return (
     <>
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <header
-        className="bg-blue-700 text-white px-4 pt-safe-top pb-3 sticky top-0 z-20 shadow-md"
-        style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
-      >
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div>
-            <div className="text-lg font-bold leading-tight">Nephro Pocket</div>
-            <div className="text-xs text-blue-200">HD Clinical Consultant · รพ.ดอนตูม</div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setView('quick')}
-              className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-            >
-              Quick
-            </button>
-            <button
-              onClick={() => setView('pregnancy')}
-              className="bg-pink-500 hover:bg-pink-400 active:bg-pink-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-            >
-              Preg
-            </button>
-            <button
-              onClick={toggleTheme}
-              className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 w-9 h-9 rounded-lg flex items-center justify-center text-lg"
-              aria-label={isDark ? 'โหมดกลางวัน' : 'โหมดกลางคืน'}
-            >
-              {isDark ? '☀️' : '🌙'}
-            </button>
-            <button
-              onClick={() => setView('settings')}
-              className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 w-9 h-9 rounded-lg flex items-center justify-center text-lg"
-              aria-label="ตั้งค่า"
-            >
-              ⚙️
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-lg mx-auto w-full px-4 py-4">
-        {/* Search */}
-        <div className="relative mb-3">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-          <input
-            type="text"
-            placeholder="ค้นหาชื่อ / HN..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-          />
-        </div>
-
-        {/* Sort tabs */}
-        <div className="flex gap-1.5 mb-4">
-          {[
-            ['name', '🔤 ชื่อ'],
-            ['hn', '# HN'],
-            ['date', '🕐 ล่าสุด'],
-          ].map(([k, label]) => (
-            <button
-              key={k}
-              onClick={() => setSortBy(k)}
-              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-                sortBy === k
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-600 border border-gray-200'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-          <span className="ml-auto text-xs text-gray-400 self-center">{patients.length} คน</span>
-        </div>
-
-        {/* Patient cards */}
-        <div className="space-y-2 mb-4">
-          {displayed.map((p) => (
-            <PatientCard
-              key={p.id}
-              patient={p}
-              onClick={() => {
-                setSelectedId(p.id)
-                setView('detail')
-              }}
-            />
-          ))}
-          {displayed.length === 0 && (
-            <div className="text-center text-gray-400 py-16 text-sm">
-              {search ? 'ไม่พบคนไข้ที่ค้นหา' : 'ยังไม่มีคนไข้\nกด + เพิ่มคนไข้ใหม่'}
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {/* Header */}
+        <header
+          className="bg-blue-700 text-white px-4 pt-safe-top pb-3 sticky top-0 z-20 shadow-md"
+          style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
+        >
+          <div className="max-w-lg mx-auto flex items-center justify-between">
+            <div>
+              <div className="text-lg font-bold leading-tight">Nephro Pocket</div>
+              <div className="text-xs text-blue-200">HD Clinical Consultant · รพ.ดอนตูม</div>
             </div>
-          )}
-        </div>
-
-        {/* Add patient */}
-        {showAdd ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-            <p className="font-medium text-sm mb-3 text-gray-700">เพิ่มคนไข้ใหม่</p>
-            <input
-              type="text"
-              placeholder="ชื่อ / ชื่อเล่น / initials"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addPatient()}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
-            <input
-              type="text"
-              placeholder="HN (ไม่บังคับ)"
-              value={newHN}
-              onChange={(e) => setNewHN(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addPatient()}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
             <div className="flex gap-2">
               <button
-                onClick={addPatient}
-                className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium"
+                type="button"
+                onClick={() => setView('quick')}
+                className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
               >
-                เพิ่ม
+                Quick
               </button>
               <button
-                onClick={() => {
-                  setShowAdd(false)
-                  setNewName('')
-                  setNewHN('')
-                }}
-                className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm"
+                type="button"
+                onClick={() => setView('pregnancy')}
+                className="bg-pink-500 hover:bg-pink-400 active:bg-pink-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
               >
-                ยกเลิก
+                Preg
+              </button>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 w-9 h-9 rounded-lg flex items-center justify-center text-lg"
+                aria-label={isDark ? 'โหมดกลางวัน' : 'โหมดกลางคืน'}
+              >
+                {isDark ? '☀️' : '🌙'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('settings')}
+                className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 w-9 h-9 rounded-lg flex items-center justify-center text-lg"
+                aria-label="ตั้งค่า"
+              >
+                ⚙️
               </button>
             </div>
           </div>
-        ) : (
-          <button
-            onClick={() => setShowAdd(true)}
-            className="w-full bg-blue-600 active:bg-blue-700 text-white py-3.5 rounded-2xl text-sm font-medium shadow flex items-center justify-center gap-2"
-          >
-            <span className="text-lg leading-none">+</span> เพิ่มคนไข้ใหม่
-          </button>
-        )}
+        </header>
 
-        {/* Disclaimer */}
-        <p className="text-center text-xs text-gray-400 mt-6 mb-2">
-          Clinical decision support — แพทย์ต้อง confirm ก่อนสั่งยาเสมอ
-        </p>
-      </main>
-    </div>
-    <DrAIFloat settings={settings} />
+        <main className="flex-1 max-w-lg mx-auto w-full px-4 py-4">
+          {/* Search */}
+          <div className="relative mb-3">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <input
+              type="text"
+              placeholder="ค้นหาชื่อ / HN..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
+
+          {/* Sort tabs */}
+          <div className="flex gap-1.5 mb-4">
+            {[
+              ['name', '🔤 ชื่อ'],
+              ['hn', '# HN'],
+              ['date', '🕐 ล่าสุด'],
+            ].map(([k, label]) => (
+              <button
+                type="button"
+                key={k}
+                onClick={() => setSortBy(k)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                  sortBy === k
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-600 border border-gray-200'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+            <span className="ml-auto text-xs text-gray-400 self-center">{patients.length} คน</span>
+          </div>
+
+          {/* Patient cards */}
+          <div className="space-y-2 mb-4">
+            {displayed.map((p) => (
+              <PatientCard
+                key={p.id}
+                patient={p}
+                onClick={() => {
+                  setSelectedId(p.id)
+                  setView('detail')
+                }}
+              />
+            ))}
+            {displayed.length === 0 && (
+              <div className="text-center text-gray-400 py-16 text-sm">
+                {search ? 'ไม่พบคนไข้ที่ค้นหา' : 'ยังไม่มีคนไข้\nกด + เพิ่มคนไข้ใหม่'}
+              </div>
+            )}
+          </div>
+
+          {/* Add patient */}
+          {showAdd ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <p className="font-medium text-sm mb-3 text-gray-700">เพิ่มคนไข้ใหม่</p>
+              <input
+                type="text"
+                placeholder="ชื่อ / ชื่อเล่น / initials"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addPatient()}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <input
+                type="text"
+                placeholder="HN (ไม่บังคับ)"
+                value={newHN}
+                onChange={(e) => setNewHN(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addPatient()}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={addPatient}
+                  className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium"
+                >
+                  เพิ่ม
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAdd(false)
+                    setNewName('')
+                    setNewHN('')
+                  }}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm"
+                >
+                  ยกเลิก
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowAdd(true)}
+              className="w-full bg-blue-600 active:bg-blue-700 text-white py-3.5 rounded-2xl text-sm font-medium shadow flex items-center justify-center gap-2"
+            >
+              <span className="text-lg leading-none">+</span> เพิ่มคนไข้ใหม่
+            </button>
+          )}
+
+          {/* Disclaimer */}
+          <p className="text-center text-xs text-gray-400 mt-6 mb-2">
+            Clinical decision support — แพทย์ต้อง confirm ก่อนสั่งยาเสมอ
+          </p>
+        </main>
+      </div>
+      <DrAIFloat settings={settings} />
     </>
   )
 }
@@ -306,6 +314,7 @@ function PatientCard({ patient, onClick }) {
 
   return (
     <button
+      type="button"
       onClick={onClick}
       className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-3 text-left active:bg-gray-50 transition-colors"
     >
@@ -439,7 +448,9 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
       const existingIds = new Set(current.map((p) => p.id))
       const toAdd = incoming.filter((p) => p?.id && !existingIds.has(p.id))
       savePatients([...current, ...toAdd])
-      setImportMsg(`✅ นำเข้าสำเร็จ — เพิ่ม ${toAdd.length} คน (ซ้ำ ${incoming.length - toAdd.length} คน)`)
+      setImportMsg(
+        `✅ นำเข้าสำเร็จ — เพิ่ม ${toAdd.length} คน (ซ้ำ ${incoming.length - toAdd.length} คน)`
+      )
       onDataRestored?.()
     } catch (err) {
       setImportMsg(`❌ ${err.message || 'นำเข้าไม่สำเร็จ'}`)
