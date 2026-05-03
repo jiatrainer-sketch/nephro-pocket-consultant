@@ -59,7 +59,7 @@ export default function QuickMode({ onBack, settings }) {
       >
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+            <button type="button" onClick={onBack} className="text-2xl leading-none shrink-0" aria-label="กลับ">
               ←
             </button>
             <div className="flex-1">
