@@ -186,6 +186,7 @@ export default function App() {
           <input
             type="text"
             placeholder="ค้นหาชื่อ / HN..."
+            aria-label="ค้นหาชื่อหรือ HN"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -460,7 +461,7 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
         className="bg-blue-700 text-white px-4 py-3 flex items-center gap-3 sticky top-0 z-20"
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
-        <button type="button" onClick={onBack} className="text-2xl leading-none">
+        <button type="button" onClick={onBack} className="text-2xl leading-none" aria-label="กลับ">
           ←
         </button>
         <h1 className="font-bold text-lg">ตั้งค่า</h1>
