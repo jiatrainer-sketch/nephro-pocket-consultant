@@ -50,7 +50,7 @@ export default function PregnancyTab({ onBack, settings }) {
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="text-xl leading-none">←</button>
+          <button type="button" onClick={onBack} className="text-xl leading-none">←</button>
           <div>
             <div className="text-lg font-bold leading-tight">Pregnancy / Lactation</div>
             <div className="text-xs text-pink-200">ยาปลอดภัยสำหรับคนท้อง/ให้นม</div>
@@ -69,7 +69,7 @@ export default function PregnancyTab({ onBack, settings }) {
               { v: 'pregnant-3', l: 'ท้อง T3' },
               { v: 'breastfeeding', l: 'ให้นม' },
             ].map(({ v, l }) => (
-              <button
+              <button type="button"
                 key={v}
                 onClick={() => setContext(v)}
                 className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors ${
@@ -86,7 +86,7 @@ export default function PregnancyTab({ onBack, settings }) {
 
         {/* Mode toggle */}
         <div className="flex gap-2">
-          <button
+          <button type="button"
             onClick={() => { setMode('symptom'); setQuery('') }}
             className={`flex-1 text-sm py-2 rounded-xl font-medium transition-colors ${
               mode === 'symptom' ? 'bg-pink-600 text-white' : 'bg-white text-gray-600 border border-gray-200'
@@ -94,7 +94,7 @@ export default function PregnancyTab({ onBack, settings }) {
           >
             เลือกอาการ
           </button>
-          <button
+          <button type="button"
             onClick={() => { setMode('search'); setSelectedSymptom(null) }}
             className={`flex-1 text-sm py-2 rounded-xl font-medium transition-colors ${
               mode === 'search' ? 'bg-pink-600 text-white' : 'bg-white text-gray-600 border border-gray-200'
@@ -108,7 +108,7 @@ export default function PregnancyTab({ onBack, settings }) {
         {mode === 'symptom' && (
           <div className="flex flex-wrap gap-1.5">
             {SYMPTOMS.map(({ key, label }) => (
-              <button
+              <button type="button"
                 key={key}
                 onClick={() => setSelectedSymptom(key === selectedSymptom ? null : key)}
                 className={`text-xs px-2.5 py-1.5 rounded-full border transition-colors ${
@@ -163,7 +163,7 @@ export default function PregnancyTab({ onBack, settings }) {
 
       {/* AI Floating Button */}
       {!showAI && (
-        <button
+        <button type="button"
           onClick={() => setShowAI(true)}
           className="fixed bottom-6 right-6 w-14 h-14 bg-purple-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl active:bg-purple-800 z-30"
           aria-label="ถาม AI"
@@ -338,7 +338,7 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
     <div className="fixed inset-0 z-40 flex flex-col bg-gray-50">
       {/* AI Header */}
       <div className="bg-purple-600 text-white px-4 py-3 flex items-center gap-3 shadow-md">
-        <button onClick={onClose} className="text-xl leading-none">←</button>
+        <button type="button" onClick={onClose} className="text-xl leading-none">←</button>
         <div>
           <div className="text-sm font-bold">Dr. AI — {contextLabel}</div>
           <div className="text-xs text-purple-200">ถามเกี่ยวกับยาในคนท้อง/ให้นม</div>
@@ -386,14 +386,14 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
             className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-300 disabled:bg-gray-100"
           />
           {loading ? (
-            <button
+            <button type="button"
               onClick={stopGeneration}
               className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white active:bg-red-700 shrink-0"
             >
               หยุด
             </button>
           ) : (
-            <button
+            <button type="button"
               onClick={send}
               disabled={!settings?.apiKey || !input.trim()}
               className="bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 shrink-0"
@@ -402,7 +402,7 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
             </button>
           )}
         {messages.length > 0 && (
-          <button
+          <button type="button"
             onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
             className="w-full mt-2 text-xs text-gray-400 py-1"
           >
