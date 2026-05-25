@@ -117,7 +117,7 @@ export default function InfoTab({ patient, onUpdate }) {
       setConditionSuggestions([])
       return
     }
-    const src = editing ? (form.conditions || []) : (patient.conditions || [])
+    const src = editing ? form.conditions || [] : patient.conditions || []
     const already = new Set(src.map((c) => c.name.toLowerCase()))
     const results = CONDITION_SUGGESTIONS.filter(
       (c) => c.toLowerCase().includes(q) && !already.has(c.toLowerCase())
@@ -264,22 +264,30 @@ export default function InfoTab({ patient, onUpdate }) {
                   >
                     {c.name}
                     {c.since ? ` (${c.since})` : ''}
-                    <button onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5">✕</button>
+                    <button
+                      type="button"
+                      onClick={() => removeCondition(i)}
+                      className="text-blue-400 ml-0.5"
+                    >
+                      ✕
+                    </button>
                   </span>
                 ))}
               </div>
             )}
             <div className="flex flex-wrap gap-1.5">
-              {COMMON_CONDITIONS.filter((c) => !patient.conditions?.some((x) => x.name === c)).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => addCondition(c)}
-                  className="text-xs px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 active:bg-blue-50"
-                >
-                  + {c}
-                </button>
-              ))}
+              {COMMON_CONDITIONS.filter((c) => !patient.conditions?.some((x) => x.name === c)).map(
+                (c) => (
+                  <button
+                    type="button"
+                    key={c}
+                    onClick={() => addCondition(c)}
+                    className="text-xs px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 active:bg-blue-50"
+                  >
+                    + {c}
+                  </button>
+                )
+              )}
             </div>
             <div className="relative">
               <div className="flex gap-2">
@@ -304,8 +312,8 @@ export default function InfoTab({ patient, onUpdate }) {
                 <div className="absolute left-0 right-24 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden max-h-56 overflow-y-auto">
                   {conditionSuggestions.map((c, i) => (
                     <button
-                      key={i}
                       type="button"
+                      key={i}
                       onClick={() => addCondition(c)}
                       className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
                     >
@@ -331,7 +339,13 @@ export default function InfoTab({ patient, onUpdate }) {
                     className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
                   >
                     ⚠️ {a}
-                    <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">✕</button>
+                    <button
+                      type="button"
+                      onClick={() => removeAllergy(i)}
+                      className="text-red-400 ml-0.5"
+                    >
+                      ✕
+                    </button>
                   </span>
                 ))}
               </div>
@@ -362,8 +376,8 @@ export default function InfoTab({ patient, onUpdate }) {
                 <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
                   {allergySuggestions.map((med, i) => (
                     <button
-                      key={i}
                       type="button"
+                      key={i}
                       onClick={() => addAllergy(med.name)}
                       className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
                     >
@@ -378,6 +392,7 @@ export default function InfoTab({ patient, onUpdate }) {
         </div>
 
         <button
+          type="button"
           onClick={() => setEditing(true)}
           className="w-full border border-blue-300 text-blue-600 py-3 rounded-2xl text-sm font-medium"
         >
@@ -395,8 +410,8 @@ export default function InfoTab({ patient, onUpdate }) {
           <div className="flex gap-2">
             {PATIENT_STATUSES.map((s) => (
               <button
-                key={s.id}
                 type="button"
+                key={s.id}
                 onClick={() => set('status', s.id)}
                 className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
                   form.status === s.id
@@ -475,8 +490,8 @@ export default function InfoTab({ patient, onUpdate }) {
           <div className="flex flex-wrap gap-1.5 mb-2">
             {ESRD_CAUSES.map((c) => (
               <button
-                key={c}
                 type="button"
+                key={c}
                 onClick={() => set('esrd_cause', form.esrd_cause === c ? '' : c)}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   form.esrd_cause === c
@@ -502,8 +517,8 @@ export default function InfoTab({ patient, onUpdate }) {
           <div className="flex flex-wrap gap-1.5">
             {VASCULAR_ACCESS_TYPES.map((t) => (
               <button
-                key={t}
                 type="button"
+                key={t}
                 onClick={() => setAccess('type', form.vascular_access?.type === t ? '' : t)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   form.vascular_access?.type === t
@@ -538,6 +553,7 @@ export default function InfoTab({ patient, onUpdate }) {
                 {c.name}
                 {c.since ? ` (${c.since})` : ''}
                 <button
+                  type="button"
                   onClick={() => removeCondition(i)}
                   className="text-blue-400 hover:text-red-500 ml-0.5"
                 >
@@ -551,8 +567,8 @@ export default function InfoTab({ patient, onUpdate }) {
         <div className="flex flex-wrap gap-1.5 mb-3">
           {COMMON_CONDITIONS.filter((c) => !form.conditions?.some((x) => x.name === c)).map((c) => (
             <button
-              key={c}
               type="button"
+              key={c}
               onClick={() => addCondition(c)}
               className="text-xs px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 active:bg-blue-50"
             >
@@ -590,8 +606,8 @@ export default function InfoTab({ patient, onUpdate }) {
             <div className="absolute left-0 right-24 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden max-h-56 overflow-y-auto">
               {conditionSuggestions.map((c, i) => (
                 <button
-                  key={i}
                   type="button"
+                  key={i}
                   onClick={() => addCondition(c)}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-blue-50 border-b border-gray-50 last:border-0"
                 >
@@ -618,6 +634,7 @@ export default function InfoTab({ patient, onUpdate }) {
               >
                 ⚠️ {a}
                 <button
+                  type="button"
                   onClick={() => removeAllergy(i)}
                   className="text-red-400 hover:text-red-600 ml-0.5"
                 >
@@ -653,8 +670,8 @@ export default function InfoTab({ patient, onUpdate }) {
             <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
               {allergySuggestions.map((med, i) => (
                 <button
-                  key={i}
                   type="button"
+                  key={i}
                   onClick={() => addAllergy(med.name)}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
                 >
@@ -670,12 +687,14 @@ export default function InfoTab({ patient, onUpdate }) {
       {/* Save / Cancel */}
       <div className="flex gap-2 pb-8">
         <button
+          type="button"
           onClick={save}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium"
         >
           บันทึก
         </button>
         <button
+          type="button"
           onClick={cancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
@@ -696,7 +715,7 @@ function Section({ title, children, onEdit }) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
         <h3 className="font-semibold text-sm text-gray-700">{title}</h3>
         {onEdit && (
-          <button onClick={onEdit} className="text-xs text-blue-500">
+          <button type="button" onClick={onEdit} className="text-xs text-blue-500">
             แก้ไข
           </button>
         )}
