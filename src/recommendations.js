@@ -316,7 +316,8 @@ function getRenoprotectionRecs(v, meds, conditions, egfrDropPct = 0) {
           title: 'SGLT2i — รอ eGFR stable ก่อนเพิ่ม',
           recommendation: `มี ${indication} → SGLT2i มี indication ตาม KDIGO 2024\nแต่ eGFR ลดลง >30% — ไม่ควรเพิ่มยาที่ลด eGFR เพิ่มตอนนี้\nรอ eGFR stable แล้วค่อย add:\n• Dapagliflozin (Forxiga) 10 mg OD (eGFR ≥25)\n• Empagliflozin (Jardiance) 10 mg OD (eGFR ≥20)`,
           target: 'รอ eGFR stable → add SGLT2i ตาม KDIGO 2024',
-          warning: 'SGLT2i จะทำให้ eGFR ลดเพิ่มอีก 3-5 mL/min (hemodynamic dip) — ไม่ควรเพิ่มขณะ eGFR ไม่ stable',
+          warning:
+            'SGLT2i จะทำให้ eGFR ลดเพิ่มอีก 3-5 mL/min (hemodynamic dip) — ไม่ควรเพิ่มขณะ eGFR ไม่ stable',
         })
       } else {
         recs.push({
