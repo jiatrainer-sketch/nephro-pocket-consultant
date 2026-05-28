@@ -380,8 +380,10 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
   const [storage, setStorage] = useState(null)
   const [restoreMsg, setRestoreMsg] = useState('')
   const [importMsg, setImportMsg] = useState('')
+  const [labImportMsg, setLabImportMsg] = useState('')
   const fileRef = useRef(null)
   const importFileRef = useRef(null)
+  const labImportRef = useRef(null)
 
   useEffect(() => {
     getStorageInfo().then(setStorage)
@@ -443,6 +445,45 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
       onDataRestored?.()
     } catch (err) {
       setImportMsg(`❌ ${err.message || 'นำเข้าไม่สำเร็จ'}`)
+    }
+    e.target.value = ''
+  }
+
+  const handleLabImport = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const labData = JSON.parse(text)
+      if (typeof labData !== 'object' || Array.isArray(labData)) {
+        throw new Error('รูปแบบไฟล์ไม่ถูกต้อง')
+      }
+      const patients = loadPatients()
+      let matched = 0
+      let labsAdded = 0
+      const normalize = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase()
+      for (const [excelName, labEntries] of Object.entries(labData)) {
+        const n = normalize(excelName)
+        const patient = patients.find((p) => {
+          const pn = normalize(p.name)
+          return pn === n || n.includes(pn) || pn.includes(n)
+        })
+        if (!patient) continue
+        matched++
+        if (!patient.labs) patient.labs = []
+        for (const entry of labEntries) {
+          const exists = patient.labs.some((l) => l.date === entry.date)
+          if (!exists) {
+            patient.labs.push({ id: generateId(), date: entry.date, values: entry.values })
+            labsAdded++
+          }
+        }
+      }
+      savePatients(patients)
+      setLabImportMsg(`✅ จับคู่ได้ ${matched}/${Object.keys(labData).length} คน — เพิ่ม ${labsAdded} lab entries`)
+      onDataRestored?.()
+    } catch (err) {
+      setLabImportMsg(`❌ ${err.message || 'นำเข้า Lab ไม่สำเร็จ'}`)
     }
     e.target.value = ''
   }
@@ -584,6 +625,30 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
             />
             {importMsg && <p className="text-xs text-center mt-1">{importMsg}</p>}
           </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+          <div>
+            <h3 className="font-semibold text-sm text-gray-700 mb-1">🧪 นำเข้า Lab จากไฟล์</h3>
+            <p className="text-xs text-gray-500">
+              Upload JSON ที่ generate จาก Excel — จับคู่ชื่อคนไข้อัตโนมัติแล้วเพิ่ม lab entries
+            </p>
+          </div>
+          <input
+            ref={labImportRef}
+            type="file"
+            accept="application/json,.json"
+            onChange={handleLabImport}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => labImportRef.current?.click()}
+            className="w-full bg-purple-50 text-purple-700 py-2.5 rounded-xl text-sm font-medium border border-purple-200"
+          >
+            🧪 นำเข้า Lab (จับคู่ชื่อ)
+          </button>
+          {labImportMsg && <p className="text-xs text-center mt-1">{labImportMsg}</p>}
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">
