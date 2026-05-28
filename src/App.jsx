@@ -449,43 +449,63 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
     e.target.value = ''
   }
 
+  const importLabData = (labData) => {
+    if (typeof labData !== 'object' || Array.isArray(labData)) {
+      throw new Error('รูปแบบไฟล์ไม่ถูกต้อง')
+    }
+    const patients = loadPatients()
+    let matched = 0
+    let labsAdded = 0
+    const normalize = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase()
+    for (const [excelName, labEntries] of Object.entries(labData)) {
+      const n = normalize(excelName)
+      const patient = patients.find((p) => {
+        const pn = normalize(p.name)
+        return pn === n || n.includes(pn) || pn.includes(n)
+      })
+      if (!patient) continue
+      matched++
+      if (!patient.labs) patient.labs = []
+      for (const entry of labEntries) {
+        const exists = patient.labs.some((l) => l.date === entry.date)
+        if (!exists) {
+          patient.labs.push({ id: generateId(), date: entry.date, values: entry.values })
+          labsAdded++
+        }
+      }
+    }
+    savePatients(patients)
+    onDataRestored?.()
+    return { matched, total: Object.keys(labData).length, labsAdded }
+  }
+
   const handleLabImport = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
     try {
       const text = await file.text()
       const labData = JSON.parse(text)
-      if (typeof labData !== 'object' || Array.isArray(labData)) {
-        throw new Error('รูปแบบไฟล์ไม่ถูกต้อง')
-      }
-      const patients = loadPatients()
-      let matched = 0
-      let labsAdded = 0
-      const normalize = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase()
-      for (const [excelName, labEntries] of Object.entries(labData)) {
-        const n = normalize(excelName)
-        const patient = patients.find((p) => {
-          const pn = normalize(p.name)
-          return pn === n || n.includes(pn) || pn.includes(n)
-        })
-        if (!patient) continue
-        matched++
-        if (!patient.labs) patient.labs = []
-        for (const entry of labEntries) {
-          const exists = patient.labs.some((l) => l.date === entry.date)
-          if (!exists) {
-            patient.labs.push({ id: generateId(), date: entry.date, values: entry.values })
-            labsAdded++
-          }
-        }
-      }
-      savePatients(patients)
-      setLabImportMsg(`✅ จับคู่ได้ ${matched}/${Object.keys(labData).length} คน — เพิ่ม ${labsAdded} lab entries`)
-      onDataRestored?.()
+      const { matched, total, labsAdded } = importLabData(labData)
+      setLabImportMsg(`✅ จับคู่ได้ ${matched}/${total} คน — เพิ่ม ${labsAdded} lab entries`)
     } catch (err) {
       setLabImportMsg(`❌ ${err.message || 'นำเข้า Lab ไม่สำเร็จ'}`)
     }
     e.target.value = ''
+  }
+
+  const handleQuickLabImport = async () => {
+    setLabImportMsg('กำลังโหลด...')
+    try {
+      const res = await fetch('/lab_import_2569.json')
+      if (!res.ok) throw new Error('ไม่พบไฟล์ lab')
+      const labData = await res.json()
+      const { matched, total, labsAdded } = importLabData(labData)
+      setLabImportMsg(labsAdded > 0
+        ? `✅ จับคู่ได้ ${matched}/${total} คน — เพิ่ม ${labsAdded} lab entries`
+        : `✅ จับคู่ได้ ${matched}/${total} คน — Lab ครบแล้ว ไม่มีรายการใหม่`)
+    } catch (err) {
+      setLabImportMsg(`❌ ${err.message}`)
+    }
   }
 
   const fmtBytes = (n) => {
@@ -629,11 +649,18 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
           <div>
-            <h3 className="font-semibold text-sm text-gray-700 mb-1">🧪 นำเข้า Lab จากไฟล์</h3>
+            <h3 className="font-semibold text-sm text-gray-700 mb-1">🧪 นำเข้า Lab</h3>
             <p className="text-xs text-gray-500">
-              Upload JSON ที่ generate จาก Excel — จับคู่ชื่อคนไข้อัตโนมัติแล้วเพิ่ม lab entries
+              จับคู่ชื่อคนไข้อัตโนมัติแล้วเพิ่ม lab entries
             </p>
           </div>
+          <button
+            type="button"
+            onClick={handleQuickLabImport}
+            className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium"
+          >
+            🧪 นำเข้า Lab ปี 2569 (กพ. + พค.)
+          </button>
           <input
             ref={labImportRef}
             type="file"
@@ -646,7 +673,7 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
             onClick={() => labImportRef.current?.click()}
             className="w-full bg-purple-50 text-purple-700 py-2.5 rounded-xl text-sm font-medium border border-purple-200"
           >
-            🧪 นำเข้า Lab (จับคู่ชื่อ)
+            📁 นำเข้า Lab จากไฟล์อื่น
           </button>
           {labImportMsg && <p className="text-xs text-center mt-1">{labImportMsg}</p>}
         </div>
