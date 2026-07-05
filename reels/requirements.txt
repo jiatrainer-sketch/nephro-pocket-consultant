@@ -1,0 +1,5 @@
+# ต้องใช้ moviepy 2.x (API ใหม่) — `pip install moviepy` ปัจจุบันได้ 2.x
+moviepy>=2.0
+pillow>=10.0
+numpy>=1.24
+# หมายเหตุ: ต้องมี ffmpeg ติดตั้งในเครื่องด้วย (moviepy เรียกใช้เบื้องหลัง)
