@@ -456,13 +456,33 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
     const patients = loadPatients()
     let matched = 0
     let labsAdded = 0
-    const normalize = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase()
-    for (const [excelName, labEntries] of Object.entries(labData)) {
-      const n = normalize(excelName)
-      const patient = patients.find((p) => {
+    // ตัดคำนำหน้า (นาย/นาง/นางสาว/นส./น.ส. ฯลฯ) ก่อนเทียบ เพื่อให้ "นส.กรรธิดา" จับคู่ "น.ส.กรรธิดา" ได้
+    const normalize = (s) =>
+      (s || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/^(นางสาว|นาง|นาย|น\.ส\.|นส\.|ด\.ช\.|ด\.ญ\.|พระครู|พระ|ร\.ต\.ต\.|รตต\.)\s*/, '')
+        .toLowerCase()
+    // patient หนึ่งคนรับ partial match ได้ครั้งเดียว — กัน Excel หลายชื่อเทใส่คนไข้ชื่อสั้นคนเดียว
+    const usedByPartial = new Set()
+    const findPatient = (n) => {
+      if (!n) return null
+      // รอบ 1: ชื่อตรงกันเป๊ะ
+      const exact = patients.find((p) => normalize(p.name) === n)
+      if (exact) return exact
+      // รอบ 2: ชื่อย่อย (เช่น เก็บแค่ชื่อจริงไม่มีนามสกุล) — ต้องยาวพอและเจอคนเดียวเท่านั้น
+      const partial = patients.filter((p) => {
+        if (usedByPartial.has(p.id)) return false
         const pn = normalize(p.name)
-        return pn === n || n.includes(pn) || pn.includes(n)
+        if (!pn) return false
+        return (pn.length >= 4 && n.includes(pn)) || (n.length >= 4 && pn.includes(n))
       })
+      if (partial.length !== 1) return null
+      usedByPartial.add(partial[0].id)
+      return partial[0]
+    }
+    for (const [excelName, labEntries] of Object.entries(labData)) {
+      const patient = findPatient(normalize(excelName))
       if (!patient) continue
       matched++
       if (!patient.labs) patient.labs = []
