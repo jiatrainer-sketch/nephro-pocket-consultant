@@ -46,11 +46,11 @@ export default function PregnancyTab({ onBack, settings }) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header
-        className="bg-pink-600 text-white px-4 pt-safe-top pb-3 sticky top-0 z-20 shadow-md"
+        className="bg-pink-600 text-white px-4 pb-3 sticky top-0 z-20 shadow-md"
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="text-xl leading-none">←</button>
+          <button type="button" onClick={onBack} className="text-xl leading-none" aria-label="กลับ">←</button>
           <div>
             <div className="text-lg font-bold leading-tight">Pregnancy / Lactation</div>
             <div className="text-xs text-pink-200">ยาปลอดภัยสำหรับคนท้อง/ให้นม</div>
@@ -338,7 +338,7 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
     <div className="fixed inset-0 z-40 flex flex-col bg-gray-50">
       {/* AI Header */}
       <div className="bg-purple-600 text-white px-4 py-3 flex items-center gap-3 shadow-md">
-        <button onClick={onClose} className="text-xl leading-none">←</button>
+        <button type="button" onClick={onClose} className="text-xl leading-none" aria-label="ปิด">←</button>
         <div>
           <div className="text-sm font-bold">Dr. AI — {contextLabel}</div>
           <div className="text-xs text-purple-200">ถามเกี่ยวกับยาในคนท้อง/ให้นม</div>
