@@ -140,7 +140,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header
-        className="bg-blue-700 text-white px-4 pt-safe-top pb-3 sticky top-0 z-20 shadow-md"
+        className="bg-blue-700 text-white px-4 pb-3 sticky top-0 z-20 shadow-md"
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
         <div className="max-w-lg mx-auto flex items-center justify-between">
