@@ -541,7 +541,7 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
         className="bg-blue-700 text-white px-4 py-3 flex items-center gap-3 sticky top-0 z-20"
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
-        <button type="button" onClick={onBack} className="text-2xl leading-none">
+        <button type="button" onClick={onBack} className="text-2xl leading-none" aria-label="กลับ">
           ←
         </button>
         <h1 className="font-bold text-lg">ตั้งค่า</h1>
