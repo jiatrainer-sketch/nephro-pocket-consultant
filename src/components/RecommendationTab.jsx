@@ -72,6 +72,7 @@ export default function RecommendationTab({ patient }) {
         ].map(({ key, icon, label, color }) => (
           <button
             key={key}
+            type="button"
             onClick={() => toggleProtocol(key)}
             className={`flex-1 flex flex-col items-center py-2.5 rounded-2xl text-xs font-semibold border transition-colors ${
               activeProtocol === key
@@ -173,7 +174,7 @@ function ProtocolCard({ title, onClose, children }) {
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
         <h3 className="font-bold text-sm text-gray-800">{title}</h3>
-        <button onClick={onClose} className="text-gray-400 text-lg leading-none px-1">
+        <button type="button" onClick={onClose} className="text-gray-400 text-lg leading-none px-1">
           ✕
         </button>
       </div>
@@ -183,7 +184,7 @@ function ProtocolCard({ title, onClose, children }) {
 }
 
 // ---- Sick Day ----
-function SickDayContent({ patient, latestLab }) {
+function SickDayContent({ patient }) {
   const meds = patient.medications || []
 
   const STOP_RULES = [
@@ -260,6 +261,7 @@ function SickDayContent({ patient, latestLab }) {
           <div className="space-y-1">
             {stopList.map((item, i) => (
               <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: list derived from medication rules
                 key={i}
                 className={`flex items-start gap-2 px-3 py-2 rounded-xl text-sm border ${
                   item.level === 'stop'
@@ -284,6 +286,7 @@ function SickDayContent({ patient, latestLab }) {
           <div className="space-y-1">
             {monitorList.map((item, i) => (
               <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: list derived from medication rules
                 key={i}
                 className="flex items-start gap-2 px-3 py-2 rounded-xl text-sm bg-yellow-50 border border-yellow-200"
               >
@@ -304,6 +307,7 @@ function SickDayContent({ patient, latestLab }) {
           <div className="flex flex-wrap gap-1.5">
             {continueList.map((m, i) => (
               <span
+                // biome-ignore lint/suspicious/noArrayIndexKey: list derived from medication rules
                 key={i}
                 className="px-2.5 py-1 rounded-full text-xs bg-green-50 border border-green-200 text-green-800"
               >
@@ -682,6 +686,8 @@ function PreopContent({ patient, latestLab }) {
           <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
             {surgSuggestions.map((s, i) => (
               <button
+                type="button"
+                // biome-ignore lint/suspicious/noArrayIndexKey: list derived from medication rules
                 key={i}
                 onMouseDown={() => selectSurgery(s)}
                 className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between border-b border-gray-50 last:border-0"
@@ -705,6 +711,7 @@ function PreopContent({ patient, latestLab }) {
         ].map(([k, label]) => (
           <button
             key={k}
+            type="button"
             onClick={() => setType(k)}
             className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
               type === k
@@ -730,6 +737,7 @@ function PreopContent({ patient, latestLab }) {
       ) : (
         <div className="space-y-1.5">
           {rows.map((row, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: list derived from medication rules
             <div
               key={i}
               className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm border ${colorCls(row.color)}`}
