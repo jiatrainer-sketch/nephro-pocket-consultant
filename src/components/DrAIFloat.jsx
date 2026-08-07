@@ -107,6 +107,7 @@ export default function DrAIFloat({ settings }) {
   if (!open) {
     return (
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full shadow-lg flex items-center justify-center z-50 active:scale-95 transition-transform"
         aria-label="Dr. AI"
@@ -119,7 +120,7 @@ export default function DrAIFloat({ settings }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 flex items-center gap-3 shadow-md">
-        <button onClick={() => setOpen(false)} className="text-xl leading-none">←</button>
+        <button type="button" onClick={() => setOpen(false)} className="text-xl leading-none">←</button>
         <div className="flex-1">
           <div className="text-sm font-bold">Dr. AI</div>
           <div className="text-xs text-blue-200">Senior Internal Medicine Consultant</div>
@@ -139,6 +140,7 @@ export default function DrAIFloat({ settings }) {
                   <div className="mt-4 space-y-2 max-w-xs mx-auto">
                     {['Hyperkalemia K 6.8 ทำยังไง?', 'Dose Vancomycin ใน HD patient', 'DKA management step by step'].map(q => (
                       <button
+                        type="button"
                         key={q}
                         onClick={() => setInput(q)}
                         className="block w-full text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-xl border border-blue-100 text-left"
@@ -182,11 +184,12 @@ export default function DrAIFloat({ settings }) {
             className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:bg-gray-100"
           />
           {loading ? (
-            <button onClick={stopGeneration} className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white shrink-0">
+            <button type="button" onClick={stopGeneration} className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white shrink-0">
               หยุด
             </button>
           ) : (
             <button
+              type="button"
               onClick={send}
               disabled={!settings?.apiKey || !input.trim()}
               className="bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-50 shrink-0"
@@ -197,6 +200,7 @@ export default function DrAIFloat({ settings }) {
         </div>
         {messages.length > 0 && (
           <button
+            type="button"
             onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
             className="w-full mt-2 text-xs text-gray-400 py-1"
           >
