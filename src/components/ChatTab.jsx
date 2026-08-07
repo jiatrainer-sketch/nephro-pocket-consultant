@@ -131,6 +131,7 @@ export default function ChatTab({ patient, settings }) {
             <div className="mt-4 space-y-2">
               {['ควรปรับ EPO เท่าไหร่?', 'iPTH สูง ทำยังไงดี?', 'มี drug interaction ไหม?'].map((q) => (
                 <button
+                  type="button"
                   key={q}
                   onClick={() => {
                     setInput(q)
@@ -216,6 +217,7 @@ export default function ChatTab({ patient, settings }) {
           />
           {loading ? (
             <button
+              type="button"
               onClick={stopGeneration}
               className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white active:bg-red-700 shrink-0"
             >
@@ -223,6 +225,7 @@ export default function ChatTab({ patient, settings }) {
             </button>
           ) : (
             <button
+              type="button"
               onClick={send}
               disabled={!input.trim()}
               className={`px-4 rounded-xl text-sm font-medium transition-colors shrink-0 ${
@@ -237,6 +240,7 @@ export default function ChatTab({ patient, settings }) {
         </div>
         {messages.length > 0 && (
           <button
+            type="button"
             onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
             className="w-full mt-2 text-xs text-gray-400 py-1"
           >
