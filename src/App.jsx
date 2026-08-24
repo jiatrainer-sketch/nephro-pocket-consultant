@@ -513,21 +513,6 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
     e.target.value = ''
   }
 
-  const handleQuickLabImport = async () => {
-    setLabImportMsg('กำลังโหลด...')
-    try {
-      const res = await fetch('/lab_import_2569.json')
-      if (!res.ok) throw new Error('ไม่พบไฟล์ lab')
-      const labData = await res.json()
-      const { matched, total, labsAdded } = importLabData(labData)
-      setLabImportMsg(labsAdded > 0
-        ? `✅ จับคู่ได้ ${matched}/${total} คน — เพิ่ม ${labsAdded} lab entries`
-        : `✅ จับคู่ได้ ${matched}/${total} คน — Lab ครบแล้ว ไม่มีรายการใหม่`)
-    } catch (err) {
-      setLabImportMsg(`❌ ${err.message}`)
-    }
-  }
-
   const fmtBytes = (n) => {
     if (!n) return '0 B'
     if (n < 1024) return `${n} B`
@@ -669,18 +654,11 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
           <div>
-            <h3 className="font-semibold text-sm text-gray-700 mb-1">🧪 นำเข้า Lab</h3>
+            <h3 className="font-semibold text-sm text-gray-700 mb-1">🧪 นำเข้า Lab จากไฟล์</h3>
             <p className="text-xs text-gray-500">
-              จับคู่ชื่อคนไข้อัตโนมัติแล้วเพิ่ม lab entries
+              จับคู่ชื่อคนไข้อัตโนมัติแล้วเพิ่ม lab entries — ข้ามเดือนที่มีอยู่แล้ว
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleQuickLabImport}
-            className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium"
-          >
-            🧪 นำเข้า Lab ปี 2569 (กพ. + พค. + สค.)
-          </button>
           <input
             ref={labImportRef}
             type="file"
@@ -691,9 +669,9 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
           <button
             type="button"
             onClick={() => labImportRef.current?.click()}
-            className="w-full bg-purple-50 text-purple-700 py-2.5 rounded-xl text-sm font-medium border border-purple-200"
+            className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium"
           >
-            📁 นำเข้า Lab จากไฟล์อื่น
+            🧪 นำเข้า Lab (เลือกไฟล์ JSON)
           </button>
           {labImportMsg && <p className="text-xs text-center mt-1">{labImportMsg}</p>}
         </div>
