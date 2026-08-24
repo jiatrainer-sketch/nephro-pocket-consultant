@@ -679,7 +679,7 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
             onClick={handleQuickLabImport}
             className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium"
           >
-            🧪 นำเข้า Lab ปี 2569 (กพ. + พค.)
+            🧪 นำเข้า Lab ปี 2569 (กพ. + พค. + สค.)
           </button>
           <input
             ref={labImportRef}
