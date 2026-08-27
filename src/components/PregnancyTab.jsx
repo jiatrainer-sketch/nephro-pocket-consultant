@@ -50,7 +50,7 @@ export default function PregnancyTab({ onBack, settings }) {
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="text-xl leading-none">←</button>
+          <button onClick={onBack} className="text-xl leading-none" aria-label="กลับ">←</button>
           <div>
             <div className="text-lg font-bold leading-tight">Pregnancy / Lactation</div>
             <div className="text-xs text-pink-200">ยาปลอดภัยสำหรับคนท้อง/ให้นม</div>
@@ -130,6 +130,7 @@ export default function PregnancyTab({ onBack, settings }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="พิมพ์ชื่อยา เช่น amlo, para, miracid, ponstan..."
+            aria-label="ค้นหายา"
             className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
             autoFocus
           />
@@ -338,7 +339,7 @@ function AIChat({ settings, contextLabel, aiContext, onClose }) {
     <div className="fixed inset-0 z-40 flex flex-col bg-gray-50">
       {/* AI Header */}
       <div className="bg-purple-600 text-white px-4 py-3 flex items-center gap-3 shadow-md">
-        <button onClick={onClose} className="text-xl leading-none">←</button>
+        <button onClick={onClose} className="text-xl leading-none" aria-label="กลับ">←</button>
         <div>
           <div className="text-sm font-bold">Dr. AI — {contextLabel}</div>
           <div className="text-xs text-purple-200">ถามเกี่ยวกับยาในคนท้อง/ให้นม</div>

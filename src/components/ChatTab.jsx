@@ -211,6 +211,7 @@ export default function ChatTab({ patient, settings }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="ถามเกี่ยวกับคนไข้... (Enter = ขึ้นบรรทัดใหม่)"
+            aria-label="ข้อความถึง AI"
             rows={2}
             className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
