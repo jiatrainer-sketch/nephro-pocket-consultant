@@ -16,7 +16,19 @@ describe('MEDICATIONS integrity', () => {
   })
 
   it('category is one of the allowed values', () => {
-    const allowed = new Set(['HD', 'CV', 'DM', 'Other', 'Pain', 'Resp', 'Neuro', 'Endo', 'OB', 'Emergency', 'Psych'])
+    const allowed = new Set([
+      'HD',
+      'CV',
+      'DM',
+      'Other',
+      'Pain',
+      'Resp',
+      'Neuro',
+      'Endo',
+      'OB',
+      'Emergency',
+      'Psych',
+    ])
     for (const m of MEDICATIONS) {
       expect(allowed.has(m.category), `${m.name} has unknown category ${m.category}`).toBe(true)
     }
