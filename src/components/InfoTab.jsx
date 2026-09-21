@@ -264,7 +264,7 @@ export default function InfoTab({ patient, onUpdate }) {
                   >
                     {c.name}
                     {c.since ? ` (${c.since})` : ''}
-                    <button onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5">✕</button>
+                    <button onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5" aria-label="ลบ">✕</button>
                   </span>
                 ))}
               </div>
@@ -331,7 +331,7 @@ export default function InfoTab({ patient, onUpdate }) {
                     className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
                   >
                     ⚠️ {a}
-                    <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">✕</button>
+                    <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5" aria-label="ลบ">✕</button>
                   </span>
                 ))}
               </div>
