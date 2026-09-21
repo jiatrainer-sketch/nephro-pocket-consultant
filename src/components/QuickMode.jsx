@@ -59,7 +59,7 @@ export default function QuickMode({ onBack, settings }) {
       >
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+            <button onClick={onBack} className="text-2xl leading-none shrink-0" aria-label="กลับ">
               ←
             </button>
             <div className="flex-1">
@@ -482,6 +482,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
                       onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
                     }}
                     className="text-teal-400 ml-0.5"
+                    aria-label="ลบ"
                   >
                     ✕
                   </button>
@@ -503,7 +504,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
                 className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
               >
                 ⚠️ {a}
-                <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">
+                <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5" aria-label="ลบ">
                   ✕
                 </button>
               </span>
