@@ -29,7 +29,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
         <div className="max-w-lg mx-auto">
           {/* Top row */}
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+            <button type="button" onClick={onBack} className="text-2xl leading-none shrink-0" aria-label="กลับ">
               ←
             </button>
             <div className="flex-1 min-w-0">
@@ -40,8 +40,10 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
             </div>
             <div className="relative">
               <button
+                type="button"
                 onClick={() => setShowMenu(!showMenu)}
                 className="w-8 h-8 flex items-center justify-center text-white text-xl rounded-lg"
+                aria-label="เมนู"
               >
                 ⋮
               </button>
@@ -50,6 +52,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                   <div className="absolute right-0 top-9 bg-white text-gray-800 rounded-xl shadow-lg border border-gray-100 z-20 min-w-36 overflow-hidden">
                     <button
+                      type="button"
                       onClick={() => {
                         setShowMenu(false)
                         setTab('info')
@@ -59,6 +62,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
                       ✏️ แก้ไขข้อมูล
                     </button>
                     <button
+                      type="button"
                       onClick={() => {
                         setShowMenu(false)
                         onDelete()
