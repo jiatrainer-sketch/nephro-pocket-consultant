@@ -137,6 +137,7 @@ function Sparkline({ data, width = 80, height = 36, color, refLow, refHigh }) {
       />
       {/* Dots */}
       {data.map((d, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: items lack stable IDs
         <circle key={i} cx={cx(i).toFixed(1)} cy={cy(d.v).toFixed(1)} r="2.2" fill={lineColor} />
       ))}
     </svg>
@@ -250,7 +251,16 @@ export default function LabTab({ patient, onUpdate, settings }) {
   }
 
   if (showScan) {
-    return <LabScan settings={settings} onConfirm={(entry) => { saveEntry(entry); setShowScan(false) }} onCancel={() => setShowScan(false)} />
+    return (
+      <LabScan
+        settings={settings}
+        onConfirm={(entry) => {
+          saveEntry(entry)
+          setShowScan(false)
+        }}
+        onCancel={() => setShowScan(false)}
+      />
+    )
   }
 
   if (showForm) {
@@ -262,12 +272,14 @@ export default function LabTab({ patient, onUpdate, settings }) {
     <div className="p-4 space-y-3">
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={openAdd}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
         >
           <span className="text-lg leading-none">+</span> บันทึก Lab
         </button>
         <button
+          type="button"
           onClick={() => setShowScan(true)}
           className="bg-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-1"
         >
@@ -321,13 +333,17 @@ function LabCard({ entry, onEdit, onDelete }) {
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <button onClick={onEdit} className="text-xs text-blue-500 px-2 py-1">
+          <button type="button" onClick={onEdit} className="text-xs text-blue-500 px-2 py-1">
             แก้ไข
           </button>
-          <button onClick={onDelete} className="text-xs text-red-400  px-2 py-1">
+          <button type="button" onClick={onDelete} className="text-xs text-red-400  px-2 py-1">
             ลบ
           </button>
-          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 text-lg px-1">
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="text-gray-400 text-lg px-1"
+          >
             {expanded ? '▲' : '▼'}
           </button>
         </div>
@@ -428,8 +444,11 @@ function LabForm({ initial, onSave, onCancel }) {
     <div className="p-4 space-y-4">
       {/* Date */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-        <label className="block text-xs text-gray-500 mb-1">วันที่เจาะ Lab</label>
+        <label htmlFor="lab-date-input" className="block text-xs text-gray-500 mb-1">
+          วันที่เจาะ Lab
+        </label>
         <input
+          id="lab-date-input"
           type="month"
           value={date}
           onChange={(e) => setDate(e.target.value)}
@@ -463,13 +482,17 @@ function LabForm({ initial, onSave, onCancel }) {
             <div className="border-t border-gray-50 px-4 py-3 grid grid-cols-2 gap-3">
               {group.fields.map((field) => (
                 <div key={field.key}>
-                  <label className="block text-xs text-gray-500 mb-1">
+                  <label
+                    htmlFor={`lab-field-${field.key}`}
+                    className="block text-xs text-gray-500 mb-1"
+                  >
                     {field.label}
                     {field.unit && <span className="text-gray-400"> ({field.unit})</span>}
                   </label>
                   {field.options ? (
                     // Select field (Pos/Neg)
                     <select
+                      id={`lab-field-${field.key}`}
                       value={rawVals[field.key] || ''}
                       onChange={(e) => setVal(field.key, e.target.value || undefined)}
                       className="w-full border border-gray-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -483,6 +506,7 @@ function LabForm({ initial, onSave, onCancel }) {
                   ) : (
                     // Numeric text input — inputMode="decimal" shows number keyboard on mobile
                     <input
+                      id={`lab-field-${field.key}`}
                       type="text"
                       inputMode="decimal"
                       value={rawVals[field.key] ?? ''}
@@ -500,8 +524,11 @@ function LabForm({ initial, onSave, onCancel }) {
 
       {/* Note */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-        <label className="block text-xs text-gray-500 mb-1">หมายเหตุ</label>
+        <label htmlFor="lab-note-input" className="block text-xs text-gray-500 mb-1">
+          หมายเหตุ
+        </label>
         <textarea
+          id="lab-note-input"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={2}
@@ -512,12 +539,14 @@ function LabForm({ initial, onSave, onCancel }) {
 
       <div className="flex gap-2 pb-8">
         <button
+          type="button"
           onClick={handleSave}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium"
         >
           บันทึก Lab
         </button>
         <button
+          type="button"
           onClick={onCancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
@@ -531,7 +560,8 @@ function LabForm({ initial, onSave, onCancel }) {
 // ============================================================
 // Lab Scan — photo → AI reads lab values → confirm
 // ============================================================
-const LAB_KEYS = 'Hb, Hct, Ferritin, TSAT, Iron, TIBC, KtV, URR, BUN_pre, BUN_post, BUN, Cr, eGFR, Na, K, Cl, HCO3, Ca, PO4, iPTH, VitD25, ALP, Albumin, FBS, HbA1C, UACR, LDL, TG, AST, ALT, UricAcid, PT_INR'
+const LAB_KEYS =
+  'Hb, Hct, Ferritin, TSAT, Iron, TIBC, KtV, URR, BUN_pre, BUN_post, BUN, Cr, eGFR, Na, K, Cl, HCO3, Ca, PO4, iPTH, VitD25, ALP, Albumin, FBS, HbA1C, UACR, LDL, TG, AST, ALT, UricAcid, PT_INR'
 
 function LabScan({ settings, onConfirm, onCancel }) {
   const [image, setImage] = useState(null)
@@ -542,7 +572,9 @@ function LabScan({ settings, onConfirm, onCancel }) {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    return () => { if (preview) URL.revokeObjectURL(preview) }
+    return () => {
+      if (preview) URL.revokeObjectURL(preview)
+    }
   }, [preview])
 
   const handleFile = (e) => {
@@ -552,7 +584,7 @@ function LabScan({ settings, onConfirm, onCancel }) {
     setPreview(URL.createObjectURL(file))
     const reader = new FileReader()
     reader.onload = () => {
-      const mediaType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg'
+      const mediaType = file.type?.startsWith('image/') ? file.type : 'image/jpeg'
       setImage({ data: reader.result.split(',')[1], type: mediaType })
     }
     reader.onerror = () => setError('ไม่สามารถอ่านไฟล์ได้')
@@ -569,17 +601,36 @@ function LabScan({ settings, onConfirm, onCancel }) {
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-api-key': settings.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': settings.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
         body: JSON.stringify({
-          model: DR_AI_MODEL, max_tokens: 1024,
-          messages: [{ role: 'user', content: [
-            { type: 'image', source: { type: 'base64', media_type: image.type, data: image.data } },
-            { type: 'text', text: `อ่านค่า Lab จากรูปนี้ (ใบ Lab/หน้าจอ EMR/ผลเลือด)
+          model: DR_AI_MODEL,
+          max_tokens: 1024,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'image',
+                  source: { type: 'base64', media_type: image.type, data: image.data },
+                },
+                {
+                  type: 'text',
+                  text: `อ่านค่า Lab จากรูปนี้ (ใบ Lab/หน้าจอ EMR/ผลเลือด)
 ตอบเป็น JSON object เท่านั้น:
-{${LAB_KEYS.split(', ').map(k => `"${k}":number|null`).join(',')}}
+{${LAB_KEYS.split(', ')
+                    .map((k) => `"${k}":number|null`)
+                    .join(',')}}
 ใส่เฉพาะค่าที่เห็น ค่าที่ไม่เห็นใส่ null
-ถ้าเห็นวันที่ lab ใส่ "date":"YYYY-MM-DD"` },
-          ] }],
+ถ้าเห็นวันที่ lab ใส่ "date":"YYYY-MM-DD"`,
+                },
+              ],
+            },
+          ],
         }),
       })
       if (!res.ok) {
@@ -591,49 +642,121 @@ function LabScan({ settings, onConfirm, onCancel }) {
       const match = text.match(/\{[\s\S]*\}/)
       if (match) {
         const parsed = JSON.parse(match[0])
-        if (parsed.date) { setDate(parsed.date); delete parsed.date }
+        if (parsed.date) {
+          setDate(parsed.date)
+          parsed.date = undefined
+        }
         const filtered = {}
-        for (const [k, v] of Object.entries(parsed)) { if (v !== null && v !== undefined && v !== '') filtered[k] = v }
+        for (const [k, v] of Object.entries(parsed)) {
+          if (v !== null && v !== undefined && v !== '') filtered[k] = v
+        }
         setScannedValues(filtered)
-      } else { setError('AI ไม่สามารถอ่านค่า Lab ได้ — ลองถ่ายใหม่') }
-    } catch (e) { setError(`Error: ${e.message}`) }
-    finally { setLoading(false) }
+      } else {
+        setError('AI ไม่สามารถอ่านค่า Lab ได้ — ลองถ่ายใหม่')
+      }
+    } catch (e) {
+      setError(`Error: ${e.message}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const updateValue = (key, val) => setScannedValues(prev => ({ ...prev, [key]: val === '' ? undefined : Number(val) || val }))
+  const updateValue = (key, val) =>
+    setScannedValues((prev) => ({ ...prev, [key]: val === '' ? undefined : Number(val) || val }))
 
   return (
     <div className="p-4 space-y-4">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
         <h3 className="font-semibold text-sm text-gray-700">สแกน Lab จากรูป</h3>
-        {!settings?.apiKey && <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-xs text-orange-700">ใส่ API Key ใน Settings ก่อนใช้สแกน</div>}
-        <input id="lab-scan-input" type="file" accept="image/*" capture onChange={handleFile} className="sr-only" />
+        {!settings?.apiKey && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-xs text-orange-700">
+            ใส่ API Key ใน Settings ก่อนใช้สแกน
+          </div>
+        )}
+        <input
+          id="lab-scan-input"
+          type="file"
+          accept="image/*"
+          capture
+          onChange={handleFile}
+          className="sr-only"
+        />
         {!preview ? (
-          <label htmlFor={settings?.apiKey ? 'lab-scan-input' : undefined} className={`w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm block ${!settings?.apiKey ? 'opacity-50' : 'cursor-pointer active:bg-gray-50'}`}>
+          <label
+            htmlFor={settings?.apiKey ? 'lab-scan-input' : undefined}
+            className={`w-full border-2 border-dashed border-gray-300 rounded-2xl py-12 text-center text-gray-400 text-sm block ${!settings?.apiKey ? 'opacity-50' : 'cursor-pointer active:bg-gray-50'}`}
+          >
             <div className="text-3xl mb-2">📷</div>กดเพื่อถ่ายรูป / เลือกรูปผล Lab
           </label>
         ) : (
           <div className="space-y-3">
-            <img src={preview} alt="Lab" className="w-full rounded-xl max-h-60 object-contain bg-gray-100" />
+            <img
+              src={preview}
+              alt="Lab"
+              className="w-full rounded-xl max-h-60 object-contain bg-gray-100"
+            />
             <div className="flex gap-2">
-              <label htmlFor="lab-scan-input" onClick={() => setScannedValues(null)} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs text-center cursor-pointer">เปลี่ยนรูป</label>
-              {!scannedValues && <button onClick={scan} disabled={loading} className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50">{loading ? 'กำลังอ่าน...' : 'AI อ่านค่า Lab'}</button>}
+              <label
+                htmlFor="lab-scan-input"
+                onClick={() => setScannedValues(null)}
+                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs text-center cursor-pointer"
+              >
+                เปลี่ยนรูป
+              </label>
+              {!scannedValues && (
+                <button
+                  type="button"
+                  onClick={scan}
+                  disabled={loading}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50"
+                >
+                  {loading ? 'กำลังอ่าน...' : 'AI อ่านค่า Lab'}
+                </button>
+              )}
             </div>
           </div>
         )}
-        {error && <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">{error}</div>}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
+            {error}
+          </div>
+        )}
         {scannedValues && (
           <div className="space-y-3">
-            <div className="text-xs text-gray-500 font-medium">AI อ่านได้ {Object.keys(scannedValues).length} ค่า — แก้ไขได้:</div>
+            <div className="text-xs text-gray-500 font-medium">
+              AI อ่านได้ {Object.keys(scannedValues).length} ค่า — แก้ไขได้:
+            </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">วันที่ Lab</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm" />
+              <label htmlFor="lab-scan-date" className="block text-xs text-gray-500 mb-1">
+                วันที่ Lab
+              </label>
+              <input
+                id="lab-scan-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+              />
             </div>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(scannedValues).map(([key, val]) => (
-                <div key={key} className="bg-purple-50 border border-purple-200 rounded-xl px-3 py-2">
-                  <label className="block text-[10px] text-purple-600 font-medium">{key}</label>
-                  <input type="text" value={val ?? ''} onChange={(e) => updateValue(key, e.target.value)} className="w-full text-sm font-medium bg-transparent border-none p-0 focus:outline-none" />
+                <div
+                  key={key}
+                  className="bg-purple-50 border border-purple-200 rounded-xl px-3 py-2"
+                >
+                  <label
+                    htmlFor={`scan-val-${key}`}
+                    className="block text-[10px] text-purple-600 font-medium"
+                  >
+                    {key}
+                  </label>
+                  <input
+                    id={`scan-val-${key}`}
+                    type="text"
+                    value={val ?? ''}
+                    onChange={(e) => updateValue(key, e.target.value)}
+                    className="w-full text-sm font-medium bg-transparent border-none p-0 focus:outline-none"
+                  />
                 </div>
               ))}
             </div>
@@ -641,8 +764,28 @@ function LabScan({ settings, onConfirm, onCancel }) {
         )}
       </div>
       <div className="flex gap-2 pb-8">
-        {scannedValues && <button onClick={() => { const values = {}; for (const [k,v] of Object.entries(scannedValues)) { if (v !== undefined && v !== null && v !== '') values[k] = v }; onConfirm({ date, values }) }} className="flex-1 py-3 rounded-2xl text-sm font-medium bg-purple-600 text-white">บันทึก Lab</button>}
-        <button onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">ยกเลิก</button>
+        {scannedValues && (
+          <button
+            type="button"
+            onClick={() => {
+              const values = {}
+              for (const [k, v] of Object.entries(scannedValues)) {
+                if (v !== undefined && v !== null && v !== '') values[k] = v
+              }
+              onConfirm({ date, values })
+            }}
+            className="flex-1 py-3 rounded-2xl text-sm font-medium bg-purple-600 text-white"
+          >
+            บันทึก Lab
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
+        >
+          ยกเลิก
+        </button>
       </div>
     </div>
   )
