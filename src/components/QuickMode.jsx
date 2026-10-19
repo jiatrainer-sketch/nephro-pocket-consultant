@@ -59,20 +59,25 @@ export default function QuickMode({ onBack, settings }) {
       >
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+            <button type="button" onClick={onBack} className="text-2xl leading-none shrink-0">
               ←
             </button>
             <div className="flex-1">
               <div className="font-bold text-base">Quick Mode</div>
               <div className="text-xs text-teal-200">ไม่บันทึกข้อมูล</div>
             </div>
-            <button onClick={reset} className="text-xs bg-teal-600 px-3 py-1.5 rounded-lg">
+            <button
+              type="button"
+              onClick={reset}
+              className="text-xs bg-teal-600 px-3 py-1.5 rounded-lg"
+            >
               ล้าง
             </button>
           </div>
           <div className="flex -mx-4 px-2 overflow-x-auto">
             {TABS.map((t) => (
               <button
+                type="button"
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-2.5 text-xs font-medium whitespace-nowrap shrink-0 border-b-2 transition-colors ${
@@ -87,7 +92,9 @@ export default function QuickMode({ onBack, settings }) {
       </header>
 
       <main className="flex-1 max-w-lg mx-auto w-full">
-        {tab === 'lab' && <QuickLabInput patient={patient} onUpdate={setPatient} settings={settings} />}
+        {tab === 'lab' && (
+          <QuickLabInput patient={patient} onUpdate={setPatient} settings={settings} />
+        )}
         {tab === 'med' && <MedTab patient={patient} onUpdate={setPatient} settings={settings} />}
         {tab === 'rec' && <RecommendationTab patient={patient} />}
         {tab === 'chat' && <ChatTab patient={patient} settings={settings} />}
@@ -158,15 +165,29 @@ function QuickLabInput({ patient, onUpdate, settings }) {
       })
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-api-key': settings.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': settings.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
         body: JSON.stringify({
-          model: DR_AI_MODEL, max_tokens: 1024,
-          messages: [{ role: 'user', content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: `อ่านค่า Lab จากรูป ตอบเป็น JSON object เท่านั้น:
+          model: DR_AI_MODEL,
+          max_tokens: 1024,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+                {
+                  type: 'text',
+                  text: `อ่านค่า Lab จากรูป ตอบเป็น JSON object เท่านั้น:
 {"Hb":number|null,"Hct":null,"Ferritin":null,"TSAT":null,"BUN":null,"Cr":null,"eGFR":null,"Na":null,"K":null,"Cl":null,"HCO3":null,"Ca":null,"PO4":null,"iPTH":null,"VitD25":null,"ALP":null,"Albumin":null,"FBS":null,"HbA1C":null,"UACR":null,"LDL":null,"TG":null,"AST":null,"ALT":null,"UricAcid":null,"PT_INR":null}
-ใส่เฉพาะค่าที่เห็น` },
-          ] }],
+ใส่เฉพาะค่าที่เห็น`,
+                },
+              ],
+            },
+          ],
         }),
       })
       if (!resp.ok) {
@@ -179,11 +200,18 @@ function QuickLabInput({ patient, onUpdate, settings }) {
       if (match) {
         const parsed = JSON.parse(match[0])
         const newRaw = { ...rawVals }
-        for (const [k, v] of Object.entries(parsed)) { if (v !== null && v !== undefined) newRaw[k] = String(v) }
+        for (const [k, v] of Object.entries(parsed)) {
+          if (v !== null && v !== undefined) newRaw[k] = String(v)
+        }
         setRawVals(newRaw)
-      } else { setScanError('ไม่สามารถอ่านได้ — ลองถ่ายใหม่') }
-    } catch (err) { setScanError(`Error: ${err.message}`) }
-    finally { setScanLoading(false) }
+      } else {
+        setScanError('ไม่สามารถอ่านได้ — ลองถ่ายใหม่')
+      }
+    } catch (err) {
+      setScanError(`Error: ${err.message}`)
+    } finally {
+      setScanLoading(false)
+    }
   }
   const [rawAge, setRawAge] = useState(patient.age ? String(patient.age) : '')
   const [rawWeight, setRawWeight] = useState(patient.weight_kg ? String(patient.weight_kg) : '')
@@ -343,14 +371,26 @@ function QuickLabInput({ patient, onUpdate, settings }) {
   return (
     <div className="p-4 space-y-4">
       {/* Scan Lab button */}
-      <input id="quick-scan-input" type="file" accept="image/*" capture onChange={handleScanFile} className="sr-only" />
+      <input
+        id="quick-scan-input"
+        type="file"
+        accept="image/*"
+        capture
+        onChange={handleScanFile}
+        className="sr-only"
+      />
       <label
         htmlFor={settings?.apiKey && !scanLoading ? 'quick-scan-input' : undefined}
         className={`w-full bg-purple-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 ${!settings?.apiKey || scanLoading ? 'opacity-50' : 'cursor-pointer active:bg-purple-700'}`}
       >
-        <span className="text-base leading-none">📷</span> {scanLoading ? 'กำลังอ่าน Lab...' : 'สแกน Lab จากรูป'}
+        <span className="text-base leading-none">📷</span>{' '}
+        {scanLoading ? 'กำลังอ่าน Lab...' : 'สแกน Lab จากรูป'}
       </label>
-      {scanError && <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">{scanError}</div>}
+      {scanError && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
+          {scanError}
+        </div>
+      )}
 
       {/* Date + Age + Weight */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -435,8 +475,8 @@ function QuickLabInput({ patient, onUpdate, settings }) {
             const selected = patient.conditions.some((c) => c.name === name)
             return (
               <button
-                key={name}
                 type="button"
+                key={name}
                 onClick={() => toggleCondition(name)}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   selected
@@ -477,6 +517,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
                 {c.name}
                 {!QUICK_CONDITIONS.includes(c.name) && (
                   <button
+                    type="button"
                     onClick={() => {
                       const next = patient.conditions.filter((_, idx) => idx !== i)
                       onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
@@ -503,7 +544,11 @@ function QuickLabInput({ patient, onUpdate, settings }) {
                 className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
               >
                 ⚠️ {a}
-                <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">
+                <button
+                  type="button"
+                  onClick={() => removeAllergy(i)}
+                  className="text-red-400 ml-0.5"
+                >
                   ✕
                 </button>
               </span>
@@ -533,8 +578,8 @@ function QuickLabInput({ patient, onUpdate, settings }) {
             <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
               {allergySuggestions.map((med, i) => (
                 <button
-                  key={i}
                   type="button"
+                  key={i}
                   onMouseDown={() => addAllergy(med.name)}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
                 >
@@ -611,8 +656,8 @@ function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPr
       <div className="flex flex-wrap gap-1.5 mt-2">
         {PTH_MONTH_PRESETS.map((v) => (
           <button
-            key={v}
             type="button"
+            key={v}
             onClick={() => onPthPrevMonths(String(v))}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
               Number.parseFloat(rawPthPrevMonths) === v
@@ -751,8 +796,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
           <div className="flex justify-center gap-1 mb-1">
             {['เดือน', 'วัน'].map((u) => (
               <button
-                key={u}
                 type="button"
+                key={u}
                 onClick={() => switchUnit(u)}
                 className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                   unit === u
@@ -780,8 +825,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
       <div className="flex flex-wrap gap-1.5 mt-2">
         {presets.map((v) => (
           <button
-            key={v}
             type="button"
+            key={v}
             onClick={() => handlePreset(v)}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
               isPresetActive(v)
