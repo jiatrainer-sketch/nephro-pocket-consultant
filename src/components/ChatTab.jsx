@@ -4,7 +4,11 @@ import { DR_AI_MODEL, buildDrAIPrompt, buildPatientContext } from '../drAIPrompt
 export default function ChatTab({ patient, settings }) {
   const chatKey = `chat_${patient?.id || 'quick'}`
   const [messages, setMessages] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(chatKey)) || [] } catch { return [] }
+    try {
+      return JSON.parse(localStorage.getItem(chatKey)) || []
+    } catch {
+      return []
+    }
   })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -14,7 +18,12 @@ export default function ChatTab({ patient, settings }) {
   const abortRef = useRef(null)
 
   useEffect(() => {
-    try { const saved = JSON.parse(localStorage.getItem(chatKey)); setMessages(saved || []) } catch { setMessages([]) }
+    try {
+      const saved = JSON.parse(localStorage.getItem(chatKey))
+      setMessages(saved || [])
+    } catch {
+      setMessages([])
+    }
   }, [chatKey])
 
   useEffect(() => {
@@ -26,7 +35,9 @@ export default function ChatTab({ patient, settings }) {
   }, [messages, loading, error])
 
   useEffect(() => {
-    return () => { abortRef.current?.abort() }
+    return () => {
+      abortRef.current?.abort()
+    }
   }, [])
 
   const send = async () => {
@@ -131,6 +142,7 @@ export default function ChatTab({ patient, settings }) {
             <div className="mt-4 space-y-2">
               {['ควรปรับ EPO เท่าไหร่?', 'iPTH สูง ทำยังไงดี?', 'มี drug interaction ไหม?'].map((q) => (
                 <button
+                  type="button"
                   key={q}
                   onClick={() => {
                     setInput(q)
@@ -216,6 +228,7 @@ export default function ChatTab({ patient, settings }) {
           />
           {loading ? (
             <button
+              type="button"
               onClick={stopGeneration}
               className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white active:bg-red-700 shrink-0"
             >
@@ -223,6 +236,7 @@ export default function ChatTab({ patient, settings }) {
             </button>
           ) : (
             <button
+              type="button"
               onClick={send}
               disabled={!input.trim()}
               className={`px-4 rounded-xl text-sm font-medium transition-colors shrink-0 ${
@@ -237,7 +251,11 @@ export default function ChatTab({ patient, settings }) {
         </div>
         {messages.length > 0 && (
           <button
-            onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
+            type="button"
+            onClick={() => {
+              setMessages([])
+              localStorage.removeItem(chatKey)
+            }}
             className="w-full mt-2 text-xs text-gray-400 py-1"
           >
             ล้างประวัติแชท

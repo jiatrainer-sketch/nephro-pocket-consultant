@@ -183,7 +183,7 @@ function ProtocolCard({ title, onClose, children }) {
 }
 
 // ---- Sick Day ----
-function SickDayContent({ patient, latestLab }) {
+function SickDayContent({ patient }) {
   const meds = patient.medications || []
 
   const STOP_RULES = [
