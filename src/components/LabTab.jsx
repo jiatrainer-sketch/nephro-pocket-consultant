@@ -324,7 +324,7 @@ function LabCard({ entry, onEdit, onDelete }) {
           <button onClick={onEdit} className="text-xs text-blue-500 px-2 py-1">
             แก้ไข
           </button>
-          <button onClick={onDelete} className="text-xs text-red-400  px-2 py-1">
+          <button onClick={onDelete} className="text-xs text-red-400 px-2 py-1">
             ลบ
           </button>
           <button onClick={() => setExpanded(!expanded)} className="text-gray-400 text-lg px-1">
