@@ -50,7 +50,7 @@ export default function PregnancyTab({ onBack, settings }) {
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="text-xl leading-none">←</button>
+          <button type="button" onClick={onBack} className="text-xl leading-none" aria-label="กลับ">←</button>
           <div>
             <div className="text-lg font-bold leading-tight">Pregnancy / Lactation</div>
             <div className="text-xs text-pink-200">ยาปลอดภัยสำหรับคนท้อง/ให้นม</div>
