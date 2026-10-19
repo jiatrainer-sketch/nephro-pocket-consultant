@@ -17,7 +17,6 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
   const [tab, setTab] = useState('rec')
   const [showMenu, setShowMenu] = useState(false)
 
-  const _activeTab = TABS.find((t) => t.id === tab)
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -29,7 +28,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
         <div className="max-w-lg mx-auto">
           {/* Top row */}
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+            <button onClick={onBack} className="text-2xl leading-none shrink-0" aria-label="กลับ">
               ←
             </button>
             <div className="flex-1 min-w-0">
@@ -42,6 +41,7 @@ export default function PatientDetail({ patient, onUpdate, onDelete, onBack, set
               <button
                 onClick={() => setShowMenu(!showMenu)}
                 className="w-8 h-8 flex items-center justify-center text-white text-xl rounded-lg"
+                aria-label="เมนูเพิ่มเติม"
               >
                 ⋮
               </button>
