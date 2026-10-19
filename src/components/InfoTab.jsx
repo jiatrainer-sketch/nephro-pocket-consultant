@@ -264,7 +264,7 @@ export default function InfoTab({ patient, onUpdate }) {
                   >
                     {c.name}
                     {c.since ? ` (${c.since})` : ''}
-                    <button onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5">✕</button>
+                    <button type="button" onClick={() => removeCondition(i)} className="text-blue-400 ml-0.5">✕</button>
                   </span>
                 ))}
               </div>
@@ -331,7 +331,7 @@ export default function InfoTab({ patient, onUpdate }) {
                     className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
                   >
                     ⚠️ {a}
-                    <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">✕</button>
+                    <button type="button" onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">✕</button>
                   </span>
                 ))}
               </div>
@@ -378,6 +378,7 @@ export default function InfoTab({ patient, onUpdate }) {
         </div>
 
         <button
+          type="button"
           onClick={() => setEditing(true)}
           className="w-full border border-blue-300 text-blue-600 py-3 rounded-2xl text-sm font-medium"
         >
@@ -538,6 +539,7 @@ export default function InfoTab({ patient, onUpdate }) {
                 {c.name}
                 {c.since ? ` (${c.since})` : ''}
                 <button
+                  type="button"
                   onClick={() => removeCondition(i)}
                   className="text-blue-400 hover:text-red-500 ml-0.5"
                 >
@@ -618,6 +620,7 @@ export default function InfoTab({ patient, onUpdate }) {
               >
                 ⚠️ {a}
                 <button
+                  type="button"
                   onClick={() => removeAllergy(i)}
                   className="text-red-400 hover:text-red-600 ml-0.5"
                 >
@@ -670,12 +673,14 @@ export default function InfoTab({ patient, onUpdate }) {
       {/* Save / Cancel */}
       <div className="flex gap-2 pb-8">
         <button
+          type="button"
           onClick={save}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium"
         >
           บันทึก
         </button>
         <button
+          type="button"
           onClick={cancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
@@ -696,7 +701,7 @@ function Section({ title, children, onEdit }) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50">
         <h3 className="font-semibold text-sm text-gray-700">{title}</h3>
         {onEdit && (
-          <button onClick={onEdit} className="text-xs text-blue-500">
+          <button type="button" onClick={onEdit} className="text-xs text-blue-500">
             แก้ไข
           </button>
         )}
