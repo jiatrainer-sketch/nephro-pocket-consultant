@@ -53,13 +53,13 @@ export default function MedTab({ patient, onUpdate, settings }) {
   return (
     <div className="p-4 space-y-3">
       <div className="flex gap-2">
-        <button
+        <button type="button"
           onClick={openAdd}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
         >
           <span className="text-lg leading-none">+</span> เพิ่มยา
         </button>
-        <button
+        <button type="button"
           onClick={() => setShowScan(true)}
           className="bg-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-1"
         >
@@ -125,13 +125,13 @@ function MedCard({ med, onEdit, onDelete }) {
         {med.note && <div className="text-xs text-gray-400 mt-0.5">{med.note}</div>}
       </div>
       <div className="flex gap-1 shrink-0">
-        <button
+        <button type="button"
           onClick={onEdit}
           className="text-xs text-blue-500 px-2 py-1 rounded-lg active:bg-blue-50"
         >
           แก้
         </button>
-        <button
+        <button type="button"
           onClick={onDelete}
           className="text-xs text-red-400 px-2 py-1 rounded-lg active:bg-red-50"
         >
@@ -223,10 +223,9 @@ function MedForm({ initial, onSave, onCancel }) {
           {showSuggestions && suggestions.length > 0 && (
             <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden max-h-56 overflow-y-auto">
               {suggestions.map((med, i) => (
-                <button
+                <button type="button"
                   key={i}
-                  type="button"
-                  onMouseDown={() => selectMed(med)}
+                                    onMouseDown={() => selectMed(med)}
                   className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0"
                 >
                   <div className="text-sm font-medium text-gray-800">{med.name}</div>
@@ -262,10 +261,9 @@ function MedForm({ initial, onSave, onCancel }) {
           <label className="block text-xs text-gray-500 mb-1">Frequency</label>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {FREQUENCY_OPTIONS.filter((o) => o !== 'อื่น ๆ').map((o) => (
-              <button
+              <button type="button"
                 key={o}
-                type="button"
-                onClick={() => {
+                                onClick={() => {
                   setFrequency(o)
                   setCustomFreq(false)
                 }}
@@ -278,9 +276,8 @@ function MedForm({ initial, onSave, onCancel }) {
                 {o}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => {
+            <button type="button"
+                            onClick={() => {
                 setCustomFreq(true)
                 setFrequency('')
               }}
@@ -309,10 +306,9 @@ function MedForm({ initial, onSave, onCancel }) {
           <label className="block text-xs text-gray-500 mb-1">เวลากิน</label>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {TIMING_OPTIONS.filter((o) => o !== 'อื่น ๆ').map((o) => (
-              <button
+              <button type="button"
                 key={o}
-                type="button"
-                onClick={() => {
+                                onClick={() => {
                   setTiming(o)
                   setCustomTiming(false)
                 }}
@@ -325,9 +321,8 @@ function MedForm({ initial, onSave, onCancel }) {
                 {o}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => {
+            <button type="button"
+                            onClick={() => {
                 setCustomTiming(true)
                 setTiming('')
               }}
@@ -365,7 +360,7 @@ function MedForm({ initial, onSave, onCancel }) {
       </div>
 
       <div className="flex gap-2 pb-8">
-        <button
+        <button type="button"
           onClick={() => canSave && onSave({ name: name.trim(), dose, frequency, timing, note })}
           disabled={!canSave}
           className={`flex-1 py-3 rounded-2xl text-sm font-medium ${
@@ -374,7 +369,7 @@ function MedForm({ initial, onSave, onCancel }) {
         >
           บันทึก
         </button>
-        <button
+        <button type="button"
           onClick={onCancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
@@ -517,7 +512,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
                 เปลี่ยนรูป
               </label>
               {scannedDrugs.length === 0 && (
-                <button
+                <button type="button"
                   onClick={scan}
                   disabled={loading}
                   className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50"
@@ -546,7 +541,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
                 }`}
               >
                 <div className="flex items-center gap-2 px-3 pt-2">
-                  <button
+                  <button type="button"
                     onClick={() => toggle(i)}
                     className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center text-xs shrink-0 ${
                       selected.has(i)
@@ -595,7 +590,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
 
       <div className="flex gap-2 pb-8">
         {scannedDrugs.length > 0 && (
-          <button
+          <button type="button"
             onClick={confirmSelected}
             disabled={selected.size === 0}
             className={`flex-1 py-3 rounded-2xl text-sm font-medium ${
@@ -605,7 +600,7 @@ function MedScan({ settings, onConfirm, onCancel }) {
             เพิ่ม {selected.size} ยา
           </button>
         )}
-        <button onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">
+        <button type="button" onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">
           ยกเลิก
         </button>
       </div>
