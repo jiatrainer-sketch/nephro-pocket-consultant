@@ -20,11 +20,13 @@ export function useTheme() {
     } else {
       root.classList.remove('dark')
     }
-    try { localStorage.setItem(STORAGE_KEY, theme) } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, theme)
+    } catch {}
   }, [theme])
 
   const toggle = useCallback(() => {
-    setTheme(t => t === 'dark' ? 'light' : 'dark')
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
   }, [])
 
   return { theme, toggle, isDark: theme === 'dark' }
