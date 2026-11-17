@@ -59,20 +59,20 @@ export default function QuickMode({ onBack, settings }) {
       >
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+            <button type="button" onClick={onBack} className="text-2xl leading-none shrink-0">
               ←
             </button>
             <div className="flex-1">
               <div className="font-bold text-base">Quick Mode</div>
               <div className="text-xs text-teal-200">ไม่บันทึกข้อมูล</div>
             </div>
-            <button onClick={reset} className="text-xs bg-teal-600 px-3 py-1.5 rounded-lg">
+            <button type="button" onClick={reset} className="text-xs bg-teal-600 px-3 py-1.5 rounded-lg">
               ล้าง
             </button>
           </div>
           <div className="flex -mx-4 px-2 overflow-x-auto">
             {TABS.map((t) => (
-              <button
+              <button type="button"
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-2.5 text-xs font-medium whitespace-nowrap shrink-0 border-b-2 transition-colors ${
@@ -434,9 +434,8 @@ function QuickLabInput({ patient, onUpdate, settings }) {
           {QUICK_CONDITIONS.map((name) => {
             const selected = patient.conditions.some((c) => c.name === name)
             return (
-              <button
+              <button type="button"
                 key={name}
-                type="button"
                 onClick={() => toggleCondition(name)}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   selected
@@ -459,8 +458,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
             placeholder="เพิ่มโรคอื่น เช่น Autoimmune, HIV..."
             className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-300"
           />
-          <button
-            type="button"
+          <button type="button"
             onClick={addCondition}
             className="bg-teal-600 text-white px-3 rounded-xl text-sm shrink-0"
           >
@@ -476,7 +474,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
               >
                 {c.name}
                 {!QUICK_CONDITIONS.includes(c.name) && (
-                  <button
+                  <button type="button"
                     onClick={() => {
                       const next = patient.conditions.filter((_, idx) => idx !== i)
                       onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
@@ -503,7 +501,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
                 className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
               >
                 ⚠️ {a}
-                <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">
+                <button type="button" onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">
                   ✕
                 </button>
               </span>
@@ -521,8 +519,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
               placeholder="พิมพ์ชื่อยา เช่น amlo, penicillin..."
               className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
             />
-            <button
-              type="button"
+            <button type="button"
               onClick={() => addAllergy()}
               className="bg-red-500 text-white px-3 rounded-xl text-sm shrink-0"
             >
@@ -532,9 +529,8 @@ function QuickLabInput({ patient, onUpdate, settings }) {
           {allergySuggestions.length > 0 && (
             <div className="absolute left-0 right-10 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
               {allergySuggestions.map((med, i) => (
-                <button
+                <button type="button"
                   key={i}
-                  type="button"
                   onMouseDown={() => addAllergy(med.name)}
                   className="w-full text-left px-3 py-2.5 text-sm hover:bg-red-50 border-b border-gray-50 last:border-0"
                 >
@@ -610,9 +606,8 @@ function PthTrend({ pthCurrent, rawPthPrev, rawPthPrevMonths, onPthPrev, onPthPr
       </div>
       <div className="flex flex-wrap gap-1.5 mt-2">
         {PTH_MONTH_PRESETS.map((v) => (
-          <button
+          <button type="button"
             key={v}
-            type="button"
             onClick={() => onPthPrevMonths(String(v))}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
               Number.parseFloat(rawPthPrevMonths) === v
@@ -750,9 +745,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
           {/* unit toggle */}
           <div className="flex justify-center gap-1 mb-1">
             {['เดือน', 'วัน'].map((u) => (
-              <button
+              <button type="button"
                 key={u}
-                type="button"
                 onClick={() => switchUnit(u)}
                 className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                   unit === u
@@ -779,9 +773,8 @@ function EgfrTrend({ egfrCurrent, rawEgfrPrev, rawEgfrPrevMonths, onEgfrPrev, on
       </div>
       <div className="flex flex-wrap gap-1.5 mt-2">
         {presets.map((v) => (
-          <button
+          <button type="button"
             key={v}
-            type="button"
             onClick={() => handlePreset(v)}
             className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
               isPresetActive(v)
