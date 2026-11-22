@@ -261,13 +261,13 @@ export default function LabTab({ patient, onUpdate, settings }) {
   return (
     <div className="p-4 space-y-3">
       <div className="flex gap-2">
-        <button
+        <button type="button"
           onClick={openAdd}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-2"
         >
           <span className="text-lg leading-none">+</span> บันทึก Lab
         </button>
-        <button
+        <button type="button"
           onClick={() => setShowScan(true)}
           className="bg-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium flex items-center justify-center gap-1"
         >
@@ -321,13 +321,13 @@ function LabCard({ entry, onEdit, onDelete }) {
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          <button onClick={onEdit} className="text-xs text-blue-500 px-2 py-1">
+          <button type="button" onClick={onEdit} className="text-xs text-blue-500 px-2 py-1">
             แก้ไข
           </button>
-          <button onClick={onDelete} className="text-xs text-red-400  px-2 py-1">
+          <button type="button" onClick={onDelete} className="text-xs text-red-400  px-2 py-1">
             ลบ
           </button>
-          <button onClick={() => setExpanded(!expanded)} className="text-gray-400 text-lg px-1">
+          <button type="button" onClick={() => setExpanded(!expanded)} className="text-gray-400 text-lg px-1">
             {expanded ? '▲' : '▼'}
           </button>
         </div>
@@ -511,13 +511,13 @@ function LabForm({ initial, onSave, onCancel }) {
       </div>
 
       <div className="flex gap-2 pb-8">
-        <button
+        <button type="button"
           onClick={handleSave}
           className="flex-1 bg-blue-600 text-white py-3 rounded-2xl text-sm font-medium"
         >
           บันทึก Lab
         </button>
-        <button
+        <button type="button"
           onClick={onCancel}
           className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm"
         >
@@ -617,7 +617,7 @@ function LabScan({ settings, onConfirm, onCancel }) {
             <img src={preview} alt="Lab" className="w-full rounded-xl max-h-60 object-contain bg-gray-100" />
             <div className="flex gap-2">
               <label htmlFor="lab-scan-input" onClick={() => setScannedValues(null)} className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl text-xs text-center cursor-pointer">เปลี่ยนรูป</label>
-              {!scannedValues && <button onClick={scan} disabled={loading} className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50">{loading ? 'กำลังอ่าน...' : 'AI อ่านค่า Lab'}</button>}
+              {!scannedValues && <button type="button" onClick={scan} disabled={loading} className="flex-1 bg-purple-600 text-white py-2 rounded-xl text-xs font-medium disabled:opacity-50">{loading ? 'กำลังอ่าน...' : 'AI อ่านค่า Lab'}</button>}
             </div>
           </div>
         )}
@@ -641,8 +641,8 @@ function LabScan({ settings, onConfirm, onCancel }) {
         )}
       </div>
       <div className="flex gap-2 pb-8">
-        {scannedValues && <button onClick={() => { const values = {}; for (const [k,v] of Object.entries(scannedValues)) { if (v !== undefined && v !== null && v !== '') values[k] = v }; onConfirm({ date, values }) }} className="flex-1 py-3 rounded-2xl text-sm font-medium bg-purple-600 text-white">บันทึก Lab</button>}
-        <button onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">ยกเลิก</button>
+        {scannedValues && <button type="button" onClick={() => { const values = {}; for (const [k,v] of Object.entries(scannedValues)) { if (v !== undefined && v !== null && v !== '') values[k] = v }; onConfirm({ date, values }) }} className="flex-1 py-3 rounded-2xl text-sm font-medium bg-purple-600 text-white">บันทึก Lab</button>}
+        <button type="button" onClick={onCancel} className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl text-sm">ยกเลิก</button>
       </div>
     </div>
   )

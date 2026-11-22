@@ -59,20 +59,20 @@ export default function QuickMode({ onBack, settings }) {
       >
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 pb-2">
-            <button onClick={onBack} className="text-2xl leading-none shrink-0">
+            <button type="button" onClick={onBack} className="text-2xl leading-none shrink-0">
               ←
             </button>
             <div className="flex-1">
               <div className="font-bold text-base">Quick Mode</div>
               <div className="text-xs text-teal-200">ไม่บันทึกข้อมูล</div>
             </div>
-            <button onClick={reset} className="text-xs bg-teal-600 px-3 py-1.5 rounded-lg">
+            <button type="button" onClick={reset} className="text-xs bg-teal-600 px-3 py-1.5 rounded-lg">
               ล้าง
             </button>
           </div>
           <div className="flex -mx-4 px-2 overflow-x-auto">
             {TABS.map((t) => (
-              <button
+              <button type="button"
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-2.5 text-xs font-medium whitespace-nowrap shrink-0 border-b-2 transition-colors ${
@@ -476,7 +476,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
               >
                 {c.name}
                 {!QUICK_CONDITIONS.includes(c.name) && (
-                  <button
+                  <button type="button"
                     onClick={() => {
                       const next = patient.conditions.filter((_, idx) => idx !== i)
                       onUpdate({ ...buildUpdate(rawVals, date, rawWeight), conditions: next })
@@ -503,7 +503,7 @@ function QuickLabInput({ patient, onUpdate, settings }) {
                 className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-800 text-xs px-2.5 py-1 rounded-full"
               >
                 ⚠️ {a}
-                <button onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">
+                <button type="button" onClick={() => removeAllergy(i)} className="text-red-400 ml-0.5">
                   ✕
                 </button>
               </span>
