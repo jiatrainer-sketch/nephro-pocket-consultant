@@ -28,7 +28,7 @@ export default function App() {
   const [patients, setPatients] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [settings, setSettings] = useState({ apiKey: '' })
-  const { theme, toggle: toggleTheme, isDark } = useTheme()
+  const { toggle: toggleTheme, isDark } = useTheme()
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('name')
   const [showAdd, setShowAdd] = useState(false)
@@ -149,26 +149,26 @@ export default function App() {
             <div className="text-xs text-blue-200">HD Clinical Consultant · รพ.ดอนตูม</div>
           </div>
           <div className="flex gap-2">
-            <button
+            <button type="button"
               onClick={() => setView('quick')}
               className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
             >
               Quick
             </button>
-            <button
+            <button type="button"
               onClick={() => setView('pregnancy')}
               className="bg-pink-500 hover:bg-pink-400 active:bg-pink-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
             >
               Preg
             </button>
-            <button
+            <button type="button"
               onClick={toggleTheme}
               className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 w-9 h-9 rounded-lg flex items-center justify-center text-lg"
               aria-label={isDark ? 'โหมดกลางวัน' : 'โหมดกลางคืน'}
             >
               {isDark ? '☀️' : '🌙'}
             </button>
-            <button
+            <button type="button"
               onClick={() => setView('settings')}
               className="bg-blue-600 hover:bg-blue-500 active:bg-blue-800 w-9 h-9 rounded-lg flex items-center justify-center text-lg"
               aria-label="ตั้งค่า"
@@ -199,7 +199,7 @@ export default function App() {
             ['hn', '# HN'],
             ['date', '🕐 ล่าสุด'],
           ].map(([k, label]) => (
-            <button
+            <button type="button"
               key={k}
               onClick={() => setSortBy(k)}
               className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
@@ -254,13 +254,13 @@ export default function App() {
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
             <div className="flex gap-2">
-              <button
+              <button type="button"
                 onClick={addPatient}
                 className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium"
               >
                 เพิ่ม
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   setShowAdd(false)
                   setNewName('')
@@ -273,7 +273,7 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <button
+          <button type="button"
             onClick={() => setShowAdd(true)}
             className="w-full bg-blue-600 active:bg-blue-700 text-white py-3.5 rounded-2xl text-sm font-medium shadow flex items-center justify-center gap-2"
           >
@@ -305,7 +305,7 @@ function PatientCard({ patient, onClick }) {
   const avatarColor = critical ? 'bg-red-500' : abnormal ? 'bg-yellow-500' : 'bg-blue-500'
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-3 text-left active:bg-gray-50 transition-colors"
     >

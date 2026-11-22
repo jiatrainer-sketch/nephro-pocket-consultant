@@ -130,7 +130,7 @@ export default function ChatTab({ patient, settings }) {
             <p className="text-xs mt-1">ถามได้ทุกเรื่องที่เกี่ยวกับคนไข้รายนี้</p>
             <div className="mt-4 space-y-2">
               {['ควรปรับ EPO เท่าไหร่?', 'iPTH สูง ทำยังไงดี?', 'มี drug interaction ไหม?'].map((q) => (
-                <button
+                <button type="button"
                   key={q}
                   onClick={() => {
                     setInput(q)
@@ -215,14 +215,14 @@ export default function ChatTab({ patient, settings }) {
             className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
           {loading ? (
-            <button
+            <button type="button"
               onClick={stopGeneration}
               className="px-4 rounded-xl text-sm font-medium bg-red-500 text-white active:bg-red-700 shrink-0"
             >
               หยุด
             </button>
           ) : (
-            <button
+            <button type="button"
               onClick={send}
               disabled={!input.trim()}
               className={`px-4 rounded-xl text-sm font-medium transition-colors shrink-0 ${
@@ -236,7 +236,7 @@ export default function ChatTab({ patient, settings }) {
           )}
         </div>
         {messages.length > 0 && (
-          <button
+          <button type="button"
             onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
             className="w-full mt-2 text-xs text-gray-400 py-1"
           >
