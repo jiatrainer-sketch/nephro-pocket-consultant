@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DR_AI_MODEL, buildDrAIPrompt, buildPatientContext } from '../drAIPrompt'
+import { getLatestLabEntry } from '../storage'
 
 export default function ChatTab({ patient, settings }) {
   const chatKey = `chat_${patient?.id || 'quick'}`
@@ -29,18 +30,40 @@ export default function ChatTab({ patient, settings }) {
     return () => { abortRef.current?.abort() }
   }, [])
 
-  const send = async () => {
-    const text = input.trim()
+  // Auto-summary: เมื่อมี lab ใหม่ที่ยังไม่เคยสรุป ให้ Dr. AI สรุปเองตอนเปิดแท็บ
+  const latestLab = getLatestLabEntry(patient || {})
+  const labMarker = latestLab ? `${latestLab.date}|${JSON.stringify(latestLab.values)}` : ''
+  const autoKey = `chat_auto_${patient?.id || 'quick'}`
+  const autoStarted = useRef('')
+
+  useEffect(() => {
+    if (!latestLab || !settings?.apiKey || patient?.id === '__quick__') return
+    if (autoStarted.current === labMarker) return
+    if (localStorage.getItem(autoKey) === labMarker) return
+    autoStarted.current = labMarker
+    localStorage.setItem(autoKey, labMarker)
+    let base = []
+    try { base = JSON.parse(localStorage.getItem(chatKey)) || [] } catch {}
+    send(
+      `สรุปผล Lab ล่าสุด (${latestLab.date}) ของคนไข้รายนี้ เทียบกับครั้งก่อน`,
+      `📋 สรุปผล Lab ${latestLab.date} อัตโนมัติ`,
+      base
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labMarker, settings?.apiKey, chatKey])
+
+  const send = async (overrideText, displayText, baseMessages) => {
+    const text = (typeof overrideText === 'string' ? overrideText : input).trim()
     if (!text || loading) return
     if (!settings?.apiKey) {
       setError('ยังไม่ได้ตั้ง API Key — ไปที่ ⚙️ ตั้งค่า')
       return
     }
 
-    const userMsg = { role: 'user', content: text }
-    const newMessages = [...messages, userMsg]
+    const userMsg = displayText ? { role: 'user', content: text, display: displayText } : { role: 'user', content: text }
+    const newMessages = [...(baseMessages || messages), userMsg]
     setMessages(newMessages)
-    setInput('')
+    if (typeof overrideText !== 'string') setInput('')
     setLoading(true)
     setError('')
 
@@ -60,7 +83,7 @@ export default function ChatTab({ patient, settings }) {
           model: DR_AI_MODEL,
           max_tokens: 4096,
           stream: true,
-          system: buildDrAIPrompt(buildPatientContext(patient)),
+          system: buildDrAIPrompt(buildPatientContext(patient), { brief: true }),
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
         }),
       })
@@ -107,6 +130,7 @@ export default function ChatTab({ patient, settings }) {
     } catch (e) {
       setLoading(false)
       if (e.name !== 'AbortError') setError(`เกิดข้อผิดพลาด: ${e.message}`)
+      if (displayText) localStorage.removeItem(autoKey)
     } finally {
       abortRef.current = null
       setTimeout(() => inputRef.current?.focus(), 100)
@@ -153,7 +177,7 @@ export default function ChatTab({ patient, settings }) {
                   : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-bl-md'
               }`}
             >
-              {msg.content}
+              {msg.display || msg.content}
               {/* Blinking cursor while streaming */}
               {msg.role === 'assistant' &&
                 i === messages.length - 1 &&

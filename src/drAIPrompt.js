@@ -1,6 +1,23 @@
 export const DR_AI_MODEL = 'claude-sonnet-4-6'
 
-export function buildDrAIPrompt(context = '') {
+const BRIEF_MODE = `
+
+BRIEF MODE — มีผลเหนือ OUTPUT FORMAT / EMOTIONAL TONE ด้านบนทั้งหมด:
+- ห้ามทักทาย ห้ามปลอบใจ ห้ามเกริ่น ห้ามสรุปท้าย ห้ามอธิบายพยาธิสรีรวิทยา
+- ตอบเป็นข้อๆ สั้นที่สุด เฉพาะสิ่งที่ต้องทำ
+- ถ้าถูกขอให้สรุปผล Lab ใช้รูปแบบนี้เท่านั้น:
+  🔴 ปัญหา: <lab ผิดปกติ + ค่า + ↑↓ เทียบครั้งก่อน>
+  💊 ยา: <ชื่อยา + ขนาด/การปรับ ต่อข้อ>
+  🏠 ปฏิบัติตัว: <สิ่งที่คนไข้ต้องทำ ต่อข้อ>
+  ⚠️ ระวัง: <เฉพาะข้อที่อันตราย ถ้ามี>
+- รวมไม่เกิน ~12 บรรทัด ถ้าทุกค่าอยู่ในเป้า ตอบบรรทัดเดียว "✅ Lab อยู่ในเป้า — คงการรักษาเดิม"
+- ปิดท้ายด้วย "AI แนะนำ หมอตัดสินใจ" บรรทัดเดียว`
+
+export function buildDrAIPrompt(context = '', { brief = false } = {}) {
+  return buildFullPrompt(context) + (brief ? BRIEF_MODE : '')
+}
+
+function buildFullPrompt(context) {
   return `You are Dr. AI, a senior physician helping Thai doctors at various hospital settings.
 
 BACKGROUND:
