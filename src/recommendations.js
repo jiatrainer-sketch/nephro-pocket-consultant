@@ -709,26 +709,13 @@ function getMBDRecs(v, meds) {
         target: 'iPTH 150–300 pg/mL',
         warning: 'Recheck Ca ใน 2 สัปดาห์หลังเพิ่ม Vitamin D',
       })
-    } else if (pth >= 200) {
+    } else if (pth >= 150) {
       recs.push({
         id: 'pth-ok',
         severity: 'green',
         domain: 'CKD-MBD',
         title: 'iPTH อยู่ในเป้าหมาย',
         recommendation: `iPTH = ${pth} pg/mL — คงขนาด Vitamin D เดิม ≥3 เดือน`,
-        target: 'iPTH 150–300 pg/mL',
-        warning: '—',
-      })
-    } else if (pth >= 150) {
-      const dose = vitD
-        ? `ลด ${vitD.name} 50% จาก ${vitD.dose} นาน 2 เดือน`
-        : 'iPTH ค่อนข้างต่ำ — ติดตาม'
-      recs.push({
-        id: 'pth-low-border',
-        severity: 'yellow',
-        domain: 'CKD-MBD',
-        title: 'iPTH ค่อนข้างต่ำ — ลด Vitamin D',
-        recommendation: `iPTH = ${pth} pg/mL\n${dose}`,
         target: 'iPTH 150–300 pg/mL',
         warning: '—',
       })
