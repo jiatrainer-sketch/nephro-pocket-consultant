@@ -6,7 +6,7 @@ export const autoKeyFor = (patient) => `chat_auto_${patient?.id || 'quick'}`
 
 export function labMarker(patient) {
   const lab = getLatestLabEntry(patient || {})
-  return lab ? `${lab.date}|${JSON.stringify(lab.values)}` : ''
+  return lab ? `v2|${lab.date}|${JSON.stringify(lab.values)}` : ''
 }
 
 export function summaryRequest(patient) {

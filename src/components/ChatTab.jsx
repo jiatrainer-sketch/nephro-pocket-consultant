@@ -172,7 +172,7 @@ export default function ChatTab({ patient, settings }) {
                   : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-bl-md'
               }`}
             >
-              {msg.display || msg.content}
+              {msg.display || renderBold(msg.content)}
               {/* Blinking cursor while streaming */}
               {msg.role === 'assistant' &&
                 i === messages.length - 1 &&
@@ -265,4 +265,12 @@ export default function ChatTab({ patient, settings }) {
       </div>
     </div>
   )
+}
+
+// แสดง **ตัวหนา** ของ markdown ให้เป็นตัวหนาจริง และตัด # หัวข้อ
+function renderBold(text) {
+  return (text || '')
+    .replace(/^#{1,6}\s*/gm, '')
+    .split(/\*\*(.+?)\*\*/g)
+    .map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part))
 }
