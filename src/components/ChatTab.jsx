@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DR_AI_MODEL, buildDrAIPrompt, buildPatientContext } from '../drAIPrompt'
-import { getLatestLabEntry } from '../storage'
+import { autoKeyFor, labMarker, needsSummary, summaryRequest } from '../drAISummary'
 
 export default function ChatTab({ patient, settings }) {
   const chatKey = `chat_${patient?.id || 'quick'}`
@@ -31,26 +31,21 @@ export default function ChatTab({ patient, settings }) {
   }, [])
 
   // Auto-summary: เมื่อมี lab ใหม่ที่ยังไม่เคยสรุป ให้ Dr. AI สรุปเองตอนเปิดแท็บ
-  const latestLab = getLatestLabEntry(patient || {})
-  const labMarker = latestLab ? `${latestLab.date}|${JSON.stringify(latestLab.values)}` : ''
-  const autoKey = `chat_auto_${patient?.id || 'quick'}`
+  const marker = labMarker(patient)
+  const autoKey = autoKeyFor(patient)
   const autoStarted = useRef('')
 
   useEffect(() => {
-    if (!latestLab || !settings?.apiKey || patient?.id === '__quick__') return
-    if (autoStarted.current === labMarker) return
-    if (localStorage.getItem(autoKey) === labMarker) return
-    autoStarted.current = labMarker
-    localStorage.setItem(autoKey, labMarker)
+    const req = summaryRequest(patient)
+    if (!req || !settings?.apiKey || patient?.id === '__quick__') return
+    if (autoStarted.current === marker || !needsSummary(patient)) return
+    autoStarted.current = marker
+    localStorage.setItem(autoKey, marker)
     let base = []
     try { base = JSON.parse(localStorage.getItem(chatKey)) || [] } catch {}
-    send(
-      `สรุปผล Lab ล่าสุด (${latestLab.date}) ของคนไข้รายนี้ เทียบกับครั้งก่อน`,
-      `📋 สรุปผล Lab ${latestLab.date} อัตโนมัติ`,
-      base
-    )
+    send(req.content, req.display, base)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [labMarker, settings?.apiKey, chatKey])
+  }, [marker, settings?.apiKey, chatKey])
 
   const send = async (overrideText, displayText, baseMessages) => {
     const text = (typeof overrideText === 'string' ? overrideText : input).trim()

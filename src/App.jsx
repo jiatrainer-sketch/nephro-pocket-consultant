@@ -19,6 +19,7 @@ import {
   saveSettings,
 } from './storage'
 import { useTheme } from './useTheme'
+import { needsSummary, summarizeAll } from './drAISummary'
 
 // ============================================================
 // App Root
@@ -384,6 +385,8 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
   const fileRef = useRef(null)
   const importFileRef = useRef(null)
   const labImportRef = useRef(null)
+  const [batch, setBatch] = useState(null) // { done, failed, total, running }
+  const batchAbort = useRef(null)
 
   useEffect(() => {
     getStorageInfo().then(setStorage)
@@ -531,6 +534,31 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
       setLabImportMsg(`❌ ${err.message}`)
     }
   }
+
+  const handleSummarizeAll = async () => {
+    if (!settings.apiKey) {
+      setBatch({ error: 'ใส่ API Key ก่อน' })
+      return
+    }
+    const patients = loadPatients()
+    const n = patients.filter(needsSummary).length
+    if (n === 0) {
+      setBatch({ done: 0, failed: 0, total: 0 })
+      return
+    }
+    if (!window.confirm(`ให้ Dr. AI สรุปผล Lab ${n} คน?\n(ใช้เวลาประมาณ ${Math.ceil(n / 9)} นาที)`)) return
+    const controller = new AbortController()
+    batchAbort.current = controller
+    setBatch({ done: 0, failed: 0, total: n, running: true })
+    const r = await summarizeAll(patients, settings.apiKey, {
+      signal: controller.signal,
+      onProgress: (p) => setBatch({ ...p, running: true }),
+    })
+    setBatch((b) => ({ ...b, ...r, running: false }))
+    batchAbort.current = null
+  }
+
+  useEffect(() => () => batchAbort.current?.abort(), [])
 
   const handleLabImport = async (e) => {
     const file = e.target.files?.[0]
@@ -714,6 +742,42 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
             📁 นำเข้าจากไฟล์ JSON
           </button>
           {labImportMsg && <p className="text-xs text-center mt-1">{labImportMsg}</p>}
+          <div className="border-t border-gray-100 pt-3 space-y-2">
+            {batch?.running ? (
+              <button
+                type="button"
+                onClick={() => batchAbort.current?.abort()}
+                className="w-full bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium"
+              >
+                ⏹ หยุด ({batch.done + batch.failed}/{batch.total})
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSummarizeAll}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 rounded-xl text-sm font-medium"
+              >
+                🤖 ให้ Dr. AI สรุป Lab ทุกคน
+              </button>
+            )}
+            {batch?.running && (
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-purple-600 h-2 transition-all"
+                  style={{ width: `${batch.total ? ((batch.done + batch.failed) / batch.total) * 100 : 0}%` }}
+                />
+              </div>
+            )}
+            {batch && !batch.running && (
+              <p className="text-xs text-center">
+                {batch.error
+                  ? `❌ ${batch.error}`
+                  : batch.total === 0
+                    ? '✅ ทุกคนสรุปแล้ว ไม่มี Lab ใหม่'
+                    : `✅ สรุปแล้ว ${batch.done} คน${batch.failed ? ` — ไม่สำเร็จ ${batch.failed} คน (กดอีกครั้งเพื่อลองใหม่)` : ''} — เปิดแท็บ Dr. AI ของคนไข้เพื่อดู`}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">
