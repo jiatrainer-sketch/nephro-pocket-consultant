@@ -774,20 +774,25 @@ function PreopContent({ patient, latestLab }) {
 function RecCard({ rec }) {
   const s = SEV_STYLE[rec.severity] || SEV_STYLE.green
   const isCritical = rec.severity === 'critical'
+  const [open, setOpen] = useState(isCritical)
 
   return (
     <div className={`rounded-2xl border overflow-hidden ${s.card}`}>
-      <div className="px-4 py-3">
-        <div className="flex items-start gap-2 mb-2">
+      <div className={open ? 'px-4 py-3' : 'px-4 py-2.5'}>
+        <button
+          type="button"
+          onClick={() => !isCritical && setOpen((o) => !o)}
+          className={`w-full flex items-start gap-2 text-left ${open ? 'mb-2' : ''}`}
+        >
           <span className="text-base leading-none shrink-0 mt-0.5">{s.icon}</span>
-          <div className="flex-1">
-            <span className={`font-bold text-sm ${isCritical ? 'text-white' : 'text-gray-900'}`}>
-              {rec.title}
-            </span>
-            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${s.badge}`}>{rec.domain}</span>
-          </div>
-        </div>
+          <span className={`flex-1 font-bold text-sm ${isCritical ? 'text-white' : 'text-gray-900'}`}>
+            {rec.title}
+          </span>
+          {!isCritical && <span className="text-gray-400 text-xs shrink-0 mt-0.5">{open ? '▲' : '▼'}</span>}
+        </button>
 
+        {open && (
+        <>
         <div
           className={`text-sm leading-relaxed whitespace-pre-line mb-2 ${isCritical ? 'text-red-50' : 'text-gray-700'}`}
         >
@@ -806,6 +811,8 @@ function RecCard({ rec }) {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
   )

@@ -487,8 +487,10 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
       matched++
       if (!patient.labs) patient.labs = []
       for (const entry of labEntries) {
-        const exists = patient.labs.some((l) => l.date === entry.date)
-        if (!exists) {
+        const existing = patient.labs.find((l) => l.date === entry.date)
+        if (existing) {
+          existing.values = { ...existing.values, ...entry.values }
+        } else {
           patient.labs.push({ id: generateId(), date: entry.date, values: entry.values })
           labsAdded++
         }
@@ -497,6 +499,37 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
     savePatients(patients)
     onDataRestored?.()
     return { matched, total: Object.keys(labData).length, labsAdded }
+  }
+
+  const handleEncryptedLabImport = async () => {
+    const pw = window.prompt('ใส่รหัสผ่านไฟล์ Lab')
+    if (!pw) return
+    setLabImportMsg('กำลังถอดรหัส...')
+    try {
+      const res = await fetch('/labs.enc.json', { cache: 'no-store' })
+      if (!res.ok) throw new Error('ไม่พบไฟล์ Lab บนเว็บ')
+      const { iter, salt, iv, ct } = await res.json()
+      const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))
+      const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw.trim()), 'PBKDF2', false, ['deriveKey'])
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: b64(salt), iterations: iter, hash: 'SHA-256' },
+        base,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      )
+      let plain
+      try {
+        plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(iv) }, key, b64(ct))
+      } catch {
+        throw new Error('รหัสผ่านไม่ถูกต้อง')
+      }
+      const labData = JSON.parse(new TextDecoder().decode(plain))
+      const { matched, total, labsAdded } = importLabData(labData)
+      setLabImportMsg(`✅ จับคู่ได้ ${matched}/${total} คน — เพิ่ม ${labsAdded} lab ใหม่ (ค่าเดิมอัปเดตแล้ว)`)
+    } catch (err) {
+      setLabImportMsg(`❌ ${err.message}`)
+    }
   }
 
   const handleLabImport = async (e) => {
@@ -654,11 +687,18 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
           <div>
-            <h3 className="font-semibold text-sm text-gray-700 mb-1">🧪 นำเข้า Lab จากไฟล์</h3>
+            <h3 className="font-semibold text-sm text-gray-700 mb-1">🧪 นำเข้า Lab</h3>
             <p className="text-xs text-gray-500">
-              จับคู่ชื่อคนไข้อัตโนมัติแล้วเพิ่ม lab entries — ข้ามเดือนที่มีอยู่แล้ว
+              จับคู่ชื่อคนไข้อัตโนมัติ — เดือนที่มีแล้วจะอัปเดตค่าให้
             </p>
           </div>
+          <button
+            type="button"
+            onClick={handleEncryptedLabImport}
+            className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium"
+          >
+            🔐 นำเข้า Lab ล่าสุด (ใส่รหัสผ่าน)
+          </button>
           <input
             ref={labImportRef}
             type="file"
@@ -669,9 +709,9 @@ function SettingsView({ settings, onSave, onBack, onDataRestored, isDark, onTogg
           <button
             type="button"
             onClick={() => labImportRef.current?.click()}
-            className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium"
+            className="w-full bg-purple-50 text-purple-700 py-2.5 rounded-xl text-sm font-medium border border-purple-200"
           >
-            🧪 นำเข้า Lab (เลือกไฟล์ JSON)
+            📁 นำเข้าจากไฟล์ JSON
           </button>
           {labImportMsg && <p className="text-xs text-center mt-1">{labImportMsg}</p>}
         </div>
