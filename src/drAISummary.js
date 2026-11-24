@@ -71,7 +71,10 @@ export async function summarizeAndStore(patient, apiKey, signal) {
   } catch {}
   const userMsg = { role: 'user', ...req }
   const text = await callDrAI(patient, [...history, userMsg], apiKey, signal)
-  localStorage.setItem(chatKey, JSON.stringify([...history, userMsg, { role: 'assistant', content: text }]))
+  localStorage.setItem(
+    chatKey,
+    JSON.stringify([...history, userMsg, { role: 'assistant', content: text }])
+  )
   localStorage.setItem(autoKeyFor(patient), labMarker(patient))
 }
 

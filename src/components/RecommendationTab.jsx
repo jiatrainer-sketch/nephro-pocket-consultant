@@ -785,33 +785,37 @@ function RecCard({ rec }) {
           className={`w-full flex items-start gap-2 text-left ${open ? 'mb-2' : ''}`}
         >
           <span className="text-base leading-none shrink-0 mt-0.5">{s.icon}</span>
-          <span className={`flex-1 font-bold text-sm ${isCritical ? 'text-white' : 'text-gray-900'}`}>
+          <span
+            className={`flex-1 font-bold text-sm ${isCritical ? 'text-white' : 'text-gray-900'}`}
+          >
             {rec.title}
           </span>
-          {!isCritical && <span className="text-gray-400 text-xs shrink-0 mt-0.5">{open ? '▲' : '▼'}</span>}
+          {!isCritical && (
+            <span className="text-gray-400 text-xs shrink-0 mt-0.5">{open ? '▲' : '▼'}</span>
+          )}
         </button>
 
         {open && (
-        <>
-        <div
-          className={`text-sm leading-relaxed whitespace-pre-line mb-2 ${isCritical ? 'text-red-50' : 'text-gray-700'}`}
-        >
-          {rec.recommendation}
-        </div>
-
-        <div
-          className={`text-xs space-y-0.5 mt-2 pt-2 border-t ${isCritical ? 'border-red-500 text-red-200' : 'border-gray-100 text-gray-500'}`}
-        >
-          <div>
-            <span className="font-medium">เป้าหมาย:</span> {rec.target}
-          </div>
-          {rec.warning && rec.warning !== '—' && (
-            <div>
-              <span className="font-medium">⚠️ ข้อระวัง:</span> {rec.warning}
+          <>
+            <div
+              className={`text-sm leading-relaxed whitespace-pre-line mb-2 ${isCritical ? 'text-red-50' : 'text-gray-700'}`}
+            >
+              {rec.recommendation}
             </div>
-          )}
-        </div>
-        </>
+
+            <div
+              className={`text-xs space-y-0.5 mt-2 pt-2 border-t ${isCritical ? 'border-red-500 text-red-200' : 'border-gray-100 text-gray-500'}`}
+            >
+              <div>
+                <span className="font-medium">เป้าหมาย:</span> {rec.target}
+              </div>
+              {rec.warning && rec.warning !== '—' && (
+                <div>
+                  <span className="font-medium">⚠️ ข้อระวัง:</span> {rec.warning}
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
