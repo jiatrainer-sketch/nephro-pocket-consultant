@@ -5,7 +5,11 @@ import { autoKeyFor, labMarker, needsSummary, summaryRequest } from '../drAISumm
 export default function ChatTab({ patient, settings }) {
   const chatKey = `chat_${patient?.id || 'quick'}`
   const [messages, setMessages] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(chatKey)) || [] } catch { return [] }
+    try {
+      return JSON.parse(localStorage.getItem(chatKey)) || []
+    } catch {
+      return []
+    }
   })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,7 +19,12 @@ export default function ChatTab({ patient, settings }) {
   const abortRef = useRef(null)
 
   useEffect(() => {
-    try { const saved = JSON.parse(localStorage.getItem(chatKey)); setMessages(saved || []) } catch { setMessages([]) }
+    try {
+      const saved = JSON.parse(localStorage.getItem(chatKey))
+      setMessages(saved || [])
+    } catch {
+      setMessages([])
+    }
   }, [chatKey])
 
   useEffect(() => {
@@ -27,7 +36,9 @@ export default function ChatTab({ patient, settings }) {
   }, [messages, loading, error])
 
   useEffect(() => {
-    return () => { abortRef.current?.abort() }
+    return () => {
+      abortRef.current?.abort()
+    }
   }, [])
 
   // Auto-summary: เมื่อมี lab ใหม่ที่ยังไม่เคยสรุป ให้ Dr. AI สรุปเองตอนเปิดแท็บ
@@ -42,7 +53,9 @@ export default function ChatTab({ patient, settings }) {
     autoStarted.current = marker
     localStorage.setItem(autoKey, marker)
     let base = []
-    try { base = JSON.parse(localStorage.getItem(chatKey)) || [] } catch {}
+    try {
+      base = JSON.parse(localStorage.getItem(chatKey)) || []
+    } catch {}
     send(req.content, req.display, base)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marker, settings?.apiKey, chatKey])
@@ -55,7 +68,9 @@ export default function ChatTab({ patient, settings }) {
       return
     }
 
-    const userMsg = displayText ? { role: 'user', content: text, display: displayText } : { role: 'user', content: text }
+    const userMsg = displayText
+      ? { role: 'user', content: text, display: displayText }
+      : { role: 'user', content: text }
     const newMessages = [...(baseMessages || messages), userMsg]
     setMessages(newMessages)
     if (typeof overrideText !== 'string') setInput('')
@@ -256,7 +271,10 @@ export default function ChatTab({ patient, settings }) {
         </div>
         {messages.length > 0 && (
           <button
-            onClick={() => { setMessages([]); localStorage.removeItem(chatKey) }}
+            onClick={() => {
+              setMessages([])
+              localStorage.removeItem(chatKey)
+            }}
             className="w-full mt-2 text-xs text-gray-400 py-1"
           >
             ล้างประวัติแชท

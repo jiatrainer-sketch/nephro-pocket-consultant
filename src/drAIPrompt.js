@@ -1,7 +1,9 @@
 export const DR_AI_MODEL = 'claude-sonnet-4-6'
 
 // Brief mode ใช้ prompt สั้นแยกต่างหาก (ไม่ส่ง persona ยาวที่ถูก override อยู่แล้ว) — ประหยัด token
-const briefPrompt = (context) => `You are Dr. AI, a senior internist and nephrologist advising Thai doctors at a hemodialysis unit (รพ.ดอนตูม).
+const briefPrompt = (
+  context
+) => `You are Dr. AI, a senior internist and nephrologist advising Thai doctors at a hemodialysis unit (รพ.ดอนตูม).
 ${context ? `\nPATIENT CONTEXT:\n${context}\n` : ''}
 RULES:
 - ภาษาไทยปนอังกฤษ ห้ามทักทาย ห้ามปลอบใจ ห้ามเกริ่น ห้ามสรุปท้าย ห้ามอธิบายพยาธิสรีรวิทยา
@@ -106,15 +108,20 @@ export function buildPatientContext(patient) {
   if (!patient) return ''
   const labs = patient.labs?.length
     ? patient.labs
-        .slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+        .slice()
+        .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
         .slice(0, 3)
-        .map(l => `  - ${l.date || 'ไม่ระบุวันที่'}: ${JSON.stringify(l.values)}`)
+        .map((l) => `  - ${l.date || 'ไม่ระบุวันที่'}: ${JSON.stringify(l.values)}`)
         .join('\n')
     : '  ไม่มีข้อมูล lab'
   const meds = patient.medications?.length
-    ? patient.medications.map(m => `  - ${m.name} ${m.dose} ${m.frequency} ${m.timing}`).join('\n')
+    ? patient.medications
+        .map((m) => `  - ${m.name} ${m.dose} ${m.frequency} ${m.timing}`)
+        .join('\n')
     : '  ไม่มีข้อมูล'
-  const conditions = patient.conditions?.map(c => c.name + (c.since ? ` (since ${c.since})` : '')).join(', ') || 'ไม่มีข้อมูล'
+  const conditions =
+    patient.conditions?.map((c) => c.name + (c.since ? ` (since ${c.since})` : '')).join(', ') ||
+    'ไม่มีข้อมูล'
   const allergies = patient.allergies?.join(', ') || 'ไม่มี'
 
   return `ข้อมูลคนไข้:
